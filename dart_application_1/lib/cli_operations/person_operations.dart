@@ -30,7 +30,7 @@ void showPersons() {
   }
 }
 
-// Function to update a person's information
+// update person
 void updatePerson() {
   print("Ange personnummer för personen du vill uppdatera:");
   String ssn = stdin.readLineSync()!;
@@ -40,20 +40,30 @@ void updatePerson() {
   if (personToUpdate != null) {
     print("Ange nytt namn:");
     String newName = stdin.readLineSync()!;
-
-    Person newPerson = Person(name: newName, ssn: personToUpdate.ssn);
-    personRepository.update(personToUpdate,newPerson);
-    print("Personen uppdaterad!");
+    try {
+      int index = personRepository.items.indexOf(personToUpdate);
+      personRepository.updatePerson(
+          index, Person(name: newName, ssn: personToUpdate.ssn));
+      print("Personen uppdaterad!");
+    } catch (e) {
+      print("Ett fel uppstod vid uppdateringen: $e");
+    }
+  } else {
+    print("Personen med personnummer '$ssn' hittades inte.");
   }
 }
 
-// Function to delete a person
+//delete a person
 void deletePerson() {
   print("Ange personnummer för personen du vill ta bort:");
   String ssn = stdin.readLineSync()!;
 
   Person? personToDelete = personRepository.getPersonBySecurityNumber(ssn);
 
-  //personRepository.deletePerson(personToDelete);
-  print("Personen togs inte bort för metoden är inte implamenterad.");
+  if (personToDelete != null) {
+    personRepository.deletePerson(personToDelete);
+    print("Personen med personnummer '$ssn' borttaget");
+  } else {
+    print("Personen med personnummer '$ssn' hittades inte.");
+  }
 }

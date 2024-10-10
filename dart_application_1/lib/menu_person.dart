@@ -15,24 +15,25 @@ void menuPerson() {
 
     switch (choice) {
       case 1:
+        print("I menu_person.dart");
         addPerson();
         print("skapar person");
-        // showMainMenu();
+      // showMainMenu();
 
-        return;
+      // return;
       case 2:
-        // showPersons();
+        showPersons();
         print("visar alla personer");
 
-        return;
+      // return;
       case 3:
-        // updatePerson();
-        print("uppdara person");
-        return;
+        updatePerson();
+        print("uppdatera person");
+      // return;
       case 4:
-        // deletePerson();
+        deletePerson();
         print("ta bort person");
-        return;
+      // return;
       case 5:
         print("Tillbaka till huvudmenyn...");
         return;

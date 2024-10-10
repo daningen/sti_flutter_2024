@@ -20,4 +20,16 @@ class PersonRepository extends Repository<Person> {
   List<Person> getAllPeople() {
     return _items;
   }
+
+  void updatePerson(int index, Person updatedPerson) {
+    if (index >= 0 && index < items.length) {
+      items[index] = updatedPerson;
+    } else {
+      throw RangeError("Invalid index: $index");
+    }
+  }
+
+  void deletePerson(Person personToDelete) {
+    _items.remove(personToDelete);
+  }
 }
