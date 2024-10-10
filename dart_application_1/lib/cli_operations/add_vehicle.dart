@@ -1,7 +1,7 @@
 import 'dart:io';
-
+import 'package:dart_application_1/globals.dart';
+import 'package:dart_application_1/menu.dart';
 import 'package:dart_application_1/models/person.dart';
-import 'package:dart_application_1/repositories/vehicle_repository.dart';
 
 void addVehicle() {
   print("Ange regnummer:");
@@ -21,12 +21,11 @@ void addVehicle() {
 
   // Create a Person object using named parameters
   // Person person = Person(owner: owner, ssn: ssn);
-  Person person = Person(name, ssn);
+  Person person = Person(name: name, ssn: ssn);
 
   // Add the vehicle to the repository
   // ignore: prefer_typing_uninitialized_variables
-  VehicleRepository([]);
-  addVehicle(licensePlate, vehicleType, person);
+  personRepository.add(person);
 
   print("Fordon adderat");
 }

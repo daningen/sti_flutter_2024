@@ -1,6 +1,7 @@
 // Function to add a new person
 import 'dart:io';
 
+import 'package:dart_application_1/globals.dart';
 import 'package:dart_application_1/models/person.dart';
 
 void addPerson() {
@@ -36,11 +37,14 @@ void updatePerson() {
 
   Person? personToUpdate = personRepository.getPersonBySecurityNumber(ssn);
 
-  print("Ange nytt namn:");
-  String newName = stdin.readLineSync()!;
+  if (personToUpdate != null) {
+    print("Ange nytt namn:");
+    String newName = stdin.readLineSync()!;
 
-  personToUpdate.name = newName;
-  print("Personen uppdaterad!");
+    Person newPerson = Person(name: newName, ssn: personToUpdate.ssn);
+    personRepository.update(personToUpdate,newPerson);
+    print("Personen uppdaterad!");
+  }
 }
 
 // Function to delete a person
@@ -50,6 +54,6 @@ void deletePerson() {
 
   Person? personToDelete = personRepository.getPersonBySecurityNumber(ssn);
 
-  personRepository.deletePerson(personToDelete);
-  print("Personen togs bort.");
+  //personRepository.deletePerson(personToDelete);
+  print("Personen togs inte bort för metoden är inte implamenterad.");
 }
