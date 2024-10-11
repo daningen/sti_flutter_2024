@@ -10,7 +10,7 @@ void menuVehicle() {
   while (true) {
     print("Välkommen till fordonsappen");
     print("1. Lägg till fordon");
-    print("2. Sök alla fordon");
+    print("2. Visa alla fordon");
     // print("2. Sök ett fordon");
     print("3. Uppdatera fordon");
     print("4. Ta bort fordon");

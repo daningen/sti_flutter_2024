@@ -24,15 +24,4 @@ class VehicleRepository extends Repository<Vehicle> {
   void deleteVehicle(Vehicle licensePlate) {
     _items.remove(licensePlate);
   }
-
-  void updateVehicle(String licensePlate, Person newOwner) {
-    Vehicle? vehicleToUpdate = getVehicleByLicensePlate(licensePlate);
-    if (vehicleToUpdate != null) {
-      vehicleToUpdate.owner = newOwner;
-      print(
-          "Fordonet med registreringsnummer '$licensePlate' har uppdaterats.");
-    } else {
-      print("Fordonet med registreringsnummer '$licensePlate' hittades inte.");
-    }
-  }
 }
