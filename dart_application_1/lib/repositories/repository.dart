@@ -1,5 +1,5 @@
 abstract class Repository<T> {
-  List<T> _items = [];
+  final List<T> _items = [];
 
   // Repository(this.items);
   void add(T item) => _items.add(item);

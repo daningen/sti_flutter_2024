@@ -2,9 +2,6 @@ import 'dart:io';
 
 import 'package:dart_application_1/cli_operations/vehicle_operations.dart';
 
-// import 'package:dart_application_1/cli_operations/add_vehicle.dart';
-// import 'package:dart_application_1/cli_operations/search_vehicles.dart';
-
 void menuVehicles() {
   print("hellooooo");
 }
@@ -18,7 +15,7 @@ void menuVehicle() {
     print("3. Uppdatera fordon");
     print("4. Ta bort fordon");
     // print("3. parkera");
-    print("4. Tillbaka till huvudmenyn");
+    print("5. Tillbaka till huvudmenyn");
 
     int choice = int.parse(stdin.readLineSync()!);
 
@@ -41,7 +38,11 @@ void menuVehicle() {
         print("fordon parkerat");
       // return;
       case 4:
-        print("Avslutar...");
+        deleteVehicle();
+      // return;
+      // break;
+      case 5:
+        print("tillbaka till huvudmenyn  ...");
         return;
       // break;
       default:

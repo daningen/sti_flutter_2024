@@ -3,23 +3,30 @@ import 'package:dart_application_1/globals.dart';
 import 'package:dart_application_1/models/person.dart';
 import 'package:dart_application_1/models/vehicle.dart';
 
-//update vehicle
 void updateVehicle() {
-  print("uppdatera fordon");
-//   print("Ange personnummer för personen du vill uppdatera:");
-//   String licensePlate = stdin.readLineSync()!;
+  print("Ange registreringsnummer för fordonet du vill uppdatera:");
+  String licensePlate = stdin.readLineSync()!;
+  //sök fordon
+  Vehicle? vehicleToUpdate =
+      vehicleRepository.getVehicleByLicensePlate(licensePlate);
 
-//   Person? vehicleToUpdate =
-//       vehicleRepository.getVehicleByLicensePlate(licensePlate);
+  int index = vehicleRepository.items.indexOf(vehicleToUpdate!);
 
-//   if (vehicleToUpdate != null) {
-//     print("Ange nytt namn:");
-//     String newName = stdin.readLineSync()!;
+  print("Ange ny ägare av fordonet:");
+  String newName = stdin.readLineSync()!;
 
-//     Person newPerson = Person(name: newName, ssn: personToUpdate.ssn);
-//     personRepository.update(personToUpdate, newPerson);
-//     print("Personen uppdaterad!");
-//   }
+  print("Ange personnummer för ny ägare (ddmmår):");
+  String newSSN = stdin.readLineSync()!;
+  // skapa nytt personobjekt
+  Person newOwner = Person(name: newName, ssn: newSSN);
+
+  // uppdatera objektet updatedVehicle
+  Vehicle updatedVehicle = Vehicle(
+      vehicleToUpdate.licensePlate, vehicleToUpdate.vehicleType, newOwner);
+
+  // Ersätt platsen i listan med de nya uppgifterna
+  vehicleRepository.items[index] = updatedVehicle;
+  print("Fordonets ägare uppdaterad.");
 }
 
 void addVehicle() {
@@ -34,9 +41,6 @@ void addVehicle() {
 
   print("personnummer  ddmmår:");
   String ssn = stdin.readLineSync()!;
-
-  // Initialize the repository
-  // VehicleRepository vehicleRepository = VehicleRepository([]);
 
   // Create a Person object using named parameters
   Person person = Person(name: name, ssn: ssn);
@@ -62,31 +66,21 @@ void showVehicles() {
   }
 }
 
-void searchVehicle() {
-  while (true) {
-    print("Ange registreringsnummer (eller 'exit' för att avsluta):");
-    String licensePlate = stdin.readLineSync()!;
+void deleteVehicle() {
+  print("Ange registreringsnummer (eller 'exit' för att avsluta):");
+  String licensePlate = stdin.readLineSync()!;
 
-    if (licensePlate.toLowerCase() == "exit") {
-      break;
+  try {
+    Vehicle? vehicleToDelete =
+        vehicleRepository.getVehicleByLicensePlate(licensePlate);
+
+    if (vehicleToDelete != null) {
+      vehicleRepository.deleteVehicle(vehicleToDelete);
+      print("Fordon '$licensePlate' borttaget.");
+    } else {
+      print("Registreringsnummer ej hittat.");
     }
-
-    try {
-      // Directly use the global vehicleRepository
-      Vehicle? foundVehicle =
-          vehicleRepository.getVehicleByLicensePlate(licensePlate);
-
-      if (foundVehicle != null) {
-        print("Fordon hittat:");
-        print("Registreringsnummer: ${foundVehicle.licensePlate}");
-        print("Ägare: ${foundVehicle.owner.name}");
-        print("Ägarens personnummer: ${foundVehicle.owner.ssn}");
-        break;
-      } else {
-        print("Fordon med registreringsnummer '$licensePlate' hittades inte.");
-      }
-    } catch (e) {
-      print("Ett fel uppstod: $e");
-    }
+  } catch (e) {
+    print("Ett fel uppstod vid borttagning: $e");
   }
 }

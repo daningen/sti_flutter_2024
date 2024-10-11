@@ -1,25 +1,6 @@
+import 'package:dart_application_1/models/person.dart';
 import 'package:dart_application_1/models/vehicle.dart';
 import 'package:dart_application_1/repositories/repository.dart';
-
-// class VehicleRepository extends Repository<Vehicle> {
-//   VehicleRepository(this._items);
-
-//   List<Vehicle> get items => _items;
-
-//   final List<Vehicle> _items;
-
-//   void addVehicle(Vehicle vehicle) {
-//     _items.add(vehicle);
-//   }
-
-//   Vehicle? getVehicleByLicensePlate(String licensePlate) {
-//     return _items.firstWhere((vehicle) => vehicle.licensePlate == licensePlate);
-//   }
-
-//   List<Vehicle> getAllVehicles() {
-//     return _items;
-//   }
-// }
 
 class VehicleRepository extends Repository<Vehicle> {
   VehicleRepository(this._items);
@@ -38,5 +19,20 @@ class VehicleRepository extends Repository<Vehicle> {
 
   List<Vehicle> getAllVehicles() {
     return _items;
+  }
+
+  void deleteVehicle(Vehicle licensePlate) {
+    _items.remove(licensePlate);
+  }
+
+  void updateVehicle(String licensePlate, Person newOwner) {
+    Vehicle? vehicleToUpdate = getVehicleByLicensePlate(licensePlate);
+    if (vehicleToUpdate != null) {
+      vehicleToUpdate.owner = newOwner;
+      print(
+          "Fordonet med registreringsnummer '$licensePlate' har uppdaterats.");
+    } else {
+      print("Fordonet med registreringsnummer '$licensePlate' hittades inte.");
+    }
   }
 }
