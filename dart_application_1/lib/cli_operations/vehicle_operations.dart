@@ -17,14 +17,14 @@ void updateVehicle() {
 
   print("Ange personnummer för ny ägare (ddmmår):");
   String newSSN = stdin.readLineSync()!;
-  // skapa nytt personobjekt
+  //skapa nytt personobjekt
   Person newOwner = Person(name: newName, ssn: newSSN);
 
-  // uppdatera objektet updatedVehicle
+  //uppdatera objektet updatedVehicle
   Vehicle updatedVehicle = Vehicle(
       vehicleToUpdate.licensePlate, vehicleToUpdate.vehicleType, newOwner);
 
-  // Ersätt platsen i listan med de nya uppgifterna
+  //Ersätt platsen i listan med de nya uppgifterna
   vehicleRepository.items[index] = updatedVehicle;
   print("Fordonets ägare uppdaterad.");
 }
@@ -42,7 +42,7 @@ void addVehicle() {
   print("personnummer  ddmmår:");
   String ssn = stdin.readLineSync()!;
 
-  // Create a Person object using named parameters
+  //skapa nytt personobjekt
   Person person = Person(name: name, ssn: ssn);
 
   personRepository.add(person);

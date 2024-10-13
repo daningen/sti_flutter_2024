@@ -1,3 +1,4 @@
+import 'package:dart_application_1/models/parking_space.dart';
 import 'package:dart_application_1/models/person.dart';
 
 import 'repository.dart';
@@ -32,4 +33,6 @@ class PersonRepository extends Repository<Person> {
   void deletePerson(Person personToDelete) {
     _items.remove(personToDelete);
   }
+
+  // List<ParkingSpace> getAllParkingSpaces() {}
 }

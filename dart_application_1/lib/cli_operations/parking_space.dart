@@ -1,0 +1,76 @@
+import 'dart:io';
+
+import 'package:dart_application_1/globals.dart';
+import 'package:dart_application_1/models/parking_space.dart';
+
+void addParkingSpace() {
+  ParkingSpace parkingSpace = ParkingSpace('0001', 'Storgatan 10', 10);
+  parkingSpaceRepository.addParkingSpace(parkingSpace);
+  print("parkeringsplats tillagd");
+  parkingSpace = ParkingSpace('0002', 'Mellangatan 2A', 15);
+  parkingSpaceRepository.addParkingSpace(parkingSpace);
+  print("parkeringsplats tillagd");
+  print(
+      "detta är nu inlagt : ID: ${parkingSpace.id}, Adress: ${parkingSpace.address}, pris:  ${parkingSpace.pricePerHour}");
+  parkingSpace = ParkingSpace('0003', 'Lillgatan 10', 12);
+  parkingSpaceRepository.addParkingSpace(parkingSpace);
+  print(
+      "detta är nu inlagt : ID: ${parkingSpace.id}, Adress: ${parkingSpace.address}, pris:  ${parkingSpace.pricePerHour}");
+}
+
+void showParkingSpaces() {
+  List<ParkingSpace> allParkingSpaces =
+      parkingSpaceRepository.getAllParkingSpaces();
+
+  if (allParkingSpaces.isEmpty) {
+    print("Inga parkeringsplatser registrerade.");
+  } else {
+    print("Lista över alla parkeringsplatser:");
+
+    for (ParkingSpace parkingSpace in allParkingSpaces) {
+      print(
+          "ID: ${parkingSpace.id}, Adress: ${parkingSpace.address}, pris:  ${parkingSpace.pricePerHour}");
+    }
+  }
+}
+
+void updateParkingSpace() {
+  print("Ange id för platsen du vill uppdatera");
+  String parkingSpaceId = stdin.readLineSync()!;
+  print("Ange det nya priset");
+  String newPrice = stdin.readLineSync()!;
+
+  try {
+    ParkingSpace? parkingSpaceToUpdate =
+        parkingSpaceRepository.getParkingSpaceById(parkingSpaceId);
+    int parsedPrice = int.parse(newPrice);
+
+    if (parkingSpaceToUpdate != null) {
+      int index = parkingSpaceRepository.items.indexOf(parkingSpaceToUpdate);
+      parkingSpaceToUpdate.pricePerHour = parsedPrice;
+      parkingSpaceRepository.items[index] = parkingSpaceToUpdate;
+      print("Parkeringsplats uppdaterad");
+    } else {
+      print("Hittade ingen parkeringsplats med id: $parkingSpaceId");
+    }
+  } on StateError catch (e) {
+    print("Ett fel uppstod: $e. Kontrollera id.");
+  } on Exception catch (e) {
+    print("Ett oväntat fel uppstod: $e");
+  }
+}
+
+void deleteParkingSpace() {
+  print("Ange parkeringsplats som du vill ta bort:");
+  String parkingSpaceId = stdin.readLineSync()!;
+
+  ParkingSpace? parkingSpaceToDelete =
+      parkingSpaceRepository.getParkingSpaceById(parkingSpaceId);
+
+  if (parkingSpaceToDelete != null) {
+    parkingSpaceRepository.deleteParkingSpace(parkingSpaceToDelete);
+    print("Plats med id '$parkingSpaceId' borttaget");
+  } else {
+    print("Parkeringsplats'$parkingSpaceId' hittades inte.");
+  }
+}

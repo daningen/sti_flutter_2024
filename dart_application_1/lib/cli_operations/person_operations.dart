@@ -1,4 +1,3 @@
-// Function to add a new person
 import 'dart:io';
 
 import 'package:dart_application_1/globals.dart';
@@ -16,7 +15,6 @@ void addPerson() {
   print("Person tillagd!");
 }
 
-// Function to show all persons
 void showPersons() {
   List<Person> allPersons = personRepository.getAllPeople();
 
@@ -30,7 +28,6 @@ void showPersons() {
   }
 }
 
-// update person
 void updatePerson() {
   print("Ange personnummer för personen du vill uppdatera:");
   String ssn = stdin.readLineSync()!;
@@ -53,7 +50,6 @@ void updatePerson() {
   }
 }
 
-//delete a person
 void deletePerson() {
   print("Ange personnummer för personen du vill ta bort:");
   String ssn = stdin.readLineSync()!;

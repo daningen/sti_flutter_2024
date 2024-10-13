@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:dart_application_1/menu_parking.dart';
+import 'package:dart_application_1/menu_parking_space.dart';
 import 'package:dart_application_1/menu_person.dart';
 import 'package:dart_application_1/menu_vehicle.dart';
 
@@ -30,10 +32,13 @@ void menu() {
         print("du valde 2 ");
         break;
       case 3:
-        // handleParkingSpaces();
-        break;
+        menuParkingSpace();
+        print("hantera parkeringsplatser ");
+      // break;
       case 4:
-        // handleParkingEvents();
+        menuParking();
+        print("parkera fordon ");
+        // break;
         break;
       case 5:
         print("Avslutar programmet...");
