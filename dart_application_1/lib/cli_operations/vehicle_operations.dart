@@ -30,25 +30,43 @@ void updateVehicle() {
 }
 
 void addVehicle() {
-  print("Ange regnummer:");
-  String licensePlate = stdin.readLineSync()!;
+  while (true) {
+    print("Ange regnummer:");
+    String licensePlate = stdin.readLineSync()!;
+    // Finns licensePlate i repo?
+    Vehicle? existingVehicle;
 
-  print("Ange type av fordon, ex bil, motorcyckel:");
-  String vehicleType = stdin.readLineSync()!;
+    try {
+      existingVehicle =
+          vehicleRepository.getVehicleByLicensePlate(licensePlate);
+    } catch (e) {
+      existingVehicle = null;
+    }
+    if (existingVehicle != null) {
+      // Om id redan finns, testa ett nytt
+      print("Fordon är redan upplagt. Försök igen med ett nytt ID.");
+    } else {
+      // Fortsätt med övrig inläsning
 
-  print("Ange ägare av fordon:");
-  String name = stdin.readLineSync()!;
+      print("Ange type av fordon, ex bil, motorcyckel:");
+      String vehicleType = stdin.readLineSync()!;
 
-  print("personnummer  ddmmår:");
-  String ssn = stdin.readLineSync()!;
+      print("Ange ägare av fordon:");
+      String name = stdin.readLineSync()!;
 
-  //skapa nytt personobjekt
-  Person person = Person(name: name, ssn: ssn);
+      print("personnummer  ddmmår:");
+      String ssn = stdin.readLineSync()!;
 
-  personRepository.add(person);
+      //skapa nytt personobjekt
+      Person person = Person(name: name, ssn: ssn);
 
-  vehicleRepository.addVehicle(Vehicle(licensePlate, vehicleType, person));
-  print("Fordon adderat");
+      personRepository.add(person);
+
+      vehicleRepository.addVehicle(Vehicle(licensePlate, vehicleType, person));
+      print("Fordon adderat");
+      break;
+    }
+  }
 }
 
 void showVehicles() {

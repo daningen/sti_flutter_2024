@@ -2,17 +2,41 @@ import 'dart:io';
 
 import 'package:dart_application_1/globals.dart';
 import 'package:dart_application_1/models/person.dart';
+import 'package:dart_application_1/utils/ssn_validator.dart';
 
 void addPerson() {
-  print("Ange namn:");
-  String name = stdin.readLineSync()!;
+  while (true) {
+    // Finns licensePlate i repo?
+    Person? existingPerson;
+    print("Ange personnummer (ååmmdd):");
+    String ssn = stdin.readLineSync()!;
 
-  print("Ange personnummer (ddmmår):");
-  String ssn = stdin.readLineSync()!;
+    // Validera format
+    if (!ssnFormat.hasMatch(ssn)) {
+      print("Ogiltigt personnummer (YYMMDD). Försök igen.");
+      continue;
+    }
 
-  Person person = Person(name: name, ssn: ssn);
-  personRepository.addPerson(person);
-  print("Person tillagd!");
+    try {
+      existingPerson = personRepository.getPersonBySecurityNumber(ssn);
+    } catch (e) {
+      existingPerson = null;
+    }
+
+    if (existingPerson != null) {
+      // Om ssn redan finns, testa ett nytt
+      print(
+          "Personnummer är redan upplagt. Försök igen med ett nytt personnummer.");
+    } else {
+      print("Ange namn:");
+      String name = stdin.readLineSync()!;
+
+      Person person = Person(name: name, ssn: ssn);
+      personRepository.addPerson(person);
+      print("Person tillagd!");
+      break;
+    }
+  }
 }
 
 void showPersons() {

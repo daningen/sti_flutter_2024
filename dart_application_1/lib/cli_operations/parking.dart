@@ -31,13 +31,13 @@ void startParking() {
   print("Ange pris per timme:");
   int pricePerHour = int.parse(stdin.readLineSync()!);
 
-  //skapa fordon och parkingspace objekt
+  // Skapa fordon och parkingspace objekt
   Vehicle vehicle =
       Vehicle(licensePlate, vehicleType, Person(name: ownerName, ssn: ssn));
   ParkingSpace parkingSpace =
       ParkingSpace(parkingSpaceId, parkingSpaceAddress, pricePerHour);
 
-  //Skapa och starta parkering
+  // Skapa och starta parkering
   Parking parking = Parking(
     vehicle: vehicle,
     parkingSpace: parkingSpace,
@@ -58,13 +58,13 @@ void showParking() {
     print("Registreringsnummer: ${parking.vehicle.licensePlate}");
     print("Ägare: ${parking.vehicle.owner.name}");
 
-    //formatera datum
+    // Formatera datum
     print(
         "Starttid: ${DateFormat('yyyy-MM-dd HH:mm').format(parking.startTime)}");
 
     print("Parkeringsplats: ${parking.parkingSpace.address}");
 
-    //formatera endTime om det inte är null observer ! efter endTime som kontrollera att det inte är null
+    // Formatera endTime om det inte är null observer ! efter endTime som kontrollera att det inte är null
     if (parking.endTime != null) {
       print(
           "Sluttid: ${DateFormat('yyyy-MM-dd HH:mm').format(parking.endTime!)}");
@@ -92,11 +92,11 @@ void updateParking() {
     print("Ange nytt pris per timme:");
     int newPricePerHour = int.parse(stdin.readLineSync()!);
 
-    //uppdaterat parkingspace
+    // Uppdaterat parkingspace
     ParkingSpace newParkingSpace = ParkingSpace(
         newParkingSpaceId, newParkingSpaceAddress, newPricePerHour);
 
-    //uppdatera
+    // Uppdatera
     Parking updatedParking = Parking(
       vehicle: parking.vehicle,
       parkingSpace: newParkingSpace,
