@@ -4,18 +4,42 @@ import 'package:dart_application_1/globals.dart';
 import 'package:dart_application_1/models/parking_space.dart';
 
 void addParkingSpace() {
-  ParkingSpace parkingSpace = ParkingSpace('0001', 'Storgatan 10', 10);
-  parkingSpaceRepository.addParkingSpace(parkingSpace);
-  print("parkeringsplats tillagd");
-  parkingSpace = ParkingSpace('0002', 'Mellangatan 2A', 15);
-  parkingSpaceRepository.addParkingSpace(parkingSpace);
-  print("parkeringsplats tillagd");
-  print(
-      "detta är nu inlagt : ID: ${parkingSpace.id}, Adress: ${parkingSpace.address}, pris:  ${parkingSpace.pricePerHour}");
-  parkingSpace = ParkingSpace('0003', 'Lillgatan 10', 12);
-  parkingSpaceRepository.addParkingSpace(parkingSpace);
-  print(
-      "detta är nu inlagt : ID: ${parkingSpace.id}, Adress: ${parkingSpace.address}, pris:  ${parkingSpace.pricePerHour}");
+  while (true) {
+    print("Ange parkeringsplatsens ID:");
+    String id = stdin.readLineSync()!;
+
+    // Finns id i repo?
+    ParkingSpace? existingSpace;
+
+    try {
+      existingSpace = parkingSpaceRepository.getParkingSpaceById(id);
+    } catch (e) {
+      existingSpace = null;
+    }
+
+    if (existingSpace != null) {
+      // Om id redan finns, testa ett nytt
+      print("ID '$id' finns redan. Försök igen med ett nytt ID.");
+    } else {
+      // Fortsätt med övrig inläsning
+      print("Ange adress för parkeringsplatsen:");
+      String address = stdin.readLineSync()!;
+
+      print("Ange pris per timme för parkeringsplatsen:");
+      int pricePerHour =
+          int.parse(stdin.readLineSync()!); // Treat as an integer
+
+      // Skapa ParkingSpace objekt
+      ParkingSpace parkingSpace = ParkingSpace(id, address, pricePerHour);
+
+      // Lägg till objekt i repo
+      parkingSpaceRepository.addParkingSpace(parkingSpace);
+
+      print(
+          "Parkeringsplats tillagd: ID: ${parkingSpace.id}, Adress: ${parkingSpace.address}, Pris: ${parkingSpace.pricePerHour} kr/timme");
+      break;
+    }
+  }
 }
 
 void showParkingSpaces() {
