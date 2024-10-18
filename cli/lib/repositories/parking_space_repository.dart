@@ -4,6 +4,7 @@ import 'package:cli/repositories/repository.dart';
 class ParkingSpaceRepository extends Repository<ParkingSpace> {
   ParkingSpaceRepository(this._items);
 
+  @override
   List<ParkingSpace> get items => _items;
 
   void addParkingSpace(ParkingSpace parkingSpace) {

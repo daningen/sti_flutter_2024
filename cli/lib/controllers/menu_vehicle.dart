@@ -1,50 +1,45 @@
 import 'dart:io';
 
-import 'package:cli/cli_operations/vehicle_operations.dart';
+import 'package:cli/cli_operations/vehicle/add_vehicle_to_server2.dart';
+import 'package:cli/cli_operations/vehicle/vehicle_operations.dart';
 
-void menuVehicles() {
-  print("hellooooo");
-}
-
-void menuVehicle() {
+Future<void> menuVehicle() async {
   while (true) {
     print("Välkommen till fordonsappen");
     print("1. Lägg till fordon");
     print("2. Visa alla fordon");
-    // print("2. Sök ett fordon");
     print("3. Uppdatera fordon");
     print("4. Ta bort fordon");
-    // print("3. parkera");
     print("5. Tillbaka till huvudmenyn");
 
     int choice = int.parse(stdin.readLineSync()!);
 
     switch (choice) {
       case 1:
-        print("i menu_vehicle.dart");
-        addVehicle();
-        print("fordon skapat");
-      // break;
-      // return;
-      case 2:
-        // searchVehicle();
-        showVehicles();
-        print("fordon hittat");
+        print("anropar addVehicleToServer...");
 
-      // return;
+        await addVehicleToServer2();
+        // Ensure the user is notified only after the vehicle is created
+        print("Fordon skapat, stämmer detta");
+
+        break;
+      case 2:
+        print("Visar alla fordon...");
+        // await showVehicles();
+        print("Fordon hittat");
+        break;
       case 3:
-        updateVehicle();
-        // parkingVehicle();
-        print("fordon parkerat");
-      // return;
+        print("Updating vehicle...");
+        break;
       case 4:
-        deleteVehicle();
-      // return;
-      // break;
+        print("Deleting vehicle...");
+        await deleteVehicle(); // Ensure delete operation is awaited
+        print("Fordon borttaget");
+        break;
       case 5:
-        print("tillbaka till huvudmenyn  ...");
+        print("Tillbaka till huvudmenyn...");
         return;
-      // break;
+      // return; // Exit vehiclemeny och åter huvudmeny
       default:
         print("Felaktigt val välj 1, 2, 3 eller 4.");
     }

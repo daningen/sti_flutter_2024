@@ -5,6 +5,7 @@ import 'repository.dart';
 class PersonRepository extends Repository<Person> {
   PersonRepository(this._items);
 
+  @override
   List<Person> get items => _items;
 
   final List<Person> _items;

@@ -7,7 +7,7 @@ import 'package:cli/controllers/menu_vehicle.dart';
 
 void menu() {
   while (true) {
-    print("Välkommen till huvudmenyn");
+    print("Välkommen till huvudmenyn YYY");
     print("Vad vill du hantera?");
     print("1. Personer");
     print("2. Fordon");
@@ -16,33 +16,33 @@ void menu() {
     print("5. Avsluta");
 
     print("Välj ett alternativ (1-5): ");
+
     int choice = int.parse(stdin.readLineSync()!);
 
     switch (choice) {
       case 1:
-        // handlePersons();
         print("hantera personer ");
         menuPerson();
-      // break;
+        break;
+
       case 2:
-        // handleVehicles();
         print("hantera fordon ");
         menuVehicle();
+        break;
 
-        print("du valde 2 ");
-        break;
       case 3:
-        menuParkingSpace();
         print("hantera parkeringsplatser ");
-      // break;
-      case 4:
-        menuParking();
-        print("parkera fordon ");
-        // break;
+        menuParkingSpace();
         break;
+      case 4:
+        print("parkera fordon ");
+        menuParking();
+        break;
+
       case 5:
         print("Avslutar programmet...");
-        return; // Avsluta loopen
+        return; // Exit
+
       default:
         print("Ogiltigt val. Välj ett alternativ mellan 1 och 5.");
     }
