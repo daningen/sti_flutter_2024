@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:cli/cli_operations/parking_operations.dart';
 
-void menuParking() {
+void menuParking() async {
   while (true) {
     print("Parkering");
     print("1. Starta parkering");

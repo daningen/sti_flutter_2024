@@ -1,7 +1,9 @@
 import 'dart:io';
 
-import 'package:cli/cli_operations/vehicle/add_vehicle_to_server2.dart';
-import 'package:cli/cli_operations/vehicle/vehicle_operations.dart';
+import 'package:cli/cli_operations/vehicle/add_vehicle.dart';
+import 'package:cli/cli_operations/vehicle/delete_vehicle.dart';
+import 'package:cli/cli_operations/vehicle/show_vehicles.dart';
+import 'package:cli/cli_operations/vehicle/update_vehicle.dart';
 
 Future<void> menuVehicle() async {
   while (true) {
@@ -12,36 +14,41 @@ Future<void> menuVehicle() async {
     print("4. Ta bort fordon");
     print("5. Tillbaka till huvudmenyn");
 
-    int choice = int.parse(stdin.readLineSync()!);
+    // Handle invalid input gracefully
+    String? input = stdin.readLineSync();
+    if (input == null || int.tryParse(input) == null) {
+      print("Felaktigt val. Ange ett nummer.");
+      continue;
+    }
+    int choice = int.parse(input);
 
     switch (choice) {
       case 1:
-        print("anropar addVehicleToServer...");
+        print("Anropar addVehicleToServer...");
 
-        await addVehicleToServer2();
-        // Ensure the user is notified only after the vehicle is created
+        await addVehicle();
+
         print("Fordon skapat, stämmer detta");
 
         break;
       case 2:
         print("Visar alla fordon...");
-        // await showVehicles();
-        print("Fordon hittat");
+        await showVehicles();
         break;
       case 3:
-        print("Updating vehicle...");
+        print("Uppdaterar fordon...");
+        await updateVehicle(); // Uncomment or implement this function
         break;
       case 4:
-        print("Deleting vehicle...");
+        print("Tar bort fordon...");
         await deleteVehicle(); // Ensure delete operation is awaited
         print("Fordon borttaget");
         break;
       case 5:
         print("Tillbaka till huvudmenyn...");
-        return;
-      // return; // Exit vehiclemeny och åter huvudmeny
+        return; // Exit the vehicle menu
       default:
-        print("Felaktigt val välj 1, 2, 3 eller 4.");
+        print("Felaktigt val, välj 1, 2, 3 eller 4.");
     }
   }
 }

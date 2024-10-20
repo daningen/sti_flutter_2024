@@ -5,27 +5,47 @@ class ParkingSpaceRepository extends Repository<ParkingSpace> {
   ParkingSpaceRepository(this._items);
 
   @override
+  final List<ParkingSpace> _items;
+
+  @override
   List<ParkingSpace> get items => _items;
 
-  void addParkingSpace(ParkingSpace parkingSpace) {
+  // Add a new parking space
+  @override
+  Future<void> add(ParkingSpace parkingSpace) async {
     _items.add(parkingSpace);
   }
 
-  final List<ParkingSpace> _items;
-
-  ParkingSpace? getById(String id) {
-    return _items.firstWhere((space) => space.id == id);
+  // Retrieve a parking space by ID, return null if not found
+  Future<ParkingSpace?> getById(int id) async {
+    try {
+      return _items.firstWhere((space) => space.id == id);
+    } catch (e) {
+      return null; // Return null if the parking space is not found
+    }
   }
 
-  List<ParkingSpace> getAllParkingSpaces() {
+  // Retrieve all parking spaces
+  Future<List<ParkingSpace>> getAllParkingSpaces() async {
     return _items;
   }
 
-  ParkingSpace? getParkingSpaceById(String parkingSpaceId) {
-    return _items.firstWhere((space) => space.id == parkingSpaceId);
+  // Delete a parking space by its object reference
+  Future<void> deleteParkingSpace(ParkingSpace parkingSpaceToDelete) async {
+    _items.remove(parkingSpaceToDelete);
   }
 
-  void deleteParkingSpace(ParkingSpace parkingSpaceToDelete) {
-    _items.remove(parkingSpaceToDelete);
+  // Delete a parking space by its ID
+  Future<void> deleteParkingSpaceById(int id) async {
+    _items.removeWhere((space) => space.id == id);
+  }
+
+  // Update a parking space
+  @override
+  Future<void> update(ParkingSpace oldSpace, ParkingSpace newSpace) async {
+    int index = _items.indexOf(oldSpace);
+    if (index != -1) {
+      _items[index] = newSpace;
+    }
   }
 }

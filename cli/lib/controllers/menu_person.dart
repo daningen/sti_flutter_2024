@@ -1,8 +1,12 @@
 import 'dart:io';
 
-import 'package:cli/cli_operations/person_operations.dart';
+import 'package:cli/cli_operations/person/add_person.dart';
+import 'package:cli/cli_operations/person/delete_person.dart';
+import 'package:cli/cli_operations/person/show_persons.dart';
+import 'package:cli/cli_operations/person/update_person.dart';
 
-void menuPerson() {
+Future<void> menuPerson() async {
+  // Make this function async
   while (true) {
     print("Välkommen till parkeringen!");
     print("1. Skapa person");
@@ -16,28 +20,28 @@ void menuPerson() {
     switch (choice) {
       case 1:
         print("I menu_person.dart");
-        addPerson();
+        await addPerson(); // Await the async function
         print("skapar person");
-      // showMainMenu();
+        break;
 
-      // return;
       case 2:
-        showPersons();
+        await showPersons(); // Await the async function
         print("visar alla personer");
+        break;
 
-      // return;
       case 3:
-        updatePerson();
+        await updatePerson(); // Await the async function
         print("uppdatera person");
-      // return;
+        break;
+
       case 4:
-        deletePerson();
+        await deletePerson(); // Await the async function
         print("ta bort person");
-      // return;
+        break;
+
       case 5:
         print("Tillbaka till huvudmenyn...");
-        return;
-      // break;
+        return; // Exit the menu
       default:
         print("Felaktigt val välj 1, 2, 3, 4 eller 5.");
     }

@@ -1,7 +1,11 @@
 class ParkingSpace {
-  final String id;
+  final int id;
   final String address;
-  int pricePerHour;
+  final int pricePerHour;
 
-  ParkingSpace(this.id, this.address, this.pricePerHour);
+  ParkingSpace({
+    required this.id,
+    required this.address,
+    required this.pricePerHour,
+  });
 }

@@ -3,14 +3,16 @@ import 'package:http/http.dart' as http;
 import 'package:cli/cli_operations/vehicle/collect_vehicle_information.dart';
 import 'package:cli/config/config.dart';
 
-Future<void> addVehicleToServer2() async {
+Future<void> addVehicle() async {
   print("Entering addVehicleToServer");
 
-  // anropar formulär för att samla info
+  // Collect form information
   Map<String, String> vehicleInput = await collectVehicleInput();
 
-  // print("har jag skapat min map med ifyllda värden?");
-  // skapa vehicle JSON objekten
+  // Uncommented for debugging purposes, to ensure map is populated correctly
+  print("Collected vehicle information: $vehicleInput");
+
+  // Create vehicle and person JSON objects
   final personJson = {
     'name': vehicleInput['name'],
     'ssn': vehicleInput['ssn'],
@@ -25,7 +27,7 @@ Future<void> addVehicleToServer2() async {
   print("Sending POST request to add vehicle...");
 
   try {
-    // POST request för att lägga till fordon på server
+    // POST request to add vehicle to the server
     final url = Uri.parse(vehiclesEndpoint);
     final response = await http.post(
       url,

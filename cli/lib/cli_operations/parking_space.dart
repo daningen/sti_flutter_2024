@@ -3,37 +3,45 @@ import 'dart:io';
 import 'package:cli/globals.dart';
 import 'package:cli/models/parking_space.dart';
 
-void addParkingSpace() {
+// Function to add a parking space
+Future<void> addParkingSpace() async {
   while (true) {
-    print("Ange parkeringsplatsens ID:");
-    String id = stdin.readLineSync()!;
-
-    // Finns id i repo?
-    ParkingSpace? existingSpace;
-
-    try {
-      existingSpace = parkingSpaceRepository.getParkingSpaceById(id);
-    } catch (e) {
-      existingSpace = null;
+    print("Ange parkeringsplatsens ID (siffra):");
+    String? inputId = stdin.readLineSync();
+    if (inputId == null || int.tryParse(inputId) == null) {
+      print("Ogiltigt ID. Ange ett giltigt nummer.");
+      continue;
     }
+    int id = int.parse(inputId);
+
+    // Check if the ID already exists in the repo
+    ParkingSpace? existingSpace = await parkingSpaceRepository.getById(id);
 
     if (existingSpace != null) {
-      // Om id redan finns, testa ett nytt
+      // If the ID already exists, prompt to try again
       print("ID '$id' finns redan. Försök igen med ett nytt ID.");
     } else {
-      // Fortsätt med övrig inläsning
+      // Proceed with the rest of the input
       print("Ange adress för parkeringsplatsen:");
-      String address = stdin.readLineSync()!;
+      String? address = stdin.readLineSync();
 
       print("Ange pris per timme för parkeringsplatsen:");
-      int pricePerHour =
-          int.parse(stdin.readLineSync()!); // Treat as an integer
+      String? inputPrice = stdin.readLineSync();
+      if (inputPrice == null || int.tryParse(inputPrice) == null) {
+        print("Ogiltigt pris. Ange ett giltigt nummer.");
+        continue;
+      }
+      int pricePerHour = int.parse(inputPrice);
 
-      // Skapa ParkingSpace objekt
-      ParkingSpace parkingSpace = ParkingSpace(id, address, pricePerHour);
+      // Create ParkingSpace object
+      ParkingSpace parkingSpace = ParkingSpace(
+        id: id,
+        address: address ?? 'Ingen adress',
+        pricePerHour: pricePerHour,
+      );
 
-      // Lägg till objekt i repo
-      parkingSpaceRepository.addParkingSpace(parkingSpace);
+      // Add the object to the repository
+      await parkingSpaceRepository.add(parkingSpace);
 
       print(
           "Parkeringsplats tillagd: ID: ${parkingSpace.id}, Adress: ${parkingSpace.address}, Pris: ${parkingSpace.pricePerHour} kr/timme");
@@ -42,9 +50,10 @@ void addParkingSpace() {
   }
 }
 
-void showParkingSpaces() {
+// Function to show all parking spaces
+Future<void> showParkingSpaces() async {
   List<ParkingSpace> allParkingSpaces =
-      parkingSpaceRepository.getAllParkingSpaces();
+      await parkingSpaceRepository.getAllParkingSpaces();
 
   if (allParkingSpaces.isEmpty) {
     print("Inga parkeringsplatser registrerade.");
@@ -58,43 +67,63 @@ void showParkingSpaces() {
   }
 }
 
-void updateParkingSpace() {
-  print("Ange id för platsen du vill uppdatera");
-  String parkingSpaceId = stdin.readLineSync()!;
-  print("Ange det nya priset");
-  String newPrice = stdin.readLineSync()!;
+// Function to update a parking space
+Future<void> updateParkingSpace() async {
+  print("Ange ID för platsen du vill uppdatera:");
+  String? inputId = stdin.readLineSync();
+  if (inputId == null || int.tryParse(inputId) == null) {
+    print("Ogiltigt ID.");
+    return;
+  }
+  int parkingSpaceId = int.parse(inputId);
+
+  print("Ange det nya priset:");
+  String? newPrice = stdin.readLineSync();
+  if (newPrice == null || int.tryParse(newPrice) == null) {
+    print("Ogiltigt pris.");
+    return;
+  }
+  int parsedPrice = int.parse(newPrice);
 
   try {
     ParkingSpace? parkingSpaceToUpdate =
-        parkingSpaceRepository.getParkingSpaceById(parkingSpaceId);
-    int parsedPrice = int.parse(newPrice);
+        await parkingSpaceRepository.getById(parkingSpaceId);
 
     if (parkingSpaceToUpdate != null) {
-      int index = parkingSpaceRepository.items.indexOf(parkingSpaceToUpdate);
-      parkingSpaceToUpdate.pricePerHour = parsedPrice;
-      parkingSpaceRepository.items[index] = parkingSpaceToUpdate;
+      // Create a new ParkingSpace object with updated price
+      ParkingSpace updatedSpace = ParkingSpace(
+        id: parkingSpaceToUpdate.id,
+        address: parkingSpaceToUpdate.address,
+        pricePerHour: parsedPrice,
+      );
+
+      await parkingSpaceRepository.update(parkingSpaceToUpdate, updatedSpace);
       print("Parkeringsplats uppdaterad");
     } else {
-      print("Hittade ingen parkeringsplats med id: $parkingSpaceId");
+      print("Hittade ingen parkeringsplats med ID: $parkingSpaceId");
     }
-  } on StateError catch (e) {
-    print("Ett fel uppstod: $e. Kontrollera id.");
-  } on Exception catch (e) {
+  } catch (e) {
     print("Ett oväntat fel uppstod: $e");
   }
 }
 
-void deleteParkingSpace() {
-  print("Ange parkeringsplats som du vill ta bort:");
-  String parkingSpaceId = stdin.readLineSync()!;
+// Function to delete a parking space
+Future<void> deleteParkingSpace() async {
+  print("Ange parkeringsplats-ID som du vill ta bort:");
+  String? inputId = stdin.readLineSync();
+  if (inputId == null || int.tryParse(inputId) == null) {
+    print("Ogiltigt ID.");
+    return;
+  }
+  int parkingSpaceId = int.parse(inputId);
 
   ParkingSpace? parkingSpaceToDelete =
-      parkingSpaceRepository.getParkingSpaceById(parkingSpaceId);
+      await parkingSpaceRepository.getById(parkingSpaceId);
 
   if (parkingSpaceToDelete != null) {
-    parkingSpaceRepository.deleteParkingSpace(parkingSpaceToDelete);
-    print("Plats med id '$parkingSpaceId' borttaget");
+    await parkingSpaceRepository.deleteParkingSpace(parkingSpaceToDelete);
+    print("Plats med ID '$parkingSpaceId' borttaget");
   } else {
-    print("Parkeringsplats'$parkingSpaceId' hittades inte.");
+    print("Parkeringsplats med ID '$parkingSpaceId' hittades inte.");
   }
 }

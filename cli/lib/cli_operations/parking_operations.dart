@@ -7,6 +7,9 @@ import 'package:cli/repositories/parking_repository.dart';
 
 ParkingRepository parkingRepository = ParkingRepository();
 
+int nextVehicleId = 1; // Placeholder for vehicle id increment
+int nextParkingSpaceId = 1; // Placeholder for parking space id increment
+
 void startParking() async {
   print("Ange regnummer:");
   String licensePlate = stdin.readLineSync()!;
@@ -20,9 +23,6 @@ void startParking() async {
   print("Ange personnummer (ddmmyy):");
   String ssn = stdin.readLineSync()!;
 
-  print("Ange parkeringsplatsens id:");
-  String parkingSpaceId = stdin.readLineSync()!;
-
   print("Ange parkeringsplatsens adress:");
   String parkingSpaceAddress = stdin.readLineSync()!;
 
@@ -30,17 +30,26 @@ void startParking() async {
   int pricePerHour = int.parse(stdin.readLineSync()!);
 
   // Skapa fordon och parkingspace objekt
-  Vehicle vehicle =
-      Vehicle(licensePlate, vehicleType, Person(name: ownerName, ssn: ssn));
-  ParkingSpace parkingSpace =
-      ParkingSpace(parkingSpaceId, parkingSpaceAddress, pricePerHour);
+  Vehicle vehicle = Vehicle(
+    id: nextVehicleId++, // Increment ID for each new vehicle
+    licensePlate: licensePlate,
+    vehicleType: vehicleType,
+    owner: Person(id: 1, name: ownerName, ssn: ssn),
+  );
+
+  ParkingSpace parkingSpace = ParkingSpace(
+    id: nextParkingSpaceId++, // Increment ID for each new parking space
+    address: parkingSpaceAddress,
+    pricePerHour: pricePerHour,
+  );
 
   // Skapa och starta parkering
   Parking parking = Parking(
+    id: 1, // You should generate a unique id or manage it
     vehicle: vehicle,
     parkingSpace: parkingSpace,
     startTime: DateTime.now(),
-    endTime: null, //endTime sätts till null så länge parkering pågår
+    endTime: null, // EndTime is null while parking is ongoing
   );
 
   parkingRepository.add(parking);
@@ -74,9 +83,6 @@ void updateParking() async {
   Parking? parking = await parkingRepository.getByLicensePlate(licensePlate);
 
   if (parking != null) {
-    print("Ange ny parkeringsplatsens id:");
-    String newParkingSpaceId = stdin.readLineSync()!;
-
     print("Ange ny parkeringsplatsens adress:");
     String newParkingSpaceAddress = stdin.readLineSync()!;
 
@@ -85,10 +91,14 @@ void updateParking() async {
 
     // Create updated parking space
     ParkingSpace newParkingSpace = ParkingSpace(
-        newParkingSpaceId, newParkingSpaceAddress, newPricePerHour);
+      id: parking.parkingSpace.id, // Use existing parking space id
+      address: newParkingSpaceAddress,
+      pricePerHour: newPricePerHour,
+    );
 
     // Create updated parking object
     Parking updatedParking = Parking(
+      id: parking.id, // Use the same id as the original parking
       vehicle: parking.vehicle,
       parkingSpace: newParkingSpace,
       startTime: parking.startTime,
@@ -111,8 +121,8 @@ void stopParkingSpace() async {
   Parking? parking = await parkingRepository.getByLicensePlate(licensePlate);
 
   if (parking != null) {
-    await parkingRepository.stopParking(
-        parking); // Await the stopParking function if it's asynchronous
+    await parkingRepository
+        .stopParking(parking.id); // Use the id to stop parking
     print("Parkeringen avslutad för fordon ${parking.vehicle.licensePlate}");
   } else {
     print("Ingen parkering hittades för registreringsnummer: $licensePlate");

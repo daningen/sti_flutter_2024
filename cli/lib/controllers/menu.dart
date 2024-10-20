@@ -5,7 +5,7 @@ import 'package:cli/controllers/menu_parking_space.dart';
 import 'package:cli/controllers/menu_person.dart';
 import 'package:cli/controllers/menu_vehicle.dart';
 
-void menu() {
+Future<void> menu() async {
   while (true) {
     print("Välkommen till huvudmenyn YYY");
     print("Vad vill du hantera?");
@@ -22,12 +22,12 @@ void menu() {
     switch (choice) {
       case 1:
         print("hantera personer ");
-        menuPerson();
+        await menuPerson();
         break;
 
       case 2:
         print("hantera fordon ");
-        menuVehicle();
+        await menuVehicle();
         break;
 
       case 3:

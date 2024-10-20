@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:cli/cli_operations/parking_space.dart';
 
-void menuParkingSpace() {
+void menuParkingSpace() async {
   while (true) {
     print("Parkeringsplatser!");
     print("1. Skapa parkeringsplats");

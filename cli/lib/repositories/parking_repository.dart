@@ -7,25 +7,35 @@ class ParkingRepository extends Repository<Parking> {
     List<Parking> allParkings = await getAll();
     try {
       return allParkings.firstWhere(
-          (parking) => parking.vehicle.licensePlate == licensePlate);
-      // orElse: () => null); // Return null directly
+        (parking) => parking.vehicle.licensePlate == licensePlate,
+      );
     } catch (e) {
-      return null;
+      return null; // Return null if no parking is found
     }
   }
 
-  // Method to stop parking by updating the end time
-  Future<void> stopParking(Parking parking) async {
+  // Asynchronous method to get a parking entry by parking id
+  Future<Parking?> getById(int id) async {
     List<Parking> allParkings = await getAll();
-    var index = allParkings.indexWhere(
-        (p) => p.vehicle.licensePlate == parking.vehicle.licensePlate);
-    if (index != -1) {
-      allParkings[index] = Parking(
-        vehicle: parking.vehicle,
-        parkingSpace: parking.parkingSpace,
-        startTime: parking.startTime,
-        endTime: DateTime.now(), // End the parking session
+    try {
+      return allParkings.firstWhere(
+        (parking) => parking.id == id,
       );
+    } catch (e) {
+      return null; // Return null if no parking is found
+    }
+  }
+
+  // Method to stop parking by updating the end time using the parking id
+  Future<void> stopParking(int id) async {
+    List<Parking> allParkings = await getAll();
+    var index = allParkings.indexWhere((p) => p.id == id);
+
+    if (index != -1) {
+      // Update the existing parking entry with the current end time
+      allParkings[index].endParkingSession();
+    } else {
+      throw Exception("Parking session not found");
     }
   }
 }
