@@ -2,10 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:cli/config/config.dart';
+import 'package:intl/intl.dart';
 
 Future<void> showParking() async {
   print("Ange fordonets registreringsnummer:");
-  String licensePlate = stdin.readLineSync()!;
+  String licensePlate =
+      stdin.readLineSync()!.toUpperCase(); // Make sure it's uppercase
 
   try {
     final url = Uri.parse('$parkingsEndpoint?licensePlate=$licensePlate');
@@ -25,13 +27,25 @@ Future<void> showParking() async {
       // Assuming you want to print out the first parking found
       Map<String, dynamic> parkingData = parkingList.first;
 
+      final startTime = DateTime.parse(parkingData['startTime']);
+      final endTime = parkingData['endTime'] != null
+          ? DateTime.parse(parkingData['endTime'])
+          : null;
+
       print("Detaljer om din parkering");
       print("Registreingsnummer: ${parkingData['vehicle']['licensePlate']}");
       print("Ägare: ${parkingData['vehicle']['owner']['name']}");
-      print("Adress parkering: ${parkingData['parkingSpace']['address']}");
-      print("Startid: ${parkingData['startTime']}");
-      print(
-          "Sluttid: ${parkingData['endTime'] ?? 'Parkering pågår fortfarande'}");
+      print("Adress: ${parkingData['parkingSpace']['address']}");
+
+      // Format startTime
+      print("Startid: ${DateFormat('yyyy-MM-dd HH:mm').format(startTime)}");
+
+      // Display correct message based on endTime being null or not
+      if (endTime == null) {
+        print("Sluttid: Parkering pågår fortfarande");
+      } else {
+        print("Sluttid: ${DateFormat('yyyy-MM-dd HH:mm').format(endTime)}");
+      }
     } else {
       print("Error fetching parking: ${response.body}");
     }
