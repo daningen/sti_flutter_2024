@@ -1,8 +1,11 @@
 import 'dart:io';
 
-import 'package:cli/cli_operations/parking_space.dart';
+import 'package:cli/cli_operations/parkingspace/add_parking_space.dart';
+import 'package:cli/cli_operations/parkingspace/delete_parking_space.dart';
+import 'package:cli/cli_operations/parkingspace/show_parking_spaces.dart';
+import 'package:cli/cli_operations/parkingspace/update_parking_space.dart';
 
-void menuParkingSpace() async {
+Future<void> menuParkingSpace() async {
   while (true) {
     print("Parkeringsplatser!");
     print("1. Skapa parkeringsplats");
@@ -16,23 +19,23 @@ void menuParkingSpace() async {
     switch (choice) {
       case 1:
         print("I menu_person.dart");
-        addParkingSpace();
+        await addParkingSpace();
         print("skapar parkeringsplats");
-
+        break;
       // return;
       case 2:
-        showParkingSpaces();
+        await showParkingSpaces();
         print("visar alla parkeringsplatser");
-
+        break;
       // return;
       case 3:
-        updateParkingSpace();
+        await updateParkingSpace();
         print("uppdatera parkeringsplats");
-      // return;
+        break;
       case 4:
-        deleteParkingSpace();
+        await deleteParkingSpace();
         print("ta bort parkeringsplats");
-      // return;
+        break;
       case 5:
         print("Tillbaka till huvudmenyn...");
         return;

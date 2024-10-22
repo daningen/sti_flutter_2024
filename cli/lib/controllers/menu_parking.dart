@@ -1,8 +1,11 @@
 import 'dart:io';
 
-import 'package:cli/cli_operations/parking_operations.dart';
+import 'package:cli/cli_operations/parking/add_parking.dart';
+import 'package:cli/cli_operations/parking/show_parking.dart';
+import 'package:cli/cli_operations/parking/stop_parking.dart';
+import 'package:cli/cli_operations/parking/update_parking.dart';
 
-void menuParking() async {
+Future<void> menuParking() async {
   while (true) {
     print("Parkering");
     print("1. Starta parkering");
@@ -16,22 +19,22 @@ void menuParking() async {
     switch (choice) {
       case 1:
         print("I menu_person.dart");
-        startParking();
+        await addParking();
         print("starta parkering");
       // showMainMenu();
 
       // return;
       case 2:
-        showParking();
+        await showParking();
         print("visa parkering");
 
       // return;
       case 3:
-        updateParking();
+        await updateParking();
         print("uppdatera parkering");
       // return;
       case 4:
-        stopParkingSpace();
+        await stopParking();
         print("avsluta parkering");
       // return;
       case 5:

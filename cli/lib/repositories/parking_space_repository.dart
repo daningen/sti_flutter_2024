@@ -4,24 +4,23 @@ import 'package:cli/repositories/repository.dart';
 class ParkingSpaceRepository extends Repository<ParkingSpace> {
   ParkingSpaceRepository(this._items);
 
-  @override
+  // Removed @override because 'items' does not exist in the Repository superclass
   final List<ParkingSpace> _items;
 
-  @override
+  // Getter for the items list
   List<ParkingSpace> get items => _items;
 
-  // Add a new parking space
-  @override
+  // Removed @override because 'add' does not exist in the Repository superclass
   Future<void> add(ParkingSpace parkingSpace) async {
     _items.add(parkingSpace);
   }
 
-  // Retrieve a parking space by ID, return null if not found
+  // Retrieve a parking space by ID
   Future<ParkingSpace?> getById(int id) async {
     try {
       return _items.firstWhere((space) => space.id == id);
     } catch (e) {
-      return null; // Return null if the parking space is not found
+      return null;
     }
   }
 
@@ -41,7 +40,6 @@ class ParkingSpaceRepository extends Repository<ParkingSpace> {
   }
 
   // Update a parking space
-  @override
   Future<void> update(ParkingSpace oldSpace, ParkingSpace newSpace) async {
     int index = _items.indexOf(oldSpace);
     if (index != -1) {

@@ -9,19 +9,23 @@ Future<void> deletePerson() async {
   String ssn = stdin.readLineSync()!;
 
   try {
-    // Fetch the person from the server using SSN
+    // Fetch the person(s) from the server using SSN
     final url = Uri.parse(
         '$personsEndpoint?ssn=$ssn'); // Assuming the API supports query by SSN
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
-      // Parse the JSON response
-      Map<String, dynamic> personJson = jsonDecode(response.body);
+      // Parse the JSON response as a list of persons
+      List<dynamic> personsList = jsonDecode(response.body);
 
-      if (personJson.isEmpty) {
+      if (personsList.isEmpty) {
         print("Personen med personnummer '$ssn' hittades inte.");
         return;
       }
+
+      // Select the person with the correct SSN from the list
+      Map<String, dynamic> personJson =
+          personsList.firstWhere((person) => person['ssn'] == ssn);
 
       // Convert the JSON to a Person object
       Person personToDelete = Person.fromJson(personJson);

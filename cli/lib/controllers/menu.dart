@@ -32,11 +32,11 @@ Future<void> menu() async {
 
       case 3:
         print("hantera parkeringsplatser ");
-        menuParkingSpace();
+        await menuParkingSpace();
         break;
       case 4:
         print("parkera fordon ");
-        menuParking();
+        await menuParking();
         break;
 
       case 5:

@@ -23,5 +23,9 @@ String parkingSpaceByIdEndpoint(int id) => '$parkingSpacesEndpoint/$id';
 // Endpoints for parkings
 const String parkingsEndpoint = '$baseUrl/parkings';
 
-// Function to get a parking by its ID (replace ':id' dynamically)
+// Function to get a parking session by its ID (replace ':id' dynamically)
 String parkingByIdEndpoint(int id) => '$parkingsEndpoint/$id';
+
+// Function to get parking by vehicle's license plate (if API supports it)
+String parkingByLicensePlateEndpoint(String licensePlate) =>
+    '$parkingsEndpoint?licensePlate=$licensePlate';
