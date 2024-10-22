@@ -112,10 +112,13 @@ Future<Response> addParkingHandler(Request req) async {
   }
 }
 
-// Uppdatera parkering via ID
+//****** */
+
 Future<Response> updateParkingByIdHandler(Request request) async {
+  // Parse the parking ID from the request
   final id = int.tryParse(request.params['id']!);
 
+  // If ID is invalid, return a bad request error
   if (id == null) {
     return Response(
       400,
@@ -126,6 +129,8 @@ Future<Response> updateParkingByIdHandler(Request request) async {
 
   // Fetch the existing parking session by ID
   final existingParking = await parkingRepository.getById(id);
+
+  // If no parking session is found, return a 404 error
   if (existingParking == null) {
     return Response(
       404,
@@ -138,14 +143,23 @@ Future<Response> updateParkingByIdHandler(Request request) async {
   final payload = await request.readAsString();
   final data = jsonDecode(payload);
 
-  // Validate and update the parking session (e.g., endTime)
+  // Validate the input data (endTime is required in this case)
   if (data.containsKey('endTime')) {
+    // Create the updated parking object
     final updatedParking = Parking(
       id: existingParking.id,
       vehicle: existingParking.vehicle, // Keep the same vehicle
-      parkingSpace: existingParking.parkingSpace, // Keep the same parking space
+      parkingSpace: ParkingSpace(
+        id: existingParking.parkingSpace.id,
+        address: data['parkingSpace']['address'] ??
+            existingParking.parkingSpace.address,
+        pricePerHour: data['parkingSpace']['pricePerHour'] ??
+            existingParking.parkingSpace.pricePerHour,
+      ),
       startTime: existingParking.startTime, // Keep the same start time
-      endTime: DateTime.parse(data['endTime']), // Update endTime
+      endTime: data['endTime'] != null
+          ? DateTime.parse(data['endTime'])
+          : null, // Update endTime
     );
 
     // Update the parking in the repository
@@ -156,6 +170,7 @@ Future<Response> updateParkingByIdHandler(Request request) async {
       headers: {'Content-Type': 'application/json'},
     );
   } else {
+    // If endTime is missing, return a bad request error
     return Response(
       400,
       body: jsonEncode({'error': 'endTime is missing'}),
@@ -164,48 +179,7 @@ Future<Response> updateParkingByIdHandler(Request request) async {
   }
 }
 
-// Future<Response> updateParkingHandler(Request request) async {
-//   final id = int.tryParse(request.params['id']!);
-
-//   if (id == null) {
-//     return Response.badRequest(
-//         body: jsonEncode({'error': 'Invalid parking ID'}),
-//         headers: {'Content-Type': 'application/json'});
-//   }
-
-//   final existingParking = await parkingRepository.getById(id);
-//   if (existingParking == null) {
-//     // return Response.notFound(
-//     return Response.notFound(jsonEncode({'error': 'Parking space not found'}),
-//         headers: {'Content-Type': 'application/json'});
-//     // body: jsonEncode({'error': 'Parking not found'}),
-//     // headers: {'Content-Type': 'application/json'});
-//   }
-
-//   final payload = await request.readAsString();
-//   final data = jsonDecode(payload);
-
-//   // Validate the input data and update the parking if endTime is provided
-//   if (data.containsKey('endTime')) {
-//     final updatedParking = Parking(
-//       id: existingParking.id,
-//       vehicle: existingParking.vehicle,
-//       parkingSpace: existingParking.parkingSpace,
-//       startTime: existingParking.startTime,
-//       endTime: DateTime.parse(data['endTime']),
-//     );
-
-//     // Call the update method with both the old and updated parking
-//     await parkingRepository.update(existingParking, updatedParking);
-
-//     return Response.ok(jsonEncode({'message': 'Parking updated successfully'}),
-//         headers: {'Content-Type': 'application/json'});
-//   } else {
-//     return Response(400,
-//         body: jsonEncode({'error': 'endTime is missing'}),
-//         headers: {'Content-Type': 'application/json'});
-//   }
-// }
+////******** */
 
 // Stop parkering via registreringsnummer
 Future<Response> stopParkingHandler(Request request) async {

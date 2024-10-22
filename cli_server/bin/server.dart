@@ -50,7 +50,7 @@ void main(List<String> args) async {
 
   // Use middleware to log requests
   final handler =
-      const Pipeline().addMiddleware(logRequests()).addHandler(_router);
+      const Pipeline().addMiddleware(logRequests()).addHandler(_router.call);
 
   final server = await serve(handler, ip, port);
 
