@@ -1,102 +1,58 @@
-import 'dart:convert';
 import 'dart:io';
+import 'package:cli_server/globals.dart';
+import 'package:cli_server/handlers/parking_handlers.dart';
+import 'package:cli_server/handlers/parking_space_handlers.dart';
+import 'package:cli_server/handlers/person_handlers.dart';
+import 'package:cli_server/handlers/vehicle_handlers.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart';
 import 'package:shelf_router/shelf_router.dart';
 
-// A temporary in-memory store for vehicles
-final _vehicles = <String, dynamic>{};
-
-// Configure the router with routes for the vehicle operations
+// Configure the router with routes for vehicles, persons, parking spaces, and parkings
 final _router = Router()
-  ..get('/vehicles', _getAllVehiclesHandler)
-  ..get('/vehicles/<licensePlate>', _getVehicleHandler)
-  ..post('/vehicles', _addVehicleHandler)
-  ..put('/vehicles/<licensePlate>', _updateVehicleHandler)
-  ..delete('/vehicles/<licensePlate>', _deleteVehicleHandler);
+  ..get('/vehicles', getAllVehiclesHandler)
+  ..get('/vehicles/<id>', getVehicleHandler)
+  ..post('/vehicles', addVehicleHandler)
+  ..put('/vehicles/<id>', updateVehicleHandler)
+  ..delete('/vehicles/<id>', deleteVehicleHandler)
+  ..get('/persons', getAllPersonsHandler)
+  ..get('/persons/<id>', getPersonHandler)
+  ..post('/persons', addPersonHandler)
+  ..put('/persons/<id>', updatePersonHandler)
+  ..delete('/persons/<id>', deletePersonHandler)
+  ..get('/parking-spaces', getAllParkingSpacesHandler)
+  ..get('/parking-spaces/<id>', getParkingSpaceHandler)
+  ..post('/parking-spaces', addParkingSpaceHandler)
+  ..put('/parking-spaces/<id>', updateParkingSpaceHandler)
+  ..delete('/parking-spaces/<id>', deleteParkingSpaceHandler)
+  ..get('/parkings', getAllParkingsHandler) // Get all parkings
+  ..get('/parkings/<id>', getParkingHandler) // Get parking by ID
+  ..post('/parkings', addParkingHandler) // Add a new parking
+  ..put('/parkings/<id>', updateParkingByIdHandler) // Update parking by ID
+  ..delete('/parkings/<id>', deleteParkingHandler); // Delete parking by ID
 
-// Handler to get all vehicles
-Response _getAllVehiclesHandler(Request req) {
-  final jsonResponse = jsonEncode(_vehicles.values.toList());
-  return Response.ok(jsonResponse,
-      headers: {'Content-Type': 'application/json'});
-}
-
-// Handler to get a specific vehicle by license plate
-Response _getVehicleHandler(Request request) {
-  final licensePlate = request.params['licensePlate'];
-
-  if (licensePlate == null || !_vehicles.containsKey(licensePlate)) {
-    return Response.notFound('Vehicle not found');
-  }
-
-  return Response.ok(jsonEncode(_vehicles[licensePlate]),
-      headers: {'Content-Type': 'application/json'});
-}
-
-Future<Response> _addVehicleHandler(Request req) async {
-  final payload = await req.readAsString();
-  final vehicle = jsonDecode(payload);
-
-  if (vehicle.containsKey('licensePlate')) {
-    _vehicles[vehicle['licensePlate']] = vehicle;
-
-    // Create a response message with details and total vehicles
-    final jsonResponse = jsonEncode({
-      'message': 'Vehicle added successfully',
-      'vehicle': vehicle,
-      'totalVehicles': _vehicles.length, // Add total vehicles to response
-    });
-
-    return Response(
-      201,
-      body: jsonResponse,
-      headers: {'Content-Type': 'application/json'},
-    );
-  } else {
-    return Response(
-      400,
-      body: jsonEncode({'error': 'Invalid vehicle data'}),
-      headers: {'Content-Type': 'application/json'},
-    );
-  }
-}
-
-// Handler to update an existing vehicle
-Future<Response> _updateVehicleHandler(Request request) async {
-  final licensePlate = request.params['licensePlate'];
-
-  if (licensePlate == null) {
-    return Response.notFound('Vehicle not found');
-  }
-
-  final payload = await request.readAsString();
-  final vehicle = jsonDecode(payload);
-
-  if (_vehicles.containsKey(licensePlate)) {
-    _vehicles[licensePlate] = vehicle;
-    return Response.ok('Vehicle uppdaterat');
-  } else {
-    return Response.notFound('Vehicle not found');
-  }
-}
-
-// Handler to delete a vehicle by license plate
-Response _deleteVehicleHandler(Request request) {
-  final licensePlate = request.params['licensePlate'];
-
-  if (licensePlate == null || !_vehicles.containsKey(licensePlate)) {
-    return Response.notFound('Vehicle not found');
-  }
-
-  _vehicles.remove(licensePlate);
-  return Response(204);
+// Middleware to log incoming requests to the server
+Middleware logRequests() {
+  return (Handler handler) {
+    return (Request request) async {
+      print('Received ${request.method} request for ${request.requestedUri}');
+      final response = await handler(request);
+      return response;
+    };
+  };
 }
 
 void main(List<String> args) async {
   final ip = InternetAddress.anyIPv4; // Bind to any available IP address
   final port = 8080; // Server will run on port 8080
+  // Print to ensure globals.dart has been initialized
+  printGlobalsStatus();
 
-  final server = await serve(_router.call, ip, port);
-  print('Server listening on port $port');
+  // Use middleware to log requests
+  final handler =
+      const Pipeline().addMiddleware(logRequests()).addHandler(_router);
+
+  final server = await serve(handler, ip, port);
+
+  print('Server listening on http://${server.address.host}:${server.port}');
 }
