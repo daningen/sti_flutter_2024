@@ -2,7 +2,6 @@ import 'package:cli/models/parking.dart';
 import 'package:cli/repositories/repository.dart';
 
 class ParkingRepository extends Repository<Parking> {
-  // Asynchronous method to get a parking entry by vehicle license plate
   Future<Parking?> getByLicensePlate(String licensePlate) async {
     List<Parking> allParkings = await getAll();
     try {
@@ -10,11 +9,10 @@ class ParkingRepository extends Repository<Parking> {
         (parking) => parking.vehicle.licensePlate == licensePlate,
       );
     } catch (e) {
-      return null; // Return null if no parking is found
+      return null;
     }
   }
 
-  // Asynchronous method to get a parking entry by parking id
   Future<Parking?> getById(int id) async {
     List<Parking> allParkings = await getAll();
     try {
@@ -22,17 +20,16 @@ class ParkingRepository extends Repository<Parking> {
         (parking) => parking.id == id,
       );
     } catch (e) {
-      return null; // Return null if no parking is found
+      return null;
     }
   }
 
-  // Method to stop parking by updating the end time using the parking id
   Future<void> stopParking(int id) async {
     List<Parking> allParkings = await getAll();
     var index = allParkings.indexWhere((p) => p.id == id);
 
     if (index != -1) {
-      // Update the existing parking entry with the current end time
+      // uppdatera parkering med sluttid
       allParkings[index].endParkingSession();
     } else {
       throw Exception("Parking session not found");

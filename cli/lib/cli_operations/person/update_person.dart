@@ -9,9 +9,8 @@ Future<void> updatePerson() async {
   String ssn = stdin.readLineSync()!;
 
   try {
-    // Fetch the list of persons from the server using SSN
-    final url = Uri.parse(
-        '$personsEndpoint?ssn=$ssn'); // Assuming your API supports query by SSN
+    // Hämta lista med personer from the server using SSN
+    final url = Uri.parse('$personsEndpoint?ssn=$ssn');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -23,25 +22,24 @@ Future<void> updatePerson() async {
         return;
       }
 
-      // Ensure the correct person is selected (matching both SSN and ID)
+      // Matchar Person mot SSN
       Map<String, dynamic> personJson =
           personsList.firstWhere((person) => person['ssn'] == ssn);
 
-      // Convert the JSON to a Person object
+      // JSON till Personobjekt
       Person personToUpdate = Person.fromJson(personJson);
 
-      // Prompt for new name
       print("Ange nytt namn:");
       String newName = stdin.readLineSync()!;
 
-      // Create an updated Person object
+      // Skapa uppdaterat Personobjekt
       Person updatedPerson = Person(
         id: personToUpdate.id,
         name: newName,
-        ssn: personToUpdate.ssn, // Keep SSN unchanged
+        ssn: personToUpdate.ssn,
       );
 
-      // Send a PUT request to update the person on the server
+      //  PUT request uppdatera Person
       final updateUrl = Uri.parse('$personsEndpoint/${personToUpdate.id}');
       final updateResponse = await http.put(
         updateUrl,

@@ -21,7 +21,6 @@ Future<void> menuParking() async {
         print("I menu_person.dart");
         await addParking();
         print("starta parkering");
-      // showMainMenu();
 
       // return;
       case 2:

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:cli/config/config.dart'; // Ensure you have personsEndpoint configured
+import 'package:cli/config/config.dart';
 import 'package:cli/models/person.dart';
 
 Future<void> deletePerson() async {
@@ -9,13 +9,12 @@ Future<void> deletePerson() async {
   String ssn = stdin.readLineSync()!;
 
   try {
-    // Fetch the person(s) from the server using SSN
-    final url = Uri.parse(
-        '$personsEndpoint?ssn=$ssn'); // Assuming the API supports query by SSN
+    // Hämta person skicka med ssn
+    final url = Uri.parse('$personsEndpoint?ssn=$ssn');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
-      // Parse the JSON response as a list of persons
+      // Parsning av JSON response
       List<dynamic> personsList = jsonDecode(response.body);
 
       if (personsList.isEmpty) {
@@ -23,14 +22,14 @@ Future<void> deletePerson() async {
         return;
       }
 
-      // Select the person with the correct SSN from the list
+      // Ta fram person från lista med sökning på SSN
       Map<String, dynamic> personJson =
           personsList.firstWhere((person) => person['ssn'] == ssn);
 
-      // Convert the JSON to a Person object
+      // Omvandla JSON till Person objekt
       Person personToDelete = Person.fromJson(personJson);
 
-      // Send a DELETE request to delete the person from the server
+      // DELETE request
       final deleteUrl = Uri.parse('$personsEndpoint/${personToDelete.id}');
       final deleteResponse = await http.delete(deleteUrl);
 

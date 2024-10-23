@@ -4,13 +4,13 @@ import 'package:cli/repositories/repository.dart';
 class VehicleRepository extends Repository<Vehicle> {
   List<Vehicle> get allItems => items;
 
-  // Search vehicle by license plate
+  // Sök på licensePlate, funkar denna?
   Future<Vehicle?> getVehicleByLicensePlate(String licensePlate) async {
     try {
       return items
           .firstWhere((vehicle) => vehicle.licensePlate == licensePlate);
     } catch (e) {
-      return null; // Return null if no vehicle is found
+      return null;
     }
   }
 

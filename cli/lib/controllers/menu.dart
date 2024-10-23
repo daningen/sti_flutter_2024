@@ -41,7 +41,7 @@ Future<void> menu() async {
 
       case 5:
         print("Avslutar programmet...");
-        return; // Exit
+        return;
 
       default:
         print("Ogiltigt val. Välj ett alternativ mellan 1 och 5.");

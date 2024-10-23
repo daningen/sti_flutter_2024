@@ -2,10 +2,10 @@ import 'package:cli/models/parking_space.dart';
 import 'package:cli/models/vehicle.dart';
 
 class Parking {
-  final int id; // Unikt ID för varje parkeringssession
-  final Vehicle vehicle; // Fordonet som parkeras
-  final ParkingSpace parkingSpace; // Parkeringsplatsen där fordonet är parkerat
-  final DateTime startTime; // Tidpunkt när parkeringen startade
+  final int id;
+  final Vehicle vehicle;
+  final ParkingSpace parkingSpace;
+  final DateTime startTime;
   DateTime? endTime; // Sluttid för parkeringen (null om parkeringen pågår)
 
   Parking({
@@ -16,7 +16,6 @@ class Parking {
     this.endTime,
   });
 
-  // Metod för att avsluta parkeringen
   void endParkingSession() {
     endTime = DateTime.now(); // Sätt sluttiden till aktuell tid
   }

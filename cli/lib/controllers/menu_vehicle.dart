@@ -37,16 +37,16 @@ Future<void> menuVehicle() async {
         break;
       case 3:
         print("Uppdaterar fordon...");
-        await updateVehicle(); // Uncomment or implement this function
+        await updateVehicle();
         break;
       case 4:
         print("Tar bort fordon...");
-        await deleteVehicle(); // Ensure delete operation is awaited
+        await deleteVehicle();
         print("Fordon borttaget");
         break;
       case 5:
         print("Tillbaka till huvudmenyn...");
-        return; // Exit the vehicle menu
+        return;
       default:
         print("Felaktigt val, välj 1, 2, 3 eller 4.");
     }

@@ -15,15 +15,13 @@ Future<Map<String, String>> collectPersonInput() async {
   List<String> vehicleTypes = ['bil', 'moped', 'traktor', 'okänt'];
   String randomVehicleType =
       vehicleTypes[Random().nextInt(vehicleTypes.length)];
-  personInput['vehicleType'] =
-      randomVehicleType; // Set the vehicle type to a random one
+  personInput['vehicleType'] = randomVehicleType;
 
   print("Ange ägare av fordon:");
   personInput['name'] = stdin.readLineSync()!;
 
-  // Generate a random valid SSN using the separate function
-  String randomSSN =
-      generateRandomSSN(); // Assuming this function is in ssn_generator.dart
+  // Generera random pnr(SSN)
+  String randomSSN = generateRandomSSN();
   personInput['ssn'] = randomSSN;
 
   print("Generated SSN: $randomSSN");

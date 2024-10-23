@@ -6,13 +6,12 @@ import 'package:cli/config/config.dart';
 Future<void> addPerson() async {
   print("Entering addPerson");
 
-  // Collect form information
+  // Formulär som skapar input till Personobjektet
   Map<String, String> personInput = await collectPersonInput();
 
-  // Uncommented for debugging purposes, to ensure map is populated correctly
-  print("Collected person information: $personInput");
+  print("Läser in person information: $personInput");
 
-  // Create the JSON object for the person
+  // skapa JSON objekt Person
   final personJson = {
     'name': personInput['name'],
     'ssn': personInput['ssn'],
@@ -21,9 +20,8 @@ Future<void> addPerson() async {
   print("Sending POST request to add person...");
 
   try {
-    // POST request to add person to the server
-    final url = Uri.parse(
-        personsEndpoint); // Ensure this endpoint is set up in config.dart
+    // POST request add person
+    final url = Uri.parse(personsEndpoint);
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},

@@ -6,7 +6,7 @@ class Vehicle {
   final String vehicleType;
   final Person owner;
 
-  // Named constructor with required parameters
+  // Konstruktor med parametrar
   Vehicle({
     required this.id,
     required this.licensePlate,
@@ -14,7 +14,7 @@ class Vehicle {
     required this.owner,
   });
 
-  // Convert Vehicle to JSON
+  // Konvertera Vehicle till JSON
   Map<String, dynamic> toJson() => {
         'id': id,
         'licensePlate': licensePlate,
@@ -22,10 +22,10 @@ class Vehicle {
         'owner': owner.toJson(),
       };
 
-  // Convert JSON to Vehicle object
+  // Konvertera JSON till Vehicleobjekt
   factory Vehicle.fromJson(Map<String, dynamic> json) {
     return Vehicle(
-      id: json['id'], // Assuming 'id' is provided in the JSON
+      id: json['id'],
       licensePlate: json['licensePlate'],
       vehicleType: json['vehicleType'],
       owner: Person.fromJson(json['owner']),

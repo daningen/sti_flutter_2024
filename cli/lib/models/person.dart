@@ -9,17 +9,17 @@ class Person {
     required this.ssn,
   });
 
-  // Convert a Person object to JSON
+  // Konvertera Personobjekt till JSON
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
         'ssn': ssn,
       };
 
-  // Create a Person object from JSON
+  // Skapa Personobjekt från JSON
   factory Person.fromJson(Map<String, dynamic> json) {
     return Person(
-      id: json['id'], // Make sure 'id' is passed in JSON
+      id: json['id'],
       name: json['name'],
       ssn: json['ssn'],
     );

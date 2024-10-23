@@ -12,13 +12,14 @@ Future<void> updateParking() async {
     // hämta parkering utifrån licensplate
     final parkingUrl =
         Uri.parse('$parkingsEndpoint?licensePlate=$licensePlate');
+    // exempel på get request som sänds: http://localhost:8080/parkings?licensePlate=XYZ123
     final parkingResponse = await http.get(parkingUrl);
 
     if (parkingResponse.statusCode == 200) {
       List<dynamic> parkingList = jsonDecode(parkingResponse.body);
 
       if (parkingList.isNotEmpty) {
-        // hämta parkering för första fordon
+        // extrahera ut hämta parkering för första fordon
         Map<String, dynamic> parkingJson = parkingList.first;
         Parking parking = Parking.fromJson(parkingJson);
 
@@ -29,7 +30,7 @@ Future<void> updateParking() async {
         print("Ange nytt pris per timme:");
         int newPricePerHour = int.parse(stdin.readLineSync()!);
 
-        // Uppdatera parking space
+        // Uppdatera parking
         final updatedParkingJson = {
           'vehicle': parking.vehicle.toJson(),
           'parkingSpace': {

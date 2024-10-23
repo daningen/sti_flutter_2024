@@ -16,7 +16,6 @@ Future<void> showParking() async {
     print("GET response received with status code: ${response.statusCode}");
 
     if (response.statusCode == 200) {
-      // Parse the response as a list of parking sessions
       List<dynamic> parkingList = jsonDecode(response.body);
 
       if (parkingList.isEmpty) {
@@ -24,7 +23,6 @@ Future<void> showParking() async {
         return;
       }
 
-      // Assuming you want to print out the first parking found
       Map<String, dynamic> parkingData = parkingList.first;
 
       final startTime = DateTime.parse(parkingData['startTime']);
@@ -37,10 +35,9 @@ Future<void> showParking() async {
       print("Ägare: ${parkingData['vehicle']['owner']['name']}");
       print("Adress: ${parkingData['parkingSpace']['address']}");
 
-      // Format startTime
+      // Formatera startTime
       print("Startid: ${DateFormat('yyyy-MM-dd HH:mm').format(startTime)}");
 
-      // Display correct message based on endTime being null or not
       if (endTime == null) {
         print("Sluttid: Parkering pågår fortfarande");
       } else {
