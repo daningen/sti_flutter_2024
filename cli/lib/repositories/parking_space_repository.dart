@@ -8,11 +8,13 @@ class ParkingSpaceRepository extends Repository<ParkingSpace> {
   final List<ParkingSpace> _items;
 
   // Getter for the items list
+  @override
   List<ParkingSpace> get items => _items;
 
   // Removed @override because 'add' does not exist in the Repository superclass
-  Future<void> add(ParkingSpace parkingSpace) async {
-    _items.add(parkingSpace);
+  @override
+  Future<void> add(ParkingSpace item) async {
+    _items.add(item);
   }
 
   // Retrieve a parking space by ID
@@ -40,10 +42,11 @@ class ParkingSpaceRepository extends Repository<ParkingSpace> {
   }
 
   // Update a parking space
-  Future<void> update(ParkingSpace oldSpace, ParkingSpace newSpace) async {
-    int index = _items.indexOf(oldSpace);
+  @override
+  Future<void> update(ParkingSpace item, ParkingSpace newItem) async {
+    int index = _items.indexOf(item);
     if (index != -1) {
-      _items[index] = newSpace;
+      _items[index] = newItem;
     }
   }
 }

@@ -35,7 +35,9 @@ final _router = Router()
 Middleware logRequests() {
   return (Handler handler) {
     return (Request request) async {
-      print('Received ${request.method} request for ${request.requestedUri}');
+      print(
+          'Your request ${request.method} request for ${request.requestedUri}');
+
       final response = await handler(request);
       return response;
     };

@@ -7,16 +7,16 @@ String generateRandomLicensePlate() {
 
   Random random = Random();
 
-  // Generate 3 random letters
+  // Generera 3 random boksäver
   String randomLetters =
       List.generate(3, (index) => letters[random.nextInt(letters.length)])
           .join('');
 
-  // Generate 3 random digits
+  // Generera 3 random siffror
   String randomDigits =
       List.generate(3, (index) => numbers[random.nextInt(numbers.length)])
           .join('');
 
-  // Concatenate letters and digits to form a license plate
+  // konkatenera
   return '$randomLetters$randomDigits';
 }

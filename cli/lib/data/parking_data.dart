@@ -9,7 +9,6 @@ import 'package:cli/utils/generate_random_ssn.dart';
 int nextParkingId = 1;
 
 Parking generateDummyParking() {
-  // List of random names to choose from
   List<String> randomNames = [
     'Dan Erla',
     'Kim Kavat',
@@ -17,14 +16,14 @@ Parking generateDummyParking() {
     'Olle Skoog'
   ];
 
-  // Generate a random index to select a name
+  // Generera namn
   String randomName = randomNames[Random().nextInt(randomNames.length)];
 
-  // Generate random license plate and SSN
+  // Generera SSN
   String randomLicensePlate = generateRandomLicensePlate();
   String randomSSN = generateRandomSSN();
 
-  // Create vehicle, parking space, and parking objects
+  // Skapa vehicle, parking space, och parking objects
   Vehicle vehicle = Vehicle(
     id: 1,
     licensePlate: randomLicensePlate,

@@ -88,7 +88,7 @@ Future<Response> addParkingHandler(Request req) async {
                 : null,
       );
 
-      // Lägg till parking session till repo
+      // Lägg till parkingssession till repo
       await parkingRepository.add(newParking);
 
       final jsonResponse = jsonEncode({
@@ -115,10 +115,8 @@ Future<Response> addParkingHandler(Request req) async {
 //****** */
 
 Future<Response> updateParkingByIdHandler(Request request) async {
-  // Parse the parking ID from the request
   final id = int.tryParse(request.params['id']!);
 
-  // If ID is invalid, return a bad request error
   if (id == null) {
     return Response(
       400,
@@ -127,10 +125,9 @@ Future<Response> updateParkingByIdHandler(Request request) async {
     );
   }
 
-  // Fetch the existing parking session by ID
+  // hämta existerand parkering på ID
   final existingParking = await parkingRepository.getById(id);
 
-  // If no parking session is found, return a 404 error
   if (existingParking == null) {
     return Response(
       404,
@@ -143,12 +140,12 @@ Future<Response> updateParkingByIdHandler(Request request) async {
   final payload = await request.readAsString();
   final data = jsonDecode(payload);
 
-  // Validate the input data (endTime is required in this case)
+  // Validera input
   if (data.containsKey('endTime')) {
-    // Create the updated parking object
+    // skapa det nya parkeringsobjektet
     final updatedParking = Parking(
       id: existingParking.id,
-      vehicle: existingParking.vehicle, // Keep the same vehicle
+      vehicle: existingParking.vehicle,
       parkingSpace: ParkingSpace(
         id: existingParking.parkingSpace.id,
         address: data['parkingSpace']['address'] ??
@@ -156,13 +153,13 @@ Future<Response> updateParkingByIdHandler(Request request) async {
         pricePerHour: data['parkingSpace']['pricePerHour'] ??
             existingParking.parkingSpace.pricePerHour,
       ),
-      startTime: existingParking.startTime, // Keep the same start time
+      startTime: existingParking.startTime,
       endTime: data['endTime'] != null
           ? DateTime.parse(data['endTime'])
-          : null, // Update endTime
+          : null, // uppdatera endTime om parkering är stoppad
     );
 
-    // Update the parking in the repository
+    // Uppdatera repo
     await parkingRepository.update(existingParking, updatedParking);
 
     return Response.ok(
@@ -170,7 +167,7 @@ Future<Response> updateParkingByIdHandler(Request request) async {
       headers: {'Content-Type': 'application/json'},
     );
   } else {
-    // If endTime is missing, return a bad request error
+    // Om endTime saknas
     return Response(
       400,
       body: jsonEncode({'error': 'endTime is missing'}),

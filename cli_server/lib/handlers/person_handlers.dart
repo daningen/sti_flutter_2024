@@ -1,10 +1,9 @@
 import 'dart:convert';
-import 'package:cli_server/globals.dart'; // For shared repository instances
+import 'package:cli_server/globals.dart';
 import 'package:cli_server/models/person.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 
-// Handler to get all persons
 Future<Response> getAllPersonsHandler(Request req) async {
   print("Handling GET /persons");
 
@@ -21,7 +20,6 @@ Future<Response> getAllPersonsHandler(Request req) async {
       headers: {'Content-Type': 'application/json'});
 }
 
-// Handler to get a specific person by ID
 Future<Response> getPersonHandler(Request request) async {
   print("Handling GET /persons/<id>");
 
@@ -42,7 +40,6 @@ Future<Response> getPersonHandler(Request request) async {
       headers: {'Content-Type': 'application/json'});
 }
 
-// Handler to add a new person
 Future<Response> addPersonHandler(Request req) async {
   try {
     final payload = await req.readAsString();
@@ -50,10 +47,10 @@ Future<Response> addPersonHandler(Request req) async {
     final personData = jsonDecode(payload);
 
     if (personData.containsKey('name') && personData.containsKey('ssn')) {
-      // Generate new ID for the person
+      // Generera nytt id för Person
       final newId = (await personRepository.getAll()).length + 1;
 
-      // Create the new person object
+      // Skapa person objekt
       final newPerson =
           Person(id: newId, name: personData['name'], ssn: personData['ssn']);
       await personRepository.add(newPerson);
@@ -83,7 +80,6 @@ Future<Response> addPersonHandler(Request req) async {
   }
 }
 
-// Handler to update an existing person by ID
 Future<Response> updatePersonHandler(Request request) async {
   print("Handling PUT /persons/<id>");
 
@@ -122,11 +118,10 @@ Future<Response> updatePersonHandler(Request request) async {
   }
 }
 
-// Handler to delete a person by ID
 Future<Response> deletePersonHandler(Request request) async {
   print("Handling DELETE /persons/<id>");
 
-  final id = int.tryParse(request.params['id']!); // No need for extensions
+  final id = int.tryParse(request.params['id']!);
 
   if (id == null) {
     return Response.notFound(jsonEncode({'error': 'Invalid person ID'}),

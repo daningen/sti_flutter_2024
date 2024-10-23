@@ -23,7 +23,6 @@ Future<Response> getAllParkingSpacesHandler(Request req) async {
       headers: {'Content-Type': 'application/json'});
 }
 
-// Handler to get a specific parking space by ID
 Future<Response> getParkingSpaceHandler(Request request) async {
   print("Handling GET /parking-spaces/<id>");
 
@@ -43,7 +42,6 @@ Future<Response> getParkingSpaceHandler(Request request) async {
       headers: {'Content-Type': 'application/json'});
 }
 
-// Handler to add a new parking space
 Future<Response> addParkingSpaceHandler(Request req) async {
   try {
     final payload = await req.readAsString();
@@ -52,10 +50,10 @@ Future<Response> addParkingSpaceHandler(Request req) async {
 
     if (parkingSpaceData.containsKey('address') &&
         parkingSpaceData.containsKey('pricePerHour')) {
-      // Generate new ID
+      // Generera nytt id
       final newId = (await parkingSpaceRepository.getAll()).length + 1;
 
-      // Create the parking space object
+      // skap objektet ParkingSpace
       final newParkingSpace = ParkingSpace(
         id: newId,
         address: parkingSpaceData['address'],
@@ -87,7 +85,6 @@ Future<Response> addParkingSpaceHandler(Request req) async {
   }
 }
 
-// Handler to update an existing parking space by ID
 Future<Response> updateParkingSpaceHandler(Request request) async {
   print("Handling PUT /parking-spaces/<id>");
 
@@ -130,7 +127,6 @@ Future<Response> updateParkingSpaceHandler(Request request) async {
   }
 }
 
-// Handler to delete a parking space by ID
 Future<Response> deleteParkingSpaceHandler(Request request) async {
   print("Handling DELETE /parking-spaces/<id>");
 

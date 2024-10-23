@@ -10,25 +10,22 @@ class VehicleRepository extends Repository<Vehicle> {
       return items
           .firstWhere((vehicle) => vehicle.licensePlate == licensePlate);
     } catch (e) {
-      return null; // Return null if no vehicle is found
+      return null;
     }
   }
 
-  // Search vehicle by id
   Future<Vehicle?> getVehicleById(int id) async {
     try {
       return items.firstWhere((vehicle) => vehicle.id == id);
     } catch (e) {
-      return null; // Return null if no vehicle is found
+      return null;
     }
   }
 
-  // Delete vehicle by id
   Future<void> deleteVehicleById(int id) async {
     items.removeWhere((vehicle) => vehicle.id == id);
   }
 
-  // Update vehicle by id
   Future<void> updateVehicle(int id, Vehicle newVehicle) async {
     var index = items.indexWhere((vehicle) => vehicle.id == id);
     if (index != -1) {

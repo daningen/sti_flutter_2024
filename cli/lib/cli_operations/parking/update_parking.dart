@@ -9,7 +9,7 @@ Future<void> updateParking() async {
   String licensePlate = stdin.readLineSync()!;
 
   try {
-    // Step 1: Fetch parking by vehicle's license plate from the parking repository
+    // hämta parkering utifrån licensplate
     final parkingUrl =
         Uri.parse('$parkingsEndpoint?licensePlate=$licensePlate');
     final parkingResponse = await http.get(parkingUrl);
@@ -18,22 +18,22 @@ Future<void> updateParking() async {
       List<dynamic> parkingList = jsonDecode(parkingResponse.body);
 
       if (parkingList.isNotEmpty) {
-        // Get the first parking session for the vehicle
+        // hämta parkering för första fordon
         Map<String, dynamic> parkingJson = parkingList.first;
         Parking parking = Parking.fromJson(parkingJson);
 
-        // Prompt for updated information
+        // adress
         print("Ange ny parkeringsplatsens adress:");
         String newParkingSpaceAddress = stdin.readLineSync()!;
 
         print("Ange nytt pris per timme:");
         int newPricePerHour = int.parse(stdin.readLineSync()!);
 
-        // Update the parking space information
+        // Uppdatera parking space
         final updatedParkingJson = {
           'vehicle': parking.vehicle.toJson(),
           'parkingSpace': {
-            'id': parking.parkingSpace.id, // Keep the same parking space ID
+            'id': parking.parkingSpace.id, // behåll ursprungligt id
             'address': newParkingSpaceAddress,
             'pricePerHour': newPricePerHour,
           },
@@ -41,7 +41,7 @@ Future<void> updateParking() async {
           'endTime': parking.endTime?.toIso8601String(),
         };
 
-        // Step 2: Send PUT request to update the parking by ID
+        // uppdatera parkering på id
         final putUrl = Uri.parse('$parkingsEndpoint/${parking.id}');
         final putResponse = await http.put(
           putUrl,

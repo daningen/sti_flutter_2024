@@ -9,17 +9,17 @@ class ParkingSpace {
     required this.pricePerHour,
   });
 
-  // Convert a ParkingSpace object to JSON
+  // Från ParkingSpace objekt till JSON
   Map<String, dynamic> toJson() => {
         'id': id,
         'address': address,
         'pricePerHour': pricePerHour,
       };
 
-  // Create a ParkingSpace object from JSON
+  // Skapa ParkingSpace objekt JSON
   factory ParkingSpace.fromJson(Map<String, dynamic> json) {
     return ParkingSpace(
-      id: json['id'], // Ensure 'id' is included in JSON
+      id: json['id'],
       address: json['address'],
       pricePerHour: json['pricePerHour'],
     );

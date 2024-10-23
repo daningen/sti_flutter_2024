@@ -4,52 +4,50 @@ import 'package:cli/repositories/repository.dart';
 class PersonRepository extends Repository<Person> {
   List<Person> get allItems => items;
 
-  // Search person by SSN (renamed for clarity)
+  // Sök person på personnummer SSN
   Future<Person?> getPersonBySecurityNumber(String ssn) async {
     try {
       return items.firstWhere((person) => person.ssn == ssn);
     } catch (e) {
-      return null; // Return null if no person is found
+      return null;
     }
   }
 
-  // Get all people in the repository
+  // Hämta alla personer
   Future<List<Person>> getAllPeople() async {
-    return await getAll(); // Calls the getAll method from the base Repository class
+    return await getAll();
   }
 
-  // Search person by id
+  // Sök person på id
   Future<Person?> getPersonById(int id) async {
     try {
       return items.firstWhere((person) => person.id == id);
     } catch (e) {
-      return null; // Return null if no person is found
+      return null;
     }
   }
 
-  // Delete person by id
+  // Ta bort person på id
   Future<bool> deletePersonById(int id) async {
     final initialCount = items.length;
     items.removeWhere((person) => person.id == id);
 
-    // Return true if a person was deleted, false otherwise
     return items.length < initialCount;
   }
 
-  // Update person by id
+  // Uppdatera person på ID
   Future<bool> updatePerson(int id, Person newPerson) async {
     var index = items.indexWhere((person) => person.id == id);
     if (index != -1) {
-      // Ensure the id remains the same during the update
       final updatedPerson = Person(
-        id: id, // Keep the original ID
+        id: id, // original ID
         name: newPerson.name,
         ssn: newPerson.ssn,
       );
       items[index] = updatedPerson;
-      return true; // Return true to indicate success
+      return true;
     } else {
-      return false; // Return false if the person was not found
+      return false; // om person inte hittas
     }
   }
 
