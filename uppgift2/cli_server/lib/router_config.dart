@@ -1,7 +1,7 @@
 import 'package:cli_server/handlers/bag_handlers.dart';
 import 'package:cli_server/handlers/item_handlers.dart';
 import 'package:cli_server/handlers/parking_handlers.dart';
-import 'package:cli_server/handlers/parking_space_handler.dart';
+import 'package:cli_server/handlers/parking_space_handlers.dart';
 import 'package:cli_server/handlers/person_handlers.dart';
 import 'package:cli_server/handlers/vehicle_handlers.dart';
 import 'package:cli_shared/cli_shared.dart';
@@ -66,11 +66,10 @@ class ServerConfig {
         deleteParkingSpaceHandler); // Delete parking space
 
     // Parking routes
-    router.post('/parkings', postParkingHandler); // Create parking session
-    router.get('/parkings', getAllParkingsHandler); // Get all parking sessions
-    router.get('/parkings/<id>',
-        getParkingByIdHandler); // Get specific parking session
-    router.put('/parkings/<id>',
-        updateParkingByIdHandler); // Update (stop) parking session
+
+    router.post('/parkings', postParkingHandler);
+    router.get('/parkings', getAllParkingsHandler);
+    router.get('/parkings/<id>', getParkingByIdHandler);
+    router.put('/parkings/<id>', updateParkingByIdHandler);
   }
 }

@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:convert';
 import 'package:cli/repositories/parking_space_repository.dart';
 import 'package:cli/utils/validator.dart';
 import 'package:cli_shared/cli_shared.dart';

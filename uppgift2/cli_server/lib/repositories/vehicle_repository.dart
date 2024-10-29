@@ -55,10 +55,14 @@ class VehicleRepository implements RepositoryInterface<Vehicle> {
   }
 
   @override
-  Future<void> delete(int id) async {
+  Future<Vehicle?> delete(int id) async {
     final response = await http.delete(Uri.parse('$endpoint/$id'));
-    if (response.statusCode != 200) {
-      throw Exception('Failed to delete vehicle');
+    if (response.statusCode == 200) {
+      return Vehicle.fromJson(jsonDecode(response.body));
+    } else if (response.statusCode == 404) {
+      return null;
+    } else {
+      throw Exception('Failed to delete vehicle: ${response.body}');
     }
   }
 }

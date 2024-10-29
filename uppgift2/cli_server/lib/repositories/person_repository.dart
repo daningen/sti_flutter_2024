@@ -55,10 +55,14 @@ class PersonRepository implements RepositoryInterface<Person> {
   }
 
   @override
-  Future<void> delete(int id) async {
+  Future<Person?> delete(int id) async {
     final response = await http.delete(Uri.parse('$endpoint/$id'));
-    if (response.statusCode != 200) {
-      throw Exception('Failed to delete person');
+    if (response.statusCode == 200) {
+      return Person.fromJson(jsonDecode(response.body));
+    } else if (response.statusCode == 404) {
+      return null;
+    } else {
+      throw Exception('Failed to delete parking space: ${response.body}');
     }
   }
 }

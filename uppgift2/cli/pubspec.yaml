@@ -7,13 +7,18 @@ publish_to: none
 environment:
   sdk: ^3.5.3
 
-# Add regular dependencies here.
 dependencies:
   http: ^1.2.2
-  # path: ^1.8.0
-  cli_shared: 
+  cli_shared:
     path: '../cli_shared'
-    
+  # Optional, add if you need ObjectBox on the client side
+  objectbox: ^4.0.3 # or the latest version
+  # Optional, add if you need date formatting
+  intl: ^0.18.0
+  
+
 dev_dependencies:
   lints: ^4.0.0
   test: ^1.24.0
+  # Add build_runner for code generation
+  build_runner: ^2.3.3

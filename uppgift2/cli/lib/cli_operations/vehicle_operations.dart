@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:convert';
 import 'package:cli/repositories/person_repository.dart';
 import 'package:cli/repositories/vehicle_repository.dart';
 import 'package:cli/utils/validator.dart';

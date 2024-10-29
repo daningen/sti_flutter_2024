@@ -7,14 +7,16 @@ class ParkingRepository implements RepositoryInterface<Parking> {
 
   @override
   Future<Parking> create(Parking parking) async {
+    final url = Uri.parse(endpoint);
     final response = await http.post(
-      Uri.parse(endpoint),
+      url,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(parking.toJson()),
     );
 
-    if (response.statusCode == 201) {
-      return Parking.fromJson(jsonDecode(response.body));
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      return Parking.fromJson(json);
     } else {
       throw Exception('Failed to create parking');
     }
@@ -22,8 +24,9 @@ class ParkingRepository implements RepositoryInterface<Parking> {
 
   @override
   Future<List<Parking>> getAll() async {
+    final url = Uri.parse(endpoint);
     final response = await http.get(
-      Uri.parse(endpoint),
+      url,
       headers: {'Content-Type': 'application/json'},
     );
 
@@ -37,7 +40,52 @@ class ParkingRepository implements RepositoryInterface<Parking> {
 
   @override
   Future<Parking> update(int id, Parking parking) async {
+    final url = Uri.parse('$endpoint/$id');
     final response = await http.put(
-      Uri.parse('$endpoint/$id'),
+      url,
       headers: {'Content-Type': 'application/json'},
-      body: json
+      body: jsonEncode(parking.toJson()),
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      return Parking.fromJson(json);
+    } else {
+      throw Exception('Failed to update parking');
+    }
+  }
+
+  @override
+  Future<Parking?> delete(int id) async {
+    final url = Uri.parse('$endpoint/$id');
+    final response = await http.delete(
+      url,
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      return Parking.fromJson(json);
+    } else if (response.statusCode == 404) {
+      return null; // Parking not found
+    } else {
+      throw Exception('Failed to delete parking: ${response.body}');
+    }
+  }
+
+  @override
+  Future<Parking?> getById(int id) async {
+    final url = Uri.parse('$endpoint/$id');
+    final response = await http.get(
+      url,
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      return Parking.fromJson(json);
+    } else {
+      return null;
+    }
+  }
+}
