@@ -11,12 +11,14 @@ PersonRepository personRepo = PersonRepository();
 
 class VehicleOperations {
   static Future create() async {
+    // Gather Vehicle details
     print('Enter license plate: ');
     var licensePlate = stdin.readLineSync();
 
     print('Enter vehicle type (e.g., car, motorcycle): ');
     var vehicleType = stdin.readLineSync();
 
+    // Retrieve and display list of persons from server
     print('Select an owner from the list:');
     List<Person> allPersons = await personRepo.getAll();
     if (allPersons.isEmpty) {
@@ -28,6 +30,7 @@ class VehicleOperations {
       print('${i + 1}. ${allPersons[i].name} (SSN: ${allPersons[i].ssn})');
     }
 
+    // Select person from list
     String? input = stdin.readLineSync();
     if (!Validator.isIndex(input, allPersons)) {
       print('Invalid choice');
@@ -37,6 +40,7 @@ class VehicleOperations {
     int selectedIndex = int.parse(input!) - 1;
     Person selectedOwner = allPersons[selectedIndex];
 
+    // Verify input and create vehicle
     if (Validator.isString(licensePlate) && Validator.isString(vehicleType)) {
       Vehicle vehicle = Vehicle(
         licensePlate: licensePlate!,
@@ -45,12 +49,16 @@ class VehicleOperations {
       vehicle.owner.target = selectedOwner;
 
       try {
+        // Serialize Vehicle with full owner data
         var vehicleJson = jsonEncode({
           'licensePlate': vehicle.licensePlate,
           'vehicleType': vehicle.vehicleType,
-          'ownerId': selectedOwner.id,
+          'owner': selectedOwner.toJson(), // Embed complete Person data
         });
 
+        print('Data sent to server: $vehicleJson'); // For verification
+
+        // Send POST request to create vehicle
         final uri = Uri.parse('http://localhost:8080/vehicles');
         final response = await http.post(
           uri,
@@ -58,6 +66,7 @@ class VehicleOperations {
           body: vehicleJson,
         );
 
+        // Handle response
         if (response.statusCode == 200) {
           print('Vehicle created successfully.');
         } else {
