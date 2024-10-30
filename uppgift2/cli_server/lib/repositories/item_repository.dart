@@ -1,5 +1,6 @@
 import 'package:cli_server/router_config.dart';
 import 'package:cli_shared/cli_shared.dart';
+import 'package:objectbox/objectbox.dart';
 
 class ItemRepository implements RepositoryInterface<Item> {
   Box<Item> itemBox = ServerConfig.instance.store.box<Item>();
@@ -32,9 +33,7 @@ class ItemRepository implements RepositoryInterface<Item> {
   Future<Item?> delete(int id) async {
     Item? item = itemBox.get(id);
 
-    if (item != null) {
-      itemBox.remove(id);
-    }
+    itemBox.remove(id);
 
     return item;
   }

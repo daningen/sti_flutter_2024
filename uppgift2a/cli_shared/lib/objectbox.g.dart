@@ -67,61 +67,52 @@ final _entities = <obx_int.ModelEntity>[
       relations: <obx_int.ModelRelation>[],
       backlinks: <obx_int.ModelBacklink>[]),
   obx_int.ModelEntity(
-      id: const obx_int.IdUid(3, 8633875150404365074),
-      name: 'Parking',
-      lastPropertyId: const obx_int.IdUid(5, 4671941546392095825),
+      id: const obx_int.IdUid(3, 6361105331499020977),
+      name: 'Person',
+      lastPropertyId: const obx_int.IdUid(10, 8453192963093825079),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(1, 7532105327852508558),
+            id: const obx_int.IdUid(2, 1896031891015238284),
             name: 'id',
             type: 6,
             flags: 1),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(2, 1827071331388757674),
-            name: 'vehicleId',
-            type: 11,
-            flags: 520,
-            indexId: const obx_int.IdUid(1, 2058196314308392112),
-            relationTarget: 'Vehicle'),
-        obx_int.ModelProperty(
-            id: const obx_int.IdUid(3, 7914912545972115442),
-            name: 'parkingSpaceId',
-            type: 11,
-            flags: 520,
-            indexId: const obx_int.IdUid(2, 7254118980907793203),
-            relationTarget: 'ParkingSpace'),
-        obx_int.ModelProperty(
-            id: const obx_int.IdUid(4, 624995545417993233),
-            name: 'startTime',
-            type: 10,
+            id: const obx_int.IdUid(8, 5553561847851411563),
+            name: 'name',
+            type: 9,
             flags: 0),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(5, 4671941546392095825),
-            name: 'endTime',
-            type: 10,
+            id: const obx_int.IdUid(9, 7212588147923256981),
+            name: 'ssn',
+            type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(10, 8453192963093825079),
+            name: 'itemsInDb',
+            type: 9,
             flags: 0)
       ],
       relations: <obx_int.ModelRelation>[],
       backlinks: <obx_int.ModelBacklink>[]),
   obx_int.ModelEntity(
-      id: const obx_int.IdUid(4, 5011713746923030475),
+      id: const obx_int.IdUid(6, 6322958116010445661),
       name: 'ParkingSpace',
-      lastPropertyId: const obx_int.IdUid(3, 6139282941170218710),
+      lastPropertyId: const obx_int.IdUid(3, 5608482441508257846),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(1, 1654148026250898876),
+            id: const obx_int.IdUid(1, 2069394012398517009),
             name: 'id',
             type: 6,
             flags: 1),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(2, 7733829480852838856),
+            id: const obx_int.IdUid(2, 8195065975246932491),
             name: 'address',
             type: 9,
             flags: 0),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(3, 6139282941170218710),
+            id: const obx_int.IdUid(3, 5608482441508257846),
             name: 'pricePerHour',
             type: 6,
             flags: 0)
@@ -129,56 +120,70 @@ final _entities = <obx_int.ModelEntity>[
       relations: <obx_int.ModelRelation>[],
       backlinks: <obx_int.ModelBacklink>[]),
   obx_int.ModelEntity(
-      id: const obx_int.IdUid(5, 3094493169103715337),
-      name: 'Person',
-      lastPropertyId: const obx_int.IdUid(3, 6911463499026042805),
+      id: const obx_int.IdUid(8, 4947039560727772286),
+      name: 'Parking',
+      lastPropertyId: const obx_int.IdUid(5, 7589300267080396296),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(1, 7755114901641342251),
+            id: const obx_int.IdUid(1, 1690024171666092378),
             name: 'id',
             type: 6,
             flags: 1),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(2, 234065042007494800),
-            name: 'name',
-            type: 9,
+            id: const obx_int.IdUid(2, 5729697005842833787),
+            name: 'startTime',
+            type: 10,
             flags: 0),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(3, 6911463499026042805),
-            name: 'ssn',
-            type: 9,
-            flags: 0)
+            id: const obx_int.IdUid(3, 4746023821207332868),
+            name: 'endTime',
+            type: 10,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(4, 5072189699137887170),
+            name: 'vehicleId',
+            type: 11,
+            flags: 520,
+            indexId: const obx_int.IdUid(4, 8277506376588452714),
+            relationTarget: 'Vehicle'),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(5, 7589300267080396296),
+            name: 'parkingSpaceId',
+            type: 11,
+            flags: 520,
+            indexId: const obx_int.IdUid(5, 3842738552290414629),
+            relationTarget: 'ParkingSpace')
       ],
       relations: <obx_int.ModelRelation>[],
       backlinks: <obx_int.ModelBacklink>[]),
   obx_int.ModelEntity(
-      id: const obx_int.IdUid(6, 6268045523101645489),
+      id: const obx_int.IdUid(9, 4611544989560169149),
       name: 'Vehicle',
-      lastPropertyId: const obx_int.IdUid(4, 2022103765916613720),
+      lastPropertyId: const obx_int.IdUid(4, 84680324938044488),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(1, 8827078427124820792),
+            id: const obx_int.IdUid(1, 4364822756144415362),
             name: 'id',
             type: 6,
             flags: 1),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(2, 528972131072100482),
+            id: const obx_int.IdUid(2, 8401002822898253351),
             name: 'licensePlate',
             type: 9,
             flags: 0),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(3, 1479973430197364476),
+            id: const obx_int.IdUid(3, 5634770877231478866),
             name: 'vehicleType',
             type: 9,
             flags: 0),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(4, 2022103765916613720),
+            id: const obx_int.IdUid(4, 84680324938044488),
             name: 'ownerId',
             type: 11,
             flags: 520,
-            indexId: const obx_int.IdUid(3, 7125145027456338928),
+            indexId: const obx_int.IdUid(6, 7374945224662159398),
             relationTarget: 'Person')
       ],
       relations: <obx_int.ModelRelation>[],
@@ -219,13 +224,36 @@ obx.Store openStore(
 obx_int.ModelDefinition getObjectBoxModel() {
   final model = obx_int.ModelInfo(
       entities: _entities,
-      lastEntityId: const obx_int.IdUid(6, 6268045523101645489),
-      lastIndexId: const obx_int.IdUid(3, 7125145027456338928),
+      lastEntityId: const obx_int.IdUid(9, 4611544989560169149),
+      lastIndexId: const obx_int.IdUid(6, 7374945224662159398),
       lastRelationId: const obx_int.IdUid(0, 0),
       lastSequenceId: const obx_int.IdUid(0, 0),
-      retiredEntityUids: const [],
+      retiredEntityUids: const [
+        6539104271398186167,
+        1555128805293743242,
+        9175493719539538660
+      ],
       retiredIndexUids: const [],
-      retiredPropertyUids: const [],
+      retiredPropertyUids: const [
+        7626779877698590705,
+        1141262634202698580,
+        6582545937594582363,
+        2542133461562607578,
+        1496041229761913517,
+        522273590172272964,
+        9028780978659742119,
+        1596206338814084163,
+        3292283472779470667,
+        1157594897086140100,
+        9192696004812464997,
+        167578117808558176,
+        4793760092919054410,
+        2495136290426339426,
+        4576736229213416591,
+        1748614264573016617,
+        4059034261802048682,
+        3461774580256256743
+      ],
       retiredRelationUids: const [],
       modelVersion: 5,
       modelVersionParserMinimum: 5,
@@ -292,45 +320,39 @@ obx_int.ModelDefinition getObjectBoxModel() {
 
           return object;
         }),
-    Parking: obx_int.EntityDefinition<Parking>(
+    Person: obx_int.EntityDefinition<Person>(
         model: _entities[2],
-        toOneRelations: (Parking object) =>
-            [object.vehicle, object.parkingSpace],
-        toManyRelations: (Parking object) => {},
-        getId: (Parking object) => object.id,
-        setId: (Parking object, int id) {
+        toOneRelations: (Person object) => [],
+        toManyRelations: (Person object) => {},
+        getId: (Person object) => object.id,
+        setId: (Person object, int id) {
           object.id = id;
         },
-        objectToFB: (Parking object, fb.Builder fbb) {
-          fbb.startTable(6);
-          fbb.addInt64(0, object.id);
-          fbb.addInt64(1, object.vehicle.targetId);
-          fbb.addInt64(2, object.parkingSpace.targetId);
-          fbb.addInt64(3, object.startTime.millisecondsSinceEpoch);
-          fbb.addInt64(4, object.endTime?.millisecondsSinceEpoch);
+        objectToFB: (Person object, fb.Builder fbb) {
+          final nameOffset = fbb.writeString(object.name);
+          final ssnOffset = fbb.writeString(object.ssn);
+          final itemsInDbOffset = fbb.writeString(object.itemsInDb);
+          fbb.startTable(11);
+          fbb.addInt64(1, object.id);
+          fbb.addOffset(7, nameOffset);
+          fbb.addOffset(8, ssnOffset);
+          fbb.addOffset(9, itemsInDbOffset);
           fbb.finish(fbb.endTable());
           return object.id;
         },
         objectFromFB: (obx.Store store, ByteData fbData) {
           final buffer = fb.BufferContext(fbData);
           final rootOffset = buffer.derefObject(0);
-          final endTimeValue =
-              const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 12);
+          final nameParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 18, '');
+          final ssnParam = const fb.StringReader(asciiOptimization: true)
+              .vTableGet(buffer, rootOffset, 20, '');
           final idParam =
-              const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
-          final startTimeParam = DateTime.fromMillisecondsSinceEpoch(
-              const fb.Int64Reader().vTableGet(buffer, rootOffset, 10, 0));
-          final endTimeParam = endTimeValue == null
-              ? null
-              : DateTime.fromMillisecondsSinceEpoch(endTimeValue);
-          final object = Parking(
-              id: idParam, startTime: startTimeParam, endTime: endTimeParam);
-          object.vehicle.targetId =
               const fb.Int64Reader().vTableGet(buffer, rootOffset, 6, 0);
-          object.vehicle.attach(store);
-          object.parkingSpace.targetId =
-              const fb.Int64Reader().vTableGet(buffer, rootOffset, 8, 0);
-          object.parkingSpace.attach(store);
+          final object = Person(name: nameParam, ssn: ssnParam, id: idParam)
+            ..itemsInDb = const fb.StringReader(asciiOptimization: true)
+                .vTableGet(buffer, rootOffset, 22, '');
+
           return object;
         }),
     ParkingSpace: obx_int.EntityDefinition<ParkingSpace>(
@@ -353,48 +375,58 @@ obx_int.ModelDefinition getObjectBoxModel() {
         objectFromFB: (obx.Store store, ByteData fbData) {
           final buffer = fb.BufferContext(fbData);
           final rootOffset = buffer.derefObject(0);
-          final idParam =
-              const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
           final addressParam = const fb.StringReader(asciiOptimization: true)
               .vTableGet(buffer, rootOffset, 6, '');
           final pricePerHourParam =
               const fb.Int64Reader().vTableGet(buffer, rootOffset, 8, 0);
+          final idParam =
+              const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
           final object = ParkingSpace(
-              id: idParam,
               address: addressParam,
-              pricePerHour: pricePerHourParam);
+              pricePerHour: pricePerHourParam,
+              id: idParam);
 
           return object;
         }),
-    Person: obx_int.EntityDefinition<Person>(
+    Parking: obx_int.EntityDefinition<Parking>(
         model: _entities[4],
-        toOneRelations: (Person object) => [],
-        toManyRelations: (Person object) => {},
-        getId: (Person object) => object.id,
-        setId: (Person object, int id) {
+        toOneRelations: (Parking object) =>
+            [object.vehicle, object.parkingSpace],
+        toManyRelations: (Parking object) => {},
+        getId: (Parking object) => object.id,
+        setId: (Parking object, int id) {
           object.id = id;
         },
-        objectToFB: (Person object, fb.Builder fbb) {
-          final nameOffset = fbb.writeString(object.name);
-          final ssnOffset = fbb.writeString(object.ssn);
-          fbb.startTable(4);
+        objectToFB: (Parking object, fb.Builder fbb) {
+          fbb.startTable(6);
           fbb.addInt64(0, object.id);
-          fbb.addOffset(1, nameOffset);
-          fbb.addOffset(2, ssnOffset);
+          fbb.addInt64(1, object.startTime.millisecondsSinceEpoch);
+          fbb.addInt64(2, object.endTime?.millisecondsSinceEpoch);
+          fbb.addInt64(3, object.vehicle.targetId);
+          fbb.addInt64(4, object.parkingSpace.targetId);
           fbb.finish(fbb.endTable());
           return object.id;
         },
         objectFromFB: (obx.Store store, ByteData fbData) {
           final buffer = fb.BufferContext(fbData);
           final rootOffset = buffer.derefObject(0);
+          final endTimeValue =
+              const fb.Int64Reader().vTableGetNullable(buffer, rootOffset, 8);
+          final startTimeParam = DateTime.fromMillisecondsSinceEpoch(
+              const fb.Int64Reader().vTableGet(buffer, rootOffset, 6, 0));
+          final endTimeParam = endTimeValue == null
+              ? null
+              : DateTime.fromMillisecondsSinceEpoch(endTimeValue);
           final idParam =
               const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
-          final nameParam = const fb.StringReader(asciiOptimization: true)
-              .vTableGet(buffer, rootOffset, 6, '');
-          final ssnParam = const fb.StringReader(asciiOptimization: true)
-              .vTableGet(buffer, rootOffset, 8, '');
-          final object = Person(id: idParam, name: nameParam, ssn: ssnParam);
-
+          final object = Parking(
+              startTime: startTimeParam, endTime: endTimeParam, id: idParam);
+          object.vehicle.targetId =
+              const fb.Int64Reader().vTableGet(buffer, rootOffset, 10, 0);
+          object.vehicle.attach(store);
+          object.parkingSpace.targetId =
+              const fb.Int64Reader().vTableGet(buffer, rootOffset, 12, 0);
+          object.parkingSpace.attach(store);
           return object;
         }),
     Vehicle: obx_int.EntityDefinition<Vehicle>(
@@ -419,18 +451,18 @@ obx_int.ModelDefinition getObjectBoxModel() {
         objectFromFB: (obx.Store store, ByteData fbData) {
           final buffer = fb.BufferContext(fbData);
           final rootOffset = buffer.derefObject(0);
-          final idParam =
-              const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
           final licensePlateParam =
               const fb.StringReader(asciiOptimization: true)
                   .vTableGet(buffer, rootOffset, 6, '');
           final vehicleTypeParam =
               const fb.StringReader(asciiOptimization: true)
                   .vTableGet(buffer, rootOffset, 8, '');
+          final idParam =
+              const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
           final object = Vehicle(
-              id: idParam,
               licensePlate: licensePlateParam,
-              vehicleType: vehicleTypeParam);
+              vehicleType: vehicleTypeParam,
+              id: idParam);
           object.owner.targetId =
               const fb.Int64Reader().vTableGet(buffer, rootOffset, 10, 0);
           object.owner.attach(store);
@@ -465,27 +497,23 @@ class Item_ {
   static final id = obx.QueryIntegerProperty<Item>(_entities[1].properties[1]);
 }
 
-/// [Parking] entity fields to define ObjectBox queries.
-class Parking_ {
-  /// See [Parking.id].
+/// [Person] entity fields to define ObjectBox queries.
+class Person_ {
+  /// See [Person.id].
   static final id =
-      obx.QueryIntegerProperty<Parking>(_entities[2].properties[0]);
+      obx.QueryIntegerProperty<Person>(_entities[2].properties[0]);
 
-  /// See [Parking.vehicle].
-  static final vehicle =
-      obx.QueryRelationToOne<Parking, Vehicle>(_entities[2].properties[1]);
+  /// See [Person.name].
+  static final name =
+      obx.QueryStringProperty<Person>(_entities[2].properties[1]);
 
-  /// See [Parking.parkingSpace].
-  static final parkingSpace =
-      obx.QueryRelationToOne<Parking, ParkingSpace>(_entities[2].properties[2]);
+  /// See [Person.ssn].
+  static final ssn =
+      obx.QueryStringProperty<Person>(_entities[2].properties[2]);
 
-  /// See [Parking.startTime].
-  static final startTime =
-      obx.QueryDateProperty<Parking>(_entities[2].properties[3]);
-
-  /// See [Parking.endTime].
-  static final endTime =
-      obx.QueryDateProperty<Parking>(_entities[2].properties[4]);
+  /// See [Person.itemsInDb].
+  static final itemsInDb =
+      obx.QueryStringProperty<Person>(_entities[2].properties[3]);
 }
 
 /// [ParkingSpace] entity fields to define ObjectBox queries.
@@ -503,19 +531,27 @@ class ParkingSpace_ {
       obx.QueryIntegerProperty<ParkingSpace>(_entities[3].properties[2]);
 }
 
-/// [Person] entity fields to define ObjectBox queries.
-class Person_ {
-  /// See [Person.id].
+/// [Parking] entity fields to define ObjectBox queries.
+class Parking_ {
+  /// See [Parking.id].
   static final id =
-      obx.QueryIntegerProperty<Person>(_entities[4].properties[0]);
+      obx.QueryIntegerProperty<Parking>(_entities[4].properties[0]);
 
-  /// See [Person.name].
-  static final name =
-      obx.QueryStringProperty<Person>(_entities[4].properties[1]);
+  /// See [Parking.startTime].
+  static final startTime =
+      obx.QueryDateProperty<Parking>(_entities[4].properties[1]);
 
-  /// See [Person.ssn].
-  static final ssn =
-      obx.QueryStringProperty<Person>(_entities[4].properties[2]);
+  /// See [Parking.endTime].
+  static final endTime =
+      obx.QueryDateProperty<Parking>(_entities[4].properties[2]);
+
+  /// See [Parking.vehicle].
+  static final vehicle =
+      obx.QueryRelationToOne<Parking, Vehicle>(_entities[4].properties[3]);
+
+  /// See [Parking.parkingSpace].
+  static final parkingSpace =
+      obx.QueryRelationToOne<Parking, ParkingSpace>(_entities[4].properties[4]);
 }
 
 /// [Vehicle] entity fields to define ObjectBox queries.

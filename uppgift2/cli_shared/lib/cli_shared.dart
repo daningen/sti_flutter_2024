@@ -1,6 +1,3 @@
-/// Support for doing something awesome.
-///
-/// More dartdocs go here.
 library;
 
 export 'src/repositories/repository_interface.dart';
@@ -11,6 +8,4 @@ export 'src/models/vehicle.dart';
 export 'src/models/parking_space.dart';
 export 'src/models/parking.dart';
 
-//  : Export any libraries intended for clients of this package.
-
-export 'objectbox.g.dart';
+export 'cli_shared.dart';

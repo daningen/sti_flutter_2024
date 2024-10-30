@@ -1,5 +1,6 @@
+// lib/models/vehicle.dart
+import 'package:cli_shared/cli_shared.dart';
 import 'package:objectbox/objectbox.dart';
-import 'person.dart';
 
 @Entity()
 class Vehicle {
@@ -7,10 +8,20 @@ class Vehicle {
   int id;
 
   String licensePlate;
-  String vehicleType;
-  final owner = ToOne<Person>();
+  String vehicleType; // e.g., 'car', 'motorcycle'
 
-  Vehicle({this.id = 0, required this.licensePlate, required this.vehicleType});
+  final ToOne<Person> owner;
+
+  Vehicle({
+    required this.licensePlate,
+    required this.vehicleType,
+    this.id = 0,
+  }) : owner = ToOne<Person>();
+
+  // Method to set the owner after creation
+  void setOwner(Person person) {
+    owner.target = person;
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -23,13 +34,20 @@ class Vehicle {
 
   factory Vehicle.fromJson(Map<String, dynamic> json) {
     final vehicle = Vehicle(
-      id: json['id'],
-      licensePlate: json['licensePlate'],
-      vehicleType: json['vehicleType'],
+      licensePlate: json['licensePlate'] ?? '',
+      vehicleType: json['vehicleType'] ?? '',
+      id: json['id'] ?? 0,
     );
+
     if (json['owner'] != null) {
       vehicle.owner.target = Person.fromJson(json['owner']);
     }
+
     return vehicle;
+  }
+
+  @override
+  String toString() {
+    return 'Vehicle{id: $id, licensePlate: $licensePlate, vehicleType: $vehicleType, owner: ${owner.target?.name ?? 'No Owner'}}';
   }
 }

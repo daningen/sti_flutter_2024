@@ -112,7 +112,7 @@
     },
     {
       "id": "5:3094493169103715337",
-      "lastPropertyId": "3:6911463499026042805",
+      "lastPropertyId": "4:7550567431005208322",
       "name": "Person",
       "properties": [
         {
@@ -130,38 +130,11 @@
           "id": "3:6911463499026042805",
           "name": "ssn",
           "type": 9
-        }
-      ],
-      "relations": []
-    },
-    {
-      "id": "6:6268045523101645489",
-      "lastPropertyId": "4:2022103765916613720",
-      "name": "Vehicle",
-      "properties": [
-        {
-          "id": "1:8827078427124820792",
-          "name": "id",
-          "type": 6,
-          "flags": 1
         },
         {
-          "id": "2:528972131072100482",
-          "name": "licensePlate",
+          "id": "4:7550567431005208322",
+          "name": "itemsInDb",
           "type": 9
-        },
-        {
-          "id": "3:1479973430197364476",
-          "name": "vehicleType",
-          "type": 9
-        },
-        {
-          "id": "4:2022103765916613720",
-          "name": "ownerId",
-          "type": 11,
-          "flags": 520,
-          "indexId": "3:7125145027456338928",
-          "relationTarget": "Person"
         }
       ],
       "relations": []
@@ -173,9 +146,16 @@
   "lastSequenceId": "0:0",
   "modelVersion": 5,
   "modelVersionParserMinimum": 5,
-  "retiredEntityUids": [],
+  "retiredEntityUids": [
+    6268045523101645489
+  ],
   "retiredIndexUids": [],
-  "retiredPropertyUids": [],
+  "retiredPropertyUids": [
+    8827078427124820792,
+    528972131072100482,
+    1479973430197364476,
+    2022103765916613720
+  ],
   "retiredRelationUids": [],
   "version": 1
 }
