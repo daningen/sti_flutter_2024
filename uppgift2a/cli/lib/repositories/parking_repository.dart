@@ -1,29 +1,25 @@
 import 'dart:convert';
+import 'package:cli/config.dart';
 import 'package:cli_shared/cli_shared.dart';
 import 'package:http/http.dart' as http;
 
 class ParkingRepository implements RepositoryInterface<Parking> {
-  final String endpoint = "http://localhost:8080/parkings";
+  final String endpoint = Config.parkingsEndpoint;
 
   @override
-  @override
   Future<Parking> create(Parking parking) async {
-    final url = Uri.parse(endpoint);
+    final uri = Uri.parse(endpoint);
     final response = await http.post(
-      url,
+      uri,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(parking.toJson()),
     );
 
     if (response.statusCode == 201 || response.statusCode == 200) {
-      // Success response handling, adjusting for potential message-only responses
       final json = jsonDecode(response.body);
-      if (json.containsKey('parking')) {
-        return Parking.fromJson(json['parking']);
-      } else {
-        // Placeholder if no full object is returned, assumes successful creation
-        return parking;
-      }
+      return json.containsKey('parking')
+          ? Parking.fromJson(json['parking'])
+          : parking;
     } else {
       throw Exception('Failed to create parking: ${response.body}');
     }
@@ -31,9 +27,9 @@ class ParkingRepository implements RepositoryInterface<Parking> {
 
   @override
   Future<List<Parking>> getAll() async {
-    final url = Uri.parse(endpoint);
+    final uri = Uri.parse(endpoint);
     final response = await http.get(
-      url,
+      uri,
       headers: {'Content-Type': 'application/json'},
     );
 
@@ -47,9 +43,9 @@ class ParkingRepository implements RepositoryInterface<Parking> {
 
   @override
   Future<Parking> update(int id, Parking parking) async {
-    final url = Uri.parse('$endpoint/$id');
+    final uri = Uri.parse('$endpoint/$id');
     final response = await http.put(
-      url,
+      uri,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(parking.toJson()),
     );
@@ -64,9 +60,9 @@ class ParkingRepository implements RepositoryInterface<Parking> {
 
   @override
   Future<Parking?> delete(int id) async {
-    final url = Uri.parse('$endpoint/$id');
+    final uri = Uri.parse('$endpoint/$id');
     final response = await http.delete(
-      url,
+      uri,
       headers: {'Content-Type': 'application/json'},
     );
 
@@ -82,9 +78,9 @@ class ParkingRepository implements RepositoryInterface<Parking> {
 
   @override
   Future<Parking?> getById(int id) async {
-    final url = Uri.parse('$endpoint/$id');
+    final uri = Uri.parse('$endpoint/$id');
     final response = await http.get(
-      url,
+      uri,
       headers: {'Content-Type': 'application/json'},
     );
 
@@ -97,9 +93,9 @@ class ParkingRepository implements RepositoryInterface<Parking> {
   }
 
   Future<void> stop(int id) async {
-    final url = Uri.parse('$endpoint/$id');
+    final uri = Uri.parse('$endpoint/$id');
     final response = await http.put(
-      url,
+      uri,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'endTime': DateTime.now().toIso8601String()}),
     );

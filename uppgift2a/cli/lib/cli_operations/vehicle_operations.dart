@@ -1,10 +1,9 @@
 import 'dart:io';
-import 'dart:convert';
+// import 'dart:convert';
 import 'package:cli/repositories/person_repository.dart';
 import 'package:cli/repositories/vehicle_repository.dart';
 import 'package:cli/utils/validator.dart';
 import 'package:cli_shared/cli_shared.dart';
-import 'package:http/http.dart' as http;
 
 VehicleRepository vehicleRepo = VehicleRepository();
 PersonRepository personRepo = PersonRepository();
@@ -44,25 +43,13 @@ class VehicleOperations {
       );
       vehicle.owner.target = selectedOwner;
 
+      print(
+          // Print vehicle data before sending
+          'Data to be sent to server (Create): ${vehicle.toJson()}');
+
       try {
-        var vehicleJson = jsonEncode({
-          'licensePlate': vehicle.licensePlate,
-          'vehicleType': vehicle.vehicleType,
-          'ownerId': selectedOwner.id,
-        });
-
-        final uri = Uri.parse('http://localhost:8080/vehicles');
-        final response = await http.post(
-          uri,
-          headers: {'Content-Type': 'application/json'},
-          body: vehicleJson,
-        );
-
-        if (response.statusCode == 200) {
-          print('Vehicle created successfully.');
-        } else {
-          print('Failed to create vehicle: ${response.body}');
-        }
+        await vehicleRepo.create(vehicle);
+        print('Vehicle created successfully.');
       } catch (e) {
         print('Error while creating vehicle: $e');
       }

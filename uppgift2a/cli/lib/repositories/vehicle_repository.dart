@@ -1,20 +1,24 @@
 import 'dart:convert';
+import 'package:cli/config.dart';
 import 'package:cli_shared/cli_shared.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 
 class VehicleRepository implements RepositoryInterface<Vehicle> {
   // Define the base URL for the server
-  final String baseUrl = 'http://localhost:8080';
+  // final String baseUrl = 'http://localhost:8080';
   // Define a getter for the vehicles endpoint
-  String get vehiclesEndpoint => '$baseUrl/vehicles';
+
+  // Use Config endpoints
+  final String endpoint = Config.vehiclesEndpoint;
 
   @override
   Future<Vehicle> create(Vehicle vehicle) async {
     // Send the vehicle as JSON to the server
-    final uri = Uri.parse(vehiclesEndpoint);
+    // final uri = Uri.parse(vehiclesEndpoint);
     Response response = await http.post(
-      uri,
+      // uri,
+      Uri.parse(endpoint),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(vehicle.toJson()),
     );
@@ -29,9 +33,9 @@ class VehicleRepository implements RepositoryInterface<Vehicle> {
 
   @override
   Future<Vehicle?> getById(int id) async {
-    final uri = Uri.parse('$vehiclesEndpoint/$id');
+    // final uri = Uri.parse('$vehiclesEndpoint/$id');
     Response response = await http.get(
-      uri,
+      Uri.parse('$endpoint/$id'),
       headers: {'Content-Type': 'application/json'},
     );
 
@@ -47,9 +51,11 @@ class VehicleRepository implements RepositoryInterface<Vehicle> {
 
   @override
   Future<List<Vehicle>> getAll() async {
-    final uri = Uri.parse(vehiclesEndpoint);
+    // final uri = Uri.parse(vehiclesEndpoint);
+
     Response response = await http.get(
-      uri,
+      // uri,
+      Uri.parse(endpoint),
       headers: {'Content-Type': 'application/json'},
     );
 
@@ -63,9 +69,10 @@ class VehicleRepository implements RepositoryInterface<Vehicle> {
 
   @override
   Future<Vehicle> update(int id, Vehicle updatedVehicle) async {
-    final uri = Uri.parse('$vehiclesEndpoint/$id');
+    // final uri = Uri.parse('$vehiclesEndpoint/$id');
     Response response = await http.put(
-      uri,
+      // uri,
+      Uri.parse('$endpoint/$id'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(updatedVehicle.toJson()),
     );
@@ -80,9 +87,9 @@ class VehicleRepository implements RepositoryInterface<Vehicle> {
 
   @override
   Future<Vehicle?> delete(int id) async {
-    final uri = Uri.parse('$vehiclesEndpoint/$id');
+    // final uri = Uri.parse('$vehiclesEndpoint/$id');
     Response response = await http.delete(
-      uri,
+      Uri.parse('$endpoint/$id'),
       headers: {'Content-Type': 'application/json'},
     );
 

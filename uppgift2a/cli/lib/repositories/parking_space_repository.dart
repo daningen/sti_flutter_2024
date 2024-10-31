@@ -1,15 +1,16 @@
 import 'dart:convert';
+import 'package:cli/config.dart';
 import 'package:cli_shared/cli_shared.dart';
 import 'package:http/http.dart' as http;
 
 class ParkingSpaceRepository implements RepositoryInterface<ParkingSpace> {
-  final String endpoint = "http://localhost:8080/parking_spaces";
+  final String endpoint = Config.parkingSpacesEndpoint;
 
   @override
   Future<ParkingSpace> create(ParkingSpace parkingSpace) async {
-    final url = Uri.parse(endpoint);
+    final uri = Uri.parse(endpoint);
     final response = await http.post(
-      url,
+      uri,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(parkingSpace.toJson()),
     );
@@ -24,9 +25,9 @@ class ParkingSpaceRepository implements RepositoryInterface<ParkingSpace> {
 
   @override
   Future<List<ParkingSpace>> getAll() async {
-    final url = Uri.parse(endpoint);
+    final uri = Uri.parse(endpoint);
     final response = await http.get(
-      url,
+      uri,
       headers: {'Content-Type': 'application/json'},
     );
 
@@ -40,9 +41,9 @@ class ParkingSpaceRepository implements RepositoryInterface<ParkingSpace> {
 
   @override
   Future<ParkingSpace> update(int id, ParkingSpace parkingSpace) async {
-    final url = Uri.parse('$endpoint/$id');
+    final uri = Uri.parse('$endpoint/$id');
     final response = await http.put(
-      url,
+      uri,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(parkingSpace.toJson()),
     );
@@ -67,7 +68,7 @@ class ParkingSpaceRepository implements RepositoryInterface<ParkingSpace> {
       final json = jsonDecode(response.body);
       return ParkingSpace.fromJson(json);
     } else if (response.statusCode == 404) {
-      return null; // Return null if the parking space wasn't found
+      return null;
     } else {
       throw Exception('Failed to delete parking space: ${response.body}');
     }
@@ -75,9 +76,9 @@ class ParkingSpaceRepository implements RepositoryInterface<ParkingSpace> {
 
   @override
   Future<ParkingSpace?> getById(int id) async {
-    final url = Uri.parse('$endpoint/$id');
+    final uri = Uri.parse('$endpoint/$id');
     final response = await http.get(
-      url,
+      uri,
       headers: {'Content-Type': 'application/json'},
     );
 
