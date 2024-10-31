@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cli/forms/update_person_forms.dart';
 import 'package:cli/repositories/person_repository.dart';
 import 'package:cli/utils/validator.dart';
 import 'package:cli_shared/cli_shared.dart';
@@ -38,64 +39,14 @@ class PersonOperations {
     }
 
     String? input = stdin.readLineSync();
-
     if (Validator.isIndex(input, allPersons)) {
       int index = int.parse(input!) - 1;
+      Person person = await repository.getById(allPersons[index].id);
 
-      while (true) {
-        print("\n------------------------------------\n");
+      // Use UpdatePersonForm to handle the update interaction
+      await UpdatePersonForm.showUpdateOptions(person);
 
-        Person person = await repository.getById(allPersons[index].id);
-
-        print(
-            "What would you like to update in person: ${person.name} - [SSN: ${person.ssn}]?");
-
-        print('1. update name');
-        print('2. Update SSN');
-        // print('3. Add items to person');
-        // print('4. Remove items from person');
-
-        var input = stdin.readLineSync();
-
-        if (Validator.isNumber(input)) {
-          int choice = int.parse(input!);
-
-          switch (choice) {
-            case 1:
-              await _updateName(person);
-              break;
-            case 2:
-              await _updateSSN(person);
-              break;
-            // case 3:
-            //   await _addItemsToPerson(person);
-            //   break;
-            case 4:
-              await _removeItemsFromPerson(person);
-              break;
-            default:
-              print('Invalid choice');
-          }
-        } else {
-          print('Invalid input');
-        }
-        print("Would you like to update anything else? (y/n)");
-        input = stdin.readLineSync();
-        if (input == 'n') {
-          break;
-        }
-      }
-    } else {
-      print('Invalid input');
-    }
-  }
-
-  static Future _updateName(Person person) async {
-    print('Enter new name: ');
-    var name = stdin.readLineSync();
-
-    if (Validator.isString(name)) {
-      person.name = name!;
+      // Save the updated person
       await repository.update(person.id, person);
       print('Person updated');
     } else {
@@ -103,36 +54,36 @@ class PersonOperations {
     }
   }
 
-  static Future _updateSSN(Person person) async {
-    print('Enter new SSN: ');
-    var ssn = stdin.readLineSync();
+  // static Future _updateSSN(Person person) async {
+  //   print('Enter new SSN: ');
+  //   var ssn = stdin.readLineSync();
 
-    if (Validator.isString(ssn)) {
-      person.ssn = ssn!;
-      await repository.update(person.id, person);
-      print('SSN updated');
-    } else {
-      print('Invalid input');
-    }
-  }
+  //   if (Validator.isString(ssn)) {
+  //     person.ssn = ssn!;
+  //     await repository.update(person.id, person);
+  //     print('SSN updated');
+  //   } else {
+  //     print('Invalid input');
+  //   }
+  // }
 
-  static Future _removeItemsFromPerson(Person person) async {
-    print('Pick an item to remove: ');
-    for (int i = 0; i < person.items.length; i++) {
-      print('${i + 1}. ${person.items[i].description}');
-    }
+  // static Future _removeItemsFromPerson(Person person) async {
+  //   print('Pick an item to remove: ');
+  //   for (int i = 0; i < person.items.length; i++) {
+  //     print('${i + 1}. ${person.items[i].description}');
+  //   }
 
-    String? input = stdin.readLineSync();
+  //   String? input = stdin.readLineSync();
 
-    if (Validator.isIndex(input, person.items)) {
-      int index = int.parse(input!) - 1;
-      person.items.removeAt(index);
-      await repository.update(person.id, person);
-      print('Item removed from person');
-    } else {
-      print('Invalid input');
-    }
-  }
+  //   if (Validator.isIndex(input, person.items)) {
+  //     int index = int.parse(input!) - 1;
+  //     person.items.removeAt(index);
+  //     await repository.update(person.id, person);
+  //     print('Item removed from person');
+  //   } else {
+  //     print('Invalid input');
+  //   }
+  // }
 
   static Future delete() async {
     print('Pick an index to delete: ');
