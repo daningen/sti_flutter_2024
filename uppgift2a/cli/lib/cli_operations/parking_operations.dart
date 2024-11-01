@@ -15,7 +15,9 @@ class ParkingOperations {
   static Future create() async {
     try {
       // Fetch and display available vehicles
+      print("1. start by getting all vehicles to choose from");
       List<Vehicle> allVehicles = await vehicleRepository.getAll();
+
       if (allVehicles.isEmpty) {
         print(
             'No vehicles available. Please add one before creating a parking session.');
@@ -42,31 +44,48 @@ class ParkingOperations {
       int selectedVehicleIndex = int.parse(vehicleInput!) - 1;
       Vehicle selectedVehicle = allVehicles[selectedVehicleIndex];
 
-      // Fetch and display available parking spaces
+      // Fetch all parking spaces and filter out those with ongoing sessions
+      print(
+          "2. now when I have selected a vehicle I must pick an available parking space");
       List<ParkingSpace> allParkingSpaces =
           await parkingSpaceRepository.getAll();
-      if (allParkingSpaces.isEmpty) {
-        print(
-            'No parking spaces available. Please add one before creating a parking session.');
+      List<ParkingSpace> availableParkingSpaces = [];
+      print("3. now pick the parking space which do not have a endtime");
+      for (var space in allParkingSpaces) {
+        // Filter to only available spaces by checking sessions' endTime
+
+        List<Parking> sessions = await repository.getAll();
+        bool isAvailable = sessions
+            .where((session) => session.parkingSpace.target?.id == space.id)
+            .every((session) => session.endTime != null);
+
+        if (isAvailable) {
+          availableParkingSpaces.add(space);
+        }
+      }
+
+      if (availableParkingSpaces.isEmpty) {
+        print('No available parking spaces. Please try again later.');
         return;
       }
 
       print('Available parking spaces:');
-      for (int i = 0; i < allParkingSpaces.length; i++) {
+      for (int i = 0; i < availableParkingSpaces.length; i++) {
         print(
-            '${i + 1}. Address: ${allParkingSpaces[i].address}, Price per Hour: ${allParkingSpaces[i].pricePerHour}');
+            '${i + 1}. Address: ${availableParkingSpaces[i].address}, Price per Hour: ${availableParkingSpaces[i].pricePerHour}');
       }
 
       print('Pick a parking space by index:');
       String? spaceInput = stdin.readLineSync();
 
-      if (!Validator.isIndex(spaceInput, allParkingSpaces)) {
+      if (!Validator.isIndex(spaceInput, availableParkingSpaces)) {
         print('Invalid parking space selection.');
         return;
       }
 
       int selectedSpaceIndex = int.parse(spaceInput!) - 1;
-      ParkingSpace selectedParkingSpace = allParkingSpaces[selectedSpaceIndex];
+      ParkingSpace selectedParkingSpace =
+          availableParkingSpaces[selectedSpaceIndex];
 
       // Create the Parking object without initially setting vehicle and parking space
       Parking parking = Parking(
@@ -75,7 +94,7 @@ class ParkingOperations {
 
       // Set vehicle and parking space using setDetails method
       parking.setDetails(selectedVehicle, selectedParkingSpace);
-
+      print("4. send the parking request with the Parking object");
       // Use the repository to create the parking
       await repository.create(parking);
       print('Parking created successfully.');

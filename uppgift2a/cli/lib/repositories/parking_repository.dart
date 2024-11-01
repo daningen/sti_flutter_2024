@@ -8,6 +8,7 @@ class ParkingRepository implements RepositoryInterface<Parking> {
 
   @override
   Future<Parking> create(Parking parking) async {
+    print("posting parking from client");
     final uri = Uri.parse(endpoint);
     final response = await http.post(
       uri,
