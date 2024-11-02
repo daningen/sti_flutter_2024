@@ -14,55 +14,50 @@ VehicleRepository vehicleRepository = VehicleRepository();
 class ParkingOperations {
   static Future create() async {
     try {
-      // Fetch and display available vehicles
-      print("1. start by getting all vehicles to choose from");
-      List<Vehicle> allVehicles = await vehicleRepository.getAll();
+      // Step 1: Fetch all sessions and filter for ongoing sessions (no endTime)
+      // because ongoing parkings can't be parked again
+      List<Parking> allSessions = await repository.getAll();
+      List<Parking> ongoingSessions =
+          allSessions.where((session) => session.endTime == null).toList();
 
-      if (allVehicles.isEmpty) {
-        print(
-            'No vehicles available. Please add one before creating a parking session.');
+      // Step 2: Fetch all vehicles and filter out those with ongoing parking sessions
+      // because I can park the same vehicle twice at the same time
+      List<Vehicle> allVehicles = await vehicleRepository.getAll();
+      List<Vehicle> availableVehicles = allVehicles.where((vehicle) {
+        return !ongoingSessions
+            .any((session) => session.vehicle.target?.id == vehicle.id);
+      }).toList();
+
+      if (availableVehicles.isEmpty) {
+        print('No available vehicles without ongoing parking sessions.');
         return;
       }
 
       print('Available vehicles:');
-      for (int i = 0; i < allVehicles.length; i++) {
-        final owner = allVehicles[i].owner.target;
+      for (int i = 0; i < availableVehicles.length; i++) {
+        final owner = availableVehicles[i].owner.target;
         final ownerName = owner?.name ?? 'Unknown';
         print(
-          '${i + 1}. License Plate: ${allVehicles[i].licensePlate}, Owner: $ownerName',
-        );
+            '${i + 1}. License Plate: ${availableVehicles[i].licensePlate}, Owner: $ownerName');
       }
 
       print('Pick a vehicle by index:');
       String? vehicleInput = stdin.readLineSync();
-
-      if (!Validator.isIndex(vehicleInput, allVehicles)) {
+      if (!Validator.isIndex(vehicleInput, availableVehicles)) {
         print('Invalid vehicle selection.');
         return;
       }
+      Vehicle selectedVehicle = availableVehicles[int.parse(vehicleInput!) - 1];
 
-      int selectedVehicleIndex = int.parse(vehicleInput!) - 1;
-      Vehicle selectedVehicle = allVehicles[selectedVehicleIndex];
-
-      // Fetch all parking spaces and filter out those with ongoing sessions
-      print(
-          "2. now when I have selected a vehicle I must pick an available parking space");
+      // Step 3: Fetch all parking spaces and filter out those occupied in ongoing sessions
+      // because I cant choose a parking space that is already occupied
       List<ParkingSpace> allParkingSpaces =
           await parkingSpaceRepository.getAll();
-      List<ParkingSpace> availableParkingSpaces = [];
-      print("3. now pick the parking space which do not have a endtime");
-      for (var space in allParkingSpaces) {
-        // Filter to only available spaces by checking sessions' endTime
-
-        List<Parking> sessions = await repository.getAll();
-        bool isAvailable = sessions
-            .where((session) => session.parkingSpace.target?.id == space.id)
-            .every((session) => session.endTime != null);
-
-        if (isAvailable) {
-          availableParkingSpaces.add(space);
-        }
-      }
+      List<ParkingSpace> availableParkingSpaces =
+          allParkingSpaces.where((space) {
+        return !ongoingSessions
+            .any((session) => session.parkingSpace.target?.id == space.id);
+      }).toList();
 
       if (availableParkingSpaces.isEmpty) {
         print('No available parking spaces. Please try again later.');
@@ -77,25 +72,17 @@ class ParkingOperations {
 
       print('Pick a parking space by index:');
       String? spaceInput = stdin.readLineSync();
-
       if (!Validator.isIndex(spaceInput, availableParkingSpaces)) {
         print('Invalid parking space selection.');
         return;
       }
-
-      int selectedSpaceIndex = int.parse(spaceInput!) - 1;
       ParkingSpace selectedParkingSpace =
-          availableParkingSpaces[selectedSpaceIndex];
+          availableParkingSpaces[int.parse(spaceInput!) - 1];
 
-      // Create the Parking object without initially setting vehicle and parking space
-      Parking parking = Parking(
-        startTime: DateTime.now(),
-      );
-
-      // Set vehicle and parking space using setDetails method
+      // Create the Parking object with selected vehicle and parking space
+      Parking parking = Parking(startTime: DateTime.now());
       parking.setDetails(selectedVehicle, selectedParkingSpace);
       print("4. send the parking request with the Parking object");
-      // Use the repository to create the parking
       await repository.create(parking);
       print('Parking created successfully.');
     } catch (e) {
@@ -174,12 +161,15 @@ class ParkingOperations {
             ? DateTimeFormatter.formatDate(allParkings[i].endTime!)
             : 'Ongoing';
 
+        final durationText = DateTimeFormatter.calculateDuration(
+            allParkings[i].startTime, allParkings[i].endTime);
+
         print(
-          '${i + 1}. Vehicle License Plate: ${vehicle?.licensePlate ?? 'Unknown'}, '
-          'Address: ${parkingSpace?.address ?? 'Unknown'}, '
-          'Start Time: $startTimeFormatted, '
-          'End Time: $endTimeFormatted',
-        );
+            '${i + 1}. Vehicle License Plate: ${vehicle?.licensePlate ?? 'Unknown'}, '
+            'Address: ${parkingSpace?.address ?? 'Unknown'}, '
+            'Start Time: $startTimeFormatted, '
+            'End Time: $endTimeFormatted, '
+            'Duration: $durationText');
       }
     } catch (e) {
       print('Failed to retrieve parkings: $e');
