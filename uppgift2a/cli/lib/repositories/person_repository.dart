@@ -2,16 +2,19 @@ import 'dart:convert';
 import 'package:cli/config.dart';
 import 'package:cli_shared/cli_shared.dart';
 import 'package:http/http.dart' as http;
-import 'package:http/http.dart';
 
 class PersonRepository implements RepositoryInterface<Person> {
   // Access the endpoint through Config
   final String endpoint = Config.personsEndpoint;
+  final http.Client client;
+
+  // Optional client parameter; defaults to http.Client() for production
+  PersonRepository({http.Client? client}) : client = client ?? http.Client();
 
   @override
   Future<Person> getById(int id) async {
     final uri = Uri.parse('$endpoint/$id');
-    Response response = await http.get(
+    final response = await client.get(
       uri,
       headers: {'Content-Type': 'application/json'},
     );
@@ -25,7 +28,7 @@ class PersonRepository implements RepositoryInterface<Person> {
     print("Creating person through cli_operations");
     final uri = Uri.parse(endpoint);
 
-    Response response = await http.post(
+    final response = await client.post(
       uri,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(person.toJson()),
@@ -38,7 +41,7 @@ class PersonRepository implements RepositoryInterface<Person> {
   @override
   Future<List<Person>> getAll() async {
     final uri = Uri.parse(endpoint);
-    final response = await http.get(
+    final response = await client.get(
       uri,
       headers: {'Content-Type': 'application/json'},
     );
@@ -51,7 +54,7 @@ class PersonRepository implements RepositoryInterface<Person> {
   Future<Person> delete(int id) async {
     final uri = Uri.parse('$endpoint/$id');
 
-    Response response = await http.delete(
+    final response = await client.delete(
       uri,
       headers: {'Content-Type': 'application/json'},
     );
@@ -64,7 +67,7 @@ class PersonRepository implements RepositoryInterface<Person> {
   Future<Person> update(int id, Person person) async {
     final uri = Uri.parse('$endpoint/$id');
 
-    Response response = await http.put(
+    final response = await client.put(
       uri,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(person.toJson()),

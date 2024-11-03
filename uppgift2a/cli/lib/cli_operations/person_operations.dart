@@ -9,19 +9,32 @@ PersonRepository repository = PersonRepository();
 
 class PersonOperations {
   static Future create() async {
-    print('Enter name: ');
-    var nameInput = stdin.readLineSync();
+    // Prompt for name and SSN
+    final name = _promptForInput('Enter name: ');
+    final ssn = _promptForInput('Enter SSN: ');
 
-    print('Enter SSN: ');
-    var ssnInput = stdin.readLineSync();
-    if (Validator.isString(nameInput) && Validator.isValidSSN(ssnInput)) {
-      Person person = Person(name: nameInput!, ssn: ssnInput!);
-      print("call repo for create on cli/repositories/person_repository");
+    // Create a Person instance with the provided input
+    final person = Person(name: name, ssn: ssn);
+
+    // Validate input
+    if (isInputValid(person.name, person.ssn)) {
+      print(
+          "Calling repository to create person in cli/repositories/person_repository");
       await repository.create(person);
       print('Person created');
     } else {
       print('Invalid input');
     }
+  }
+
+  // Validation method for name and SSN (made public for testing)
+  static bool isInputValid(String? name, String? ssn) {
+    return Validator.isString(name) && Validator.isValidSSN(ssn);
+  }
+
+  static String _promptForInput(String prompt) {
+    print(prompt);
+    return stdin.readLineSync() ?? '';
   }
 
   static Future list() async {
@@ -53,37 +66,6 @@ class PersonOperations {
       print('Invalid input');
     }
   }
-
-  // static Future _updateSSN(Person person) async {
-  //   print('Enter new SSN: ');
-  //   var ssn = stdin.readLineSync();
-
-  //   if (Validator.isString(ssn)) {
-  //     person.ssn = ssn!;
-  //     await repository.update(person.id, person);
-  //     print('SSN updated');
-  //   } else {
-  //     print('Invalid input');
-  //   }
-  // }
-
-  // static Future _removeItemsFromPerson(Person person) async {
-  //   print('Pick an item to remove: ');
-  //   for (int i = 0; i < person.items.length; i++) {
-  //     print('${i + 1}. ${person.items[i].description}');
-  //   }
-
-  //   String? input = stdin.readLineSync();
-
-  //   if (Validator.isIndex(input, person.items)) {
-  //     int index = int.parse(input!) - 1;
-  //     person.items.removeAt(index);
-  //     await repository.update(person.id, person);
-  //     print('Item removed from person');
-  //   } else {
-  //     print('Invalid input');
-  //   }
-  // }
 
   static Future delete() async {
     print('Pick an index to delete: ');
