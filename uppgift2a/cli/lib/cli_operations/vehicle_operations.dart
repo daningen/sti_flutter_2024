@@ -13,6 +13,16 @@ class VehicleOperations {
     print('Enter license plate: ');
     var licensePlate = stdin.readLineSync();
 
+    // Check if the license plate already exists
+    List<Vehicle> allVehicles = await vehicleRepo.getAll();
+    bool licensePlateExists =
+        allVehicles.any((v) => v.licensePlate == licensePlate);
+    if (licensePlateExists) {
+      print(
+          'A vehicle with this license plate already exists. Please enter a unique license plate.');
+      return; // Exit the method early if a duplicate is found
+    }
+
     print('Enter vehicle type (e.g., car, motorcycle): ');
     var vehicleType = stdin.readLineSync();
 
@@ -43,9 +53,7 @@ class VehicleOperations {
       );
       vehicle.owner.target = selectedOwner;
 
-      print(
-          // Print vehicle data before sending
-          'Data to be sent to server (Create): ${vehicle.toJson()}');
+      print('Data to be sent to server (Create): ${vehicle.toJson()}');
 
       try {
         await vehicleRepo.create(vehicle);
