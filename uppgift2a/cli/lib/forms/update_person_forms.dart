@@ -15,7 +15,8 @@ class UpdatePersonForm {
       print('1. Update name');
       print('2. Update SSN');
       // print('3. Add items to person');
-      print('4. Remove items from person');
+      // print("in updatefooorrrrmmmm");
+      // print('4. Remove items from person');
       print('5. Exit update');
 
       var input = stdin.readLineSync();
