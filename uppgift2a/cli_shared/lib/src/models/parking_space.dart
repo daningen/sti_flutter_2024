@@ -6,8 +6,7 @@ class ParkingSpace {
   int id;
 
   String address;
-  int pricePerHour; // Use 'int' instead of 'double' for consistency.
-
+  int pricePerHour;
   ParkingSpace(
       {required this.address, required this.pricePerHour, this.id = 0});
 

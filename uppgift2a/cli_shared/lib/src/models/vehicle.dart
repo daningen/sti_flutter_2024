@@ -17,7 +17,6 @@ class Vehicle {
     this.id = 0,
   }) : owner = ToOne<Person>();
 
-  // Method to set the owner after creation
   void setOwner(Person person) {
     owner.target = person;
   }

@@ -9,11 +9,11 @@ PersonRepository repository = PersonRepository();
 
 class PersonOperations {
   static Future create() async {
-    // Prompt for name and SSN
+    // Prompt input
     final name = _promptForInput('Enter name: ');
     final ssn = _promptForInput('Enter SSN: ');
 
-    // Create a Person instance with the provided input
+    // Create a Person instance
     final person = Person(name: name, ssn: ssn);
 
     // Validate input
@@ -27,7 +27,7 @@ class PersonOperations {
     }
   }
 
-  // Validation method for name and SSN (made public for testing)
+  // Validation
   static bool isInputValid(String? name, String? ssn) {
     return Validator.isString(name) && Validator.isValidSSN(ssn);
   }

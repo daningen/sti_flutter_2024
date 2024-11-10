@@ -227,7 +227,7 @@ class ParkingOperations {
       }
 
       int index = int.parse(input!) - 1;
-      await repository.stop(allParkings[index].id); // Updated method to stop
+      await repository.stop(allParkings[index].id);
       print('Parking session stopped successfully.');
     } catch (e) {
       print('Failed to stop parking: $e');

@@ -6,7 +6,7 @@ import 'package:shelf_router/shelf_router.dart';
 
 VehicleRepository repo = VehicleRepository();
 
-// Create a new vehicle
+// Create
 Future<Response> postVehicleHandler(Request request) async {
   try {
     final data = await request.readAsString();
@@ -48,7 +48,7 @@ Future<Response> getVehiclesHandler(Request request) async {
   }
 }
 
-// Get a specific vehicle by ID
+// Get by ID
 Future<Response> getVehicleHandler(Request request) async {
   try {
     final idStr = request.params["id"];
@@ -77,7 +77,7 @@ Future<Response> getVehicleHandler(Request request) async {
   }
 }
 
-// Update a specific vehicle by ID
+// Update
 Future<Response> updateVehicleHandler(Request request) async {
   try {
     final idStr = request.params["id"];
@@ -103,7 +103,7 @@ Future<Response> updateVehicleHandler(Request request) async {
   }
 }
 
-// Delete a specific vehicle by ID
+// Delete by ID
 Future<Response> deleteVehicleHandler(Request request) async {
   try {
     final idStr = request.params["id"];

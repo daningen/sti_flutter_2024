@@ -8,8 +8,10 @@ class Parking {
   @Id()
   int id;
 
-  final ToOne<Vehicle> vehicle; // Relation to Vehicle
-  final ToOne<ParkingSpace> parkingSpace; // Relation to ParkingSpace
+  final ToOne<Vehicle>
+      vehicle; // each parking can be related to only on vehicle , not sure how this works
+  final ToOne<ParkingSpace>
+      parkingSpace; //each parking can be related to only one parking space, is this enforced?
   final DateTime startTime;
   DateTime? endTime;
 
@@ -20,13 +22,11 @@ class Parking {
   })  : vehicle = ToOne<Vehicle>(),
         parkingSpace = ToOne<ParkingSpace>();
 
-  // Method to set the vehicle and parking space after object creation
   void setDetails(Vehicle vehicle, ParkingSpace parkingSpace) {
     this.vehicle.target = vehicle;
     this.parkingSpace.target = parkingSpace;
   }
 
-  // Method to end the parking session by setting the end time
   void endParkingSession() {
     endTime = DateTime.now();
   }
@@ -35,10 +35,9 @@ class Parking {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'vehicle':
-          vehicle.target?.toJson(), // Convert vehicle to JSON if available
-      'parkingSpace': parkingSpace.target
-          ?.toJson(), // Convert parking space to JSON if available
+      'vehicle': vehicle.target?.toJson(), // Convert to JSON if available
+      'parkingSpace':
+          parkingSpace.target?.toJson(), // convert to JSON if available
       'startTime': startTime.toIso8601String(),
       'endTime': endTime?.toIso8601String(),
     };
@@ -52,7 +51,6 @@ class Parking {
       id: json['id'] ?? 0,
     );
 
-    // Set the vehicle and parking space from JSON if available
     if (json['vehicle'] != null) {
       parking.vehicle.target = Vehicle.fromJson(json['vehicle']);
     }

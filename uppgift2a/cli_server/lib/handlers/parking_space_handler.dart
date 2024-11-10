@@ -132,20 +132,14 @@ Future<Response> deleteParkingSpaceHandler(Request request) async {
   }
 }
 
-// Router configuration for parking space endpoints
+// Router configuration
 Router getParkingSpaceRouter() {
   final router = Router();
 
-  router.post(
-      '/parking_spaces', postParkingSpaceHandler); // create a parking space
-  router.get(
-      '/parking_spaces', getParkingSpacesHandler); // get all parking spaces
-  router.get('/parking_spaces/<id>',
-      getParkingSpaceHandler); // get specific parking space
-  router.put('/parking_spaces/<id>',
-      updateParkingSpaceHandler); // update specific parking space
-  router.delete('/parking_spaces/<id>',
-      deleteParkingSpaceHandler); // delete specific parking space
-
+  router.post('/parking_spaces', postParkingSpaceHandler);
+  router.get('/parking_spaces', getParkingSpacesHandler);
+  router.get('/parking_spaces/<id>', getParkingSpaceHandler);
+  router.put('/parking_spaces/<id>', updateParkingSpaceHandler);
+  router.delete('/parking_spaces/<id>', deleteParkingSpaceHandler);
   return router;
 }

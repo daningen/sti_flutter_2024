@@ -2,12 +2,11 @@ import 'dart:convert';
 import 'package:cli_server/repositories/parking_repository.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
-import 'package:cli_shared/cli_shared.dart'; // Assuming this contains the Parking model
+import 'package:cli_shared/cli_shared.dart';
 
-// Mock repository or use actual repository if available
 final parkingRepository = ParkingRepository();
 
-// Get all parking sessions
+// Get
 Future<Response> getAllParkingsHandler(Request req) async {
   try {
     List<Parking> allParkings = await parkingRepository.getAll();
@@ -22,7 +21,7 @@ Future<Response> getAllParkingsHandler(Request req) async {
   }
 }
 
-// Add a new parking session
+// Add
 Future<Response> addParkingHandler(Request request) async {
   try {
     final payload = await request.readAsString();
@@ -38,7 +37,7 @@ Future<Response> addParkingHandler(Request request) async {
   }
 }
 
-// Get a specific parking session by ID
+// Get by ID
 Future<Response> getParkingByIdHandler(Request request) async {
   final id = int.tryParse(request.params['id']!);
   if (id == null) {
@@ -60,7 +59,7 @@ Future<Response> getParkingByIdHandler(Request request) async {
   }
 }
 
-// Update a parking session by ID
+// Update by ID
 Future<Response> updateParkingHandler(Request request) async {
   final id = int.tryParse(request.params['id']!);
   if (id == null) {
@@ -91,35 +90,8 @@ Future<Response> updateParkingHandler(Request request) async {
     );
   }
 }
-// Future<Response> updateParkingByIdHandler(Request request) async {
-//   final id = int.tryParse(request.params['id']!);
-//   if (id == null) {
-//     return Response.badRequest(body: jsonEncode({'error': 'Invalid ID'}));
-//   }
 
-//   try {
-//     final payload = await request.readAsString();
-//     final data = jsonDecode(payload);
-//     final existingParking = await parkingRepository.getById(id);
-
-//     if (existingParking == null) {
-//       return Response.notFound(jsonEncode({'error': 'Parking not found'}),
-//           headers: {'Content-Type': 'application/json'});
-//     }
-
-//     final updatedParking = Parking.fromJson(data);
-//     updatedParking.id = id; // Retain the same ID
-//     await parkingRepository.update(id, updatedParking);
-//     return Response.ok(jsonEncode({'message': 'Parking updated successfully'}),
-//         headers: {'Content-Type': 'application/json'});
-//   } catch (e) {
-//     return Response.internalServerError(
-//         body: jsonEncode({'error': 'Failed to update parking'}),
-//         headers: {'Content-Type': 'application/json'});
-//   }
-// }
-
-// Delete a parking session by ID
+// Delete by ID
 Future<Response> deleteParkingHandler(Request request) async {
   final id = int.tryParse(request.params['id']!);
   if (id == null) {

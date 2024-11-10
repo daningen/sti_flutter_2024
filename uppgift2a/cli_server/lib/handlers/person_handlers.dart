@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:cli_server/repositories/person_repository.dart';
 import 'package:cli_shared/cli_shared.dart';
@@ -72,6 +73,8 @@ Future<Response> getPersonHandler(Request request) async {
 
 Future<Response> updatePersonHandler(Request request) async {
   try {
+    print("Update handler called.");
+    await stdout.flush();
     final idStr = request.params["id"];
     if (idStr == null) return Response.badRequest(body: 'ID is required');
 
@@ -80,16 +83,33 @@ Future<Response> updatePersonHandler(Request request) async {
 
     final data = await request.readAsString();
     final json = jsonDecode(data);
-    var person = Person.fromJson(json);
+    var person = await repo.getById(id);
+
+    if (person == null) {
+      return Response.notFound(
+        jsonEncode({'error': 'Person not found'}),
+        headers: {'Content-Type': 'application/json'},
+      );
+    }
+
+    // Update only the fields that are provided in the request
+    if (json.containsKey('name')) {
+      person.name = json['name'];
+    }
+    if (json.containsKey('ssn')) {
+      person.ssn = json['ssn'];
+    }
 
     person = await repo.update(id, person);
+
     return Response.ok(
       jsonEncode(person.toJson()),
       headers: {'Content-Type': 'application/json'},
     );
   } catch (e) {
     return Response.internalServerError(
-      body: jsonEncode({'error': 'Failed to update person'}),
+      body: jsonEncode(
+          {'error': 'Failed to update person', 'details': e.toString()}),
       headers: {'Content-Type': 'application/json'},
     );
   }
@@ -121,7 +141,7 @@ Future<Response> deletePersonHandler(Request request) async {
   }
 }
 
-// Add or update items for a person
+// Add or update items for a person (not used)
 Future<Response> addItemToPersonHandler(Request request) async {
   try {
     final idStr = request.params["id"];
@@ -156,7 +176,7 @@ Future<Response> addItemToPersonHandler(Request request) async {
   }
 }
 
-// Remove an item from a person
+// Remove an item (not using this now)
 Future<Response> removeItemFromPersonHandler(Request request) async {
   try {
     final idStr = request.params["id"];

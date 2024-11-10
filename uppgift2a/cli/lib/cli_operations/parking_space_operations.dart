@@ -24,7 +24,7 @@ class ParkingSpaceOperations {
       );
 
       try {
-        // Use the repository to create the parking space
+        // create p-space
         await repository.create(parkingSpace);
         print('Parking space created successfully.');
       } catch (e) {
