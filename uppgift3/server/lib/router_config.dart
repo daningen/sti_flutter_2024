@@ -1,11 +1,11 @@
-import 'package:cli_server/handlers/bag_handlers.dart';
-import 'package:cli_server/handlers/item_handlers.dart';
-import 'package:cli_server/handlers/person_handlers.dart';
-import 'package:cli_server/handlers/vehicle_handlers.dart';
-import 'package:cli_server/handlers/parking_space_handler.dart';
-import 'package:cli_server/handlers/parking_handlers.dart';
+import 'package:server/handlers/bag_handlers.dart';
+import 'package:server/handlers/item_handlers.dart';
+import 'package:server/handlers/person_handlers.dart';
+import 'package:server/handlers/vehicle_handlers.dart';
+import 'package:server/handlers/parking_space_handler.dart';
+import 'package:server/handlers/parking_handlers.dart';
+import 'package:shared/objectbox.g.dart';
 
-import 'package:cli_shared/cli_shared.dart';
 import 'package:shelf_router/shelf_router.dart';
 
 class ServerConfig {

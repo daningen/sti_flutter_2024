@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:cli/repositories/item_repository.dart';
 import 'package:cli/utils/validator.dart';
-import 'package:cli_shared/cli_shared.dart';
-
+import 'package:client_repositories/async_http_repos.dart';
+import 'package:shared/shared.dart';
+ 
 ItemRepository repository = ItemRepository();
 
 class ItemsOperations {

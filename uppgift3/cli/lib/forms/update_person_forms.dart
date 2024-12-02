@@ -2,7 +2,7 @@
 
 import 'dart:io';
 import 'package:cli/utils/validator.dart';
-import 'package:cli_shared/cli_shared.dart';
+import 'package:shared/shared.dart';
 
 class UpdatePersonForm {
   static Future<void> showUpdateOptions(Person person) async {

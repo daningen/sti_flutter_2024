@@ -1,11 +1,11 @@
-import 'package:cli/repositories/person_repository.dart';
+// import 'package:cli/repositories/person_repository.dart';
 
-class PersonOperations {
-  final PersonRepository repository;
+// class PersonOperations {
+//   final PersonRepository repository;
 
-  PersonOperations(this.repository);
+//   PersonOperations(this.repository);
 
-  Future create() async {
-    // Use `repository.create()` directly
-  }
-}
+//   Future create() async {
+//     // Use `repository.create()` directly
+//   }
+// }

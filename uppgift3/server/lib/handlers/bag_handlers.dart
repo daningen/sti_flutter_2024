@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:cli_server/repositories/bag_repository.dart';
-import 'package:cli_shared/cli_shared.dart';
+import 'package:server/repositories/bag_repository.dart';
+import 'package:shared/shared.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 
@@ -30,6 +30,8 @@ Future<Response> getBagsHandler(Request request) async {
     headers: {'Content-Type': 'application/json'},
   );
 }
+
+extension on Object? {}
 
 Future<Response> getBagHandler(Request request) async {
   String? idStr = request.params["id"];

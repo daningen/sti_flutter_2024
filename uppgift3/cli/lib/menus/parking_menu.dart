@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:cli/cli_operations/parking_operations.dart';
+import 'package:cli/cli_operations/async_http_repos/parking_operations.dart';
 import 'package:cli/utils/console.dart';
 
 class ParkingMenu {

@@ -1,5 +1,9 @@
 import 'package:admin_app/views/example_view.dart';
-import 'package:admin_app/views/parkings_view.dart';
+import 'package:admin_app/views/items_view.dart';
+import 'package:admin_app/views/parking_space_view.dart';
+
+import 'package:admin_app/views/parking_view.dart';
+
 import 'package:flutter/material.dart';
 
 void main() {
@@ -16,11 +20,11 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false, // Debug banner disabled
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 122, 197, 125),
+          seedColor: const Color.fromARGB(255, 180, 245, 126),
         ),
         useMaterial3: true, // Ensures Material 3 is used
         scaffoldBackgroundColor:
-            const Color.fromARGB(255, 212, 236, 248), // Light background color
+            const Color.fromARGB(255, 71, 208, 91), // Light background color
       ),
       home: const NavRailView(),
     );
@@ -49,17 +53,24 @@ class _NavRailViewState extends State<NavRailView> {
       label: Text('Example'),
     ),
     NavigationRailDestination(
-      icon: Icon(Icons.local_parking), // Icon for ParkingView
-      selectedIcon: Icon(Icons.local_parking, color: Colors.purple),
+      icon: Icon(Icons.car_repair_sharp), // Icon for ParkingView
+      selectedIcon: Icon(Icons.car_repair_sharp, color: Colors.amberAccent),
       label: Text('Parkings'), // Label for ParkingView
+    ),
+    NavigationRailDestination(
+      icon: Icon(Icons.local_parking), // Icon for Parking space
+      selectedIcon:
+          Icon(Icons.local_parking, color: Color.fromARGB(255, 9, 144, 13)),
+      label: Text('Parking space'), // Label for ParkingView
+      
     ),
   ];
 
   final views = [
-    // Replace with actual ItemsView when implemented
-    const ExampleView(index: 1),
+    const ItemsView(index: 1),
     const ExampleView(index: 2),
-    const ParkingsView(index: 1)
+    const ParkingView(),
+    const ParkingSpacesView(index: 3)
   ];
 
   @override
@@ -75,7 +86,7 @@ class _NavRailViewState extends State<NavRailView> {
             selectedIndex: _selectedIndex,
             onDestinationSelected: (int index) {
               setState(() {
-                _selectedIndex = index;
+                _selectedIndex = index; //index is set when choosing a
               });
             },
             labelType: NavigationRailLabelType.all,
@@ -85,8 +96,8 @@ class _NavRailViewState extends State<NavRailView> {
           // Main content view
           Expanded(
             child: Container(
-              color: const Color.fromARGB(255, 212, 236, 248), // Match theme
-              child: views[_selectedIndex],
+              color: const Color.fromARGB(255, 109, 196, 239), // Match theme
+              child: views[_selectedIndex], //showing the rest of the page
             ),
           ),
         ],

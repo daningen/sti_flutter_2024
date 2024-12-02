@@ -1,11 +1,10 @@
 import 'dart:io';
 
-import 'package:cli/repositories/parking_repository.dart';
-import 'package:cli/repositories/parking_space_repository.dart';
-import 'package:cli/repositories/vehicle_repository.dart';
 import 'package:cli/utils/date_time_formatter.dart';
 import 'package:cli/utils/validator.dart';
-import 'package:cli_shared/cli_shared.dart';
+import 'package:client_repositories/async_http_repos.dart';
+
+import 'package:shared/shared.dart';
 
 ParkingRepository repository = ParkingRepository();
 ParkingSpaceRepository parkingSpaceRepository = ParkingSpaceRepository();

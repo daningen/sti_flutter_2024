@@ -1,8 +1,9 @@
 import 'dart:io';
 
-import 'package:cli/repositories/parking_space_repository.dart';
 import 'package:cli/utils/validator.dart';
-import 'package:cli_shared/cli_shared.dart';
+
+import 'package:client_repositories/async_http_repos.dart';
+import 'package:shared/shared.dart';
 // import 'package:http/http.dart' as http;
 
 ParkingSpaceRepository repository = ParkingSpaceRepository();

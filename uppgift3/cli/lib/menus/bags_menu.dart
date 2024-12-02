@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:cli/utils/console.dart';
 
-import '../cli_operations/bags_operations.dart';
+import '../cli_operations/async_http_repos/bags_operations.dart';
 
 class BagsMenu {
   static Future prompt() async {

@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:cli/cli_operations/person_operations.dart';
+import 'package:cli/cli_operations/async_http_repos/person_operations.dart';
 import 'package:cli/utils/console.dart';
 
 class PersonMenu {

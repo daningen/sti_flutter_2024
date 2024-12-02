@@ -9,8 +9,10 @@ environment:
 
 dependencies:
   http: ^1.2.2
-  cli_shared:
+  shared:
     path: '../shared'
+  client_repositories: 
+    path: '../client_repositories'
   # Optional, add if you need ObjectBox on the client side
   objectbox: ^4.0.3 # or the latest version
   # Optional, add if you need date formatting

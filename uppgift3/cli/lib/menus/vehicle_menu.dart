@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:cli/cli_operations/vehicle_operations.dart';
+import 'package:cli/cli_operations/async_http_repos/vehicle_operations.dart';
 import 'package:cli/utils/console.dart';
 
 class VehicleMenu {

@@ -1,7 +1,9 @@
 import 'dart:convert';
-import 'package:cli/config.dart';
-import 'package:cli_shared/cli_shared.dart';
+
 import 'package:http/http.dart' as http;
+import 'package:shared/shared.dart';
+
+import '../../config.dart';
 
 class ParkingRepository implements RepositoryInterface<Parking> {
   final String endpoint = Config.parkingsEndpoint;

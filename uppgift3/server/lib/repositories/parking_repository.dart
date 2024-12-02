@@ -1,4 +1,4 @@
-import 'package:cli_shared/cli_shared.dart';
+import 'package:shared/shared.dart';
 
 class ParkingRepository implements RepositoryInterface<Parking> {
   final List<Parking> _parkingList =

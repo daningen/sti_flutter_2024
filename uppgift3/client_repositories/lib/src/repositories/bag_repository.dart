@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'package:cli_shared/cli_shared.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
+import 'package:shared/shared.dart';
 
 class BagRepository implements RepositoryInterface<Bag> {
   @override

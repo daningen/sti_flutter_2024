@@ -1,8 +1,9 @@
 import 'dart:convert';
-import 'package:cli_server/repositories/parking_repository.dart';
+
+import 'package:server/repositories/parking_repository.dart';
+import 'package:shared/shared.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
-import 'package:cli_shared/cli_shared.dart';
 
 final parkingRepository = ParkingRepository();
 

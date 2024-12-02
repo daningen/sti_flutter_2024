@@ -158,32 +158,32 @@ final _entities = <obx_int.ModelEntity>[
       relations: <obx_int.ModelRelation>[],
       backlinks: <obx_int.ModelBacklink>[]),
   obx_int.ModelEntity(
-      id: const obx_int.IdUid(9, 4611544989560169149),
+      id: const obx_int.IdUid(10, 3744316781313027710),
       name: 'Vehicle',
-      lastPropertyId: const obx_int.IdUid(4, 84680324938044488),
+      lastPropertyId: const obx_int.IdUid(4, 5480796796044026283),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(1, 4364822756144415362),
+            id: const obx_int.IdUid(1, 7255429291231494172),
             name: 'id',
             type: 6,
             flags: 1),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(2, 8401002822898253351),
+            id: const obx_int.IdUid(2, 7995080852447567522),
             name: 'licensePlate',
             type: 9,
             flags: 0),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(3, 5634770877231478866),
+            id: const obx_int.IdUid(3, 851170152724251543),
             name: 'vehicleType',
             type: 9,
             flags: 0),
         obx_int.ModelProperty(
-            id: const obx_int.IdUid(4, 84680324938044488),
+            id: const obx_int.IdUid(4, 5480796796044026283),
             name: 'ownerId',
             type: 11,
             flags: 520,
-            indexId: const obx_int.IdUid(6, 7374945224662159398),
+            indexId: const obx_int.IdUid(7, 7027168581809966975),
             relationTarget: 'Person')
       ],
       relations: <obx_int.ModelRelation>[],
@@ -224,14 +224,15 @@ obx.Store openStore(
 obx_int.ModelDefinition getObjectBoxModel() {
   final model = obx_int.ModelInfo(
       entities: _entities,
-      lastEntityId: const obx_int.IdUid(9, 4611544989560169149),
-      lastIndexId: const obx_int.IdUid(6, 7374945224662159398),
+      lastEntityId: const obx_int.IdUid(10, 3744316781313027710),
+      lastIndexId: const obx_int.IdUid(7, 7027168581809966975),
       lastRelationId: const obx_int.IdUid(0, 0),
       lastSequenceId: const obx_int.IdUid(0, 0),
       retiredEntityUids: const [
         6539104271398186167,
         1555128805293743242,
-        9175493719539538660
+        9175493719539538660,
+        4611544989560169149
       ],
       retiredIndexUids: const [],
       retiredPropertyUids: const [
@@ -252,7 +253,11 @@ obx_int.ModelDefinition getObjectBoxModel() {
         4576736229213416591,
         1748614264573016617,
         4059034261802048682,
-        3461774580256256743
+        3461774580256256743,
+        4364822756144415362,
+        8401002822898253351,
+        5634770877231478866,
+        84680324938044488
       ],
       retiredRelationUids: const [],
       modelVersion: 5,

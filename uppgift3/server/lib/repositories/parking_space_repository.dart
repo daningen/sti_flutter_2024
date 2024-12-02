@@ -1,5 +1,7 @@
-import 'package:cli_server/router_config.dart';
-import 'package:cli_shared/cli_shared.dart';
+import 'package:shared/objectbox.g.dart';
+import 'package:shared/shared.dart';
+
+import '../router_config.dart';
 
 class ParkingSpaceRepository implements RepositoryInterface<ParkingSpace> {
   // ObjectBox store to manage ParkingSpace entities.

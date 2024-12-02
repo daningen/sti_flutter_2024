@@ -1,6 +1,6 @@
-// lib/models/vehicle.dart
-
-import 'package:shared/cli_shared.dart';
+import 'package:shared/objectbox.g.dart';
+import 'package:shared/shared.dart';
+import 'package:objectbox/objectbox.dart';
 
 @Entity()
 class Vehicle {

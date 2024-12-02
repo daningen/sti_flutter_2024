@@ -1,5 +1,6 @@
-import 'package:cli_server/router_config.dart';
-import 'package:cli_shared/cli_shared.dart';
+import 'package:server/router_config.dart';
+import 'package:shared/objectbox.g.dart';
+import 'package:shared/shared.dart';
 
 class BagRepository implements RepositoryInterface<Bag> {
   Box<Bag> bagBox = ServerConfig.instance.store.box<Bag>();
