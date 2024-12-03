@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true, // Ensures Material 3 is used
         scaffoldBackgroundColor:
-            const Color.fromARGB(255, 179, 206, 183), // Light background color
+            const Color.fromARGB(255, 102, 126, 105), // Light background color
       ),
       home: const NavRailView(),
     );
@@ -54,13 +54,14 @@ class _NavRailViewState extends State<NavRailView> {
     ),
     NavigationRailDestination(
       icon: Icon(Icons.car_repair_sharp), // Icon for ParkingView
-      selectedIcon: Icon(Icons.car_repair_sharp, color: Colors.amberAccent),
+      selectedIcon: Icon(Icons.car_repair_sharp,
+          color: Color.fromARGB(255, 242, 153, 45)),
       label: Text('Parkings'), // Label for ParkingView
     ),
     NavigationRailDestination(
       icon: Icon(Icons.local_parking), // Icon for Parking space
       selectedIcon:
-          Icon(Icons.local_parking, color: Color.fromARGB(255, 9, 144, 13)),
+          Icon(Icons.local_parking, color: Color.fromARGB(255, 242, 153, 45)),
       label: Text('Parking space'), // Label for ParkingView
     ),
   ];
@@ -76,12 +77,12 @@ class _NavRailViewState extends State<NavRailView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor:
-          const Color.fromARGB(255, 191, 213, 224), // Explicit background color
+          const Color.fromARGB(255, 154, 179, 148), // Explicit background color
       body: Row(
         children: <Widget>[
           NavigationRail(
             backgroundColor:
-                const Color.fromRGBO(200, 220, 230, 1), // Match theme
+                const Color.fromARGB(255, 167, 188, 162), // Match theme
             selectedIndex: _selectedIndex,
             onDestinationSelected: (int index) {
               setState(() {
