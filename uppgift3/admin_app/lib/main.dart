@@ -20,11 +20,11 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false, // Debug banner disabled
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 180, 245, 126),
+          seedColor: const Color.fromARGB(255, 159, 185, 138),
         ),
         useMaterial3: true, // Ensures Material 3 is used
         scaffoldBackgroundColor:
-            const Color.fromARGB(255, 71, 208, 91), // Light background color
+            const Color.fromARGB(255, 179, 206, 183), // Light background color
       ),
       home: const NavRailView(),
     );
@@ -62,7 +62,6 @@ class _NavRailViewState extends State<NavRailView> {
       selectedIcon:
           Icon(Icons.local_parking, color: Color.fromARGB(255, 9, 144, 13)),
       label: Text('Parking space'), // Label for ParkingView
-      
     ),
   ];
 
@@ -82,7 +81,7 @@ class _NavRailViewState extends State<NavRailView> {
         children: <Widget>[
           NavigationRail(
             backgroundColor:
-                const Color.fromARGB(255, 200, 220, 230), // Match theme
+                const Color.fromRGBO(200, 220, 230, 1), // Match theme
             selectedIndex: _selectedIndex,
             onDestinationSelected: (int index) {
               setState(() {
