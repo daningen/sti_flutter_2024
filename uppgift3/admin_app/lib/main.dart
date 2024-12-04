@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Tjoho Managing App',
+      title: 'Managing App',
       debugShowCheckedModeBanner: false, // Debug banner disabled
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
@@ -50,7 +50,7 @@ class _NavRailViewState extends State<NavRailView> {
     NavigationRailDestination(
       icon: Icon(Icons.bookmark_border),
       selectedIcon: Icon(Icons.book),
-      label: Text('Example'),
+      label: Text('Statistics'),
     ),
     NavigationRailDestination(
       icon: Icon(Icons.car_repair_sharp), // Icon for ParkingView
@@ -96,7 +96,7 @@ class _NavRailViewState extends State<NavRailView> {
           // Main content view
           Expanded(
             child: Container(
-              color: const Color.fromARGB(255, 109, 196, 239), // Match theme
+              color: const Color.fromARGB(255, 200, 204, 207), // Match theme
               child: views[_selectedIndex], //showing the rest of the page
             ),
           ),
