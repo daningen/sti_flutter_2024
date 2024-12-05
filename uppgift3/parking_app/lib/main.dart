@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:parking_app/views/user_page.dart';
+import 'package:provider/provider.dart';
+import 'package:parking_app/auth_service.dart';  
+import 'package:parking_app/views/login_view.dart';
+import 'package:go_router/go_router.dart';
 import 'views/start_page.dart';
 import 'views/vehicles_page.dart';
 import 'views/parking_page.dart';
 import 'views/parking_spaces_page.dart';
-// import 'views/user_page.dart';
 
 void main() {
-  runApp(ParkingApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => AuthService(),
+      child: ParkingApp(),
+    ),
+  );
 }
 
 class ParkingApp extends StatelessWidget {
@@ -20,8 +27,12 @@ class ParkingApp extends StatelessWidget {
   }
 
   final GoRouter _router = GoRouter(
-    initialLocation: '/',
+    initialLocation: '/login', // Start with the login page
     routes: [
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => const LoginView(),
+      ),
       GoRoute(
         path: '/',
         builder: (context, state) => const StartPage(),
@@ -40,9 +51,8 @@ class ParkingApp extends StatelessWidget {
       ),
       GoRoute(
         path: '/user-page',
-        builder: (context, state) => const UserPage(),
+        builder: (context, state) => UserPage(),
       ),
-      // Add other routes for your app
     ],
   );
 

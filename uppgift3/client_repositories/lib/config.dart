@@ -1,5 +1,8 @@
+import 'dart:io';
+
 class Config {
-  static const String baseUrl = 'http://localhost:8080';
+  static final String hostname = Platform.isAndroid ? "10.0.2.2" : "localhost";
+  static final String baseUrl = 'http://$hostname:8080';
 
   // Define endpoints
   static String get vehiclesEndpoint => '$baseUrl/vehicles';

@@ -13,11 +13,11 @@ class StartPage extends StatelessWidget {
         children: [
           ElevatedButton(
             onPressed: () => context.go('/user-page'),
-            child: const Text('Create User'),
+            child: const Text('Users'),
           ),
           ElevatedButton(
             onPressed: () => context.go('/my-vehicles'),
-            child: const Text('My Vehicles'),
+            child: const Text('Vehicles'),
           ),
           ElevatedButton(
             onPressed: () => context.go('/parking-spaces'),
