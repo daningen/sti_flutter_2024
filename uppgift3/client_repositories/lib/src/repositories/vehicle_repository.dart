@@ -7,11 +7,6 @@ import 'package:shared/shared.dart';
 import '../../config.dart';
 
 class VehicleRepository implements RepositoryInterface<Vehicle> {
-  // Define the base URL for the server
-  // final String baseUrl = 'http://localhost:8080';
-  // Define a getter for the vehicles endpoint
-
-  // Use Config endpoints
   final String endpoint = Config.vehiclesEndpoint;
 
   @override

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:parking_app/views/user_page.dart';
+import 'package:parking_app/views/vehicles_page.dart';
 import 'package:provider/provider.dart';
-import 'package:parking_app/auth_service.dart';  
+import 'package:parking_app/auth_service.dart';
 import 'package:parking_app/views/login_view.dart';
 import 'package:go_router/go_router.dart';
 import 'views/start_page.dart';
-import 'views/vehicles_page.dart';
 import 'views/parking_page.dart';
 import 'views/parking_spaces_page.dart';
 
@@ -39,7 +39,7 @@ class ParkingApp extends StatelessWidget {
       ),
       GoRoute(
         path: '/my-vehicles',
-        builder: (context, state) => const VehiclesPage(),
+        builder: (context, state) => const VehiclesView(),
       ),
       GoRoute(
         path: '/parking',
@@ -51,7 +51,7 @@ class ParkingApp extends StatelessWidget {
       ),
       GoRoute(
         path: '/user-page',
-        builder: (context, state) => UserPage(),
+        builder: (context, state) => const UserPage(),
       ),
     ],
   );
