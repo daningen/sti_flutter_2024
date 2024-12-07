@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:client_repositories/async_http_repos.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared/shared.dart'; // Ensure that the Vehicle and Person models are imported correctly
 
 class VehiclesView extends StatefulWidget {
@@ -223,7 +224,8 @@ class _VehiclesViewState extends State<VehiclesView> {
           FloatingActionButton(
             heroTag: 'home',
             onPressed: () {
-              Navigator.of(context).pop(); // Navigate back to the start page
+              // Navigator.of(context).pop(); // Navigate back to the start page
+              context.go('/'); // Navigate back to the start page
             },
             child: const Icon(Icons.home),
           ),

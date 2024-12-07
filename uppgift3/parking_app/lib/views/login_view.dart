@@ -12,6 +12,8 @@ class LoginView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final formKey = GlobalKey<FormState>();
+    final usernameController = TextEditingController();
+    final passwordController = TextEditingController();
     final usernameFocus = FocusNode();
     final passwordFocus = FocusNode();
     final authService = context.watch<AuthService>();
@@ -22,7 +24,10 @@ class LoginView extends StatelessWidget {
 
     save(BuildContext context) {
       if (formKey.currentState!.validate()) {
-        context.read<AuthService>().login().then((_) {
+        final username = usernameController.text.trim();
+        final password = passwordController.text.trim();
+
+        context.read<AuthService>().login(username, password).then((_) {
           if (context.read<AuthService>().status == AuthStatus.authenticated) {
             GoRouter.of(context).go('/'); // Redirect to start page if logged in
           }
@@ -47,6 +52,7 @@ class LoginView extends StatelessWidget {
                     style: Theme.of(context).textTheme.headlineLarge),
                 const SizedBox(height: 32),
                 TextFormField(
+                  controller: usernameController,
                   focusNode: usernameFocus,
                   enabled: authService.status != AuthStatus.authenticating,
                   decoration: const InputDecoration(
@@ -57,6 +63,7 @@ class LoginView extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
+                  controller: passwordController,
                   focusNode: passwordFocus,
                   obscureText: true,
                   enabled: authService.status != AuthStatus.authenticating,

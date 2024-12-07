@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:parking_app/auth_service.dart';
 import 'package:parking_app/views/login_view.dart';
 import 'package:go_router/go_router.dart';
-import 'views/start_page.dart';
+import 'views/home_page.dart';
 import 'views/parking_page.dart';
 import 'views/parking_spaces_page.dart';
 
@@ -23,6 +23,7 @@ class ParkingApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       routerConfig: _router,
+      debugShowCheckedModeBanner: false,
     );
   }
 
@@ -35,7 +36,7 @@ class ParkingApp extends StatelessWidget {
       ),
       GoRoute(
         path: '/',
-        builder: (context, state) => const StartPage(),
+        builder: (context, state) => const HomePage(),
       ),
       GoRoute(
         path: '/my-vehicles',
@@ -43,11 +44,11 @@ class ParkingApp extends StatelessWidget {
       ),
       GoRoute(
         path: '/parking',
-        builder: (context, state) => const ParkingPage(),
+        builder: (context, state) => const ParkingView(),
       ),
       GoRoute(
         path: '/parking-spaces',
-        builder: (context, state) => const ParkingSpacesPage(),
+        builder: (context, state) => const ParkingSpacesView(),
       ),
       GoRoute(
         path: '/user-page',
