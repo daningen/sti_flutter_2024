@@ -16,8 +16,6 @@ class ParkingView extends StatefulWidget {
 
 class _ParkingViewState extends State<ParkingView> {
   Future<List<Parking>> getParkings = ParkingRepository().getAll();
-  Future<List<ParkingSpace>> getAvailableParkingSpaces =
-      ParkingSpaceRepository().getAll();
   Future<List<Vehicle>> getUserVehicles = VehicleRepository().getAll();
 
   @override
@@ -98,7 +96,16 @@ class _ParkingViewState extends State<ParkingView> {
           FloatingActionButton(
             heroTag: 'addParking',
             onPressed: () async {
-              var parkingsSnapshot = await getParkings;
+              // Refresh parking spaces before opening dialog
+              var availableParkingSpaces =
+                  await ParkingSpaceRepository().getAll();
+              var parkingsSnapshot = await ParkingRepository().getAll();
+              availableParkingSpaces = availableParkingSpaces
+                  .where((p) => !parkingsSnapshot.any((parking) =>
+                      parking.parkingSpace.target?.id == p.id &&
+                      parking.endTime == null))
+                  .toList();
+
               var result = await showDialog<Map<String, dynamic>>(
                 context: context,
                 builder: (context) {
@@ -125,74 +132,52 @@ class _ParkingViewState extends State<ParkingView> {
                                     (v) => v.owner.target?.name == currentUser)
                                 .toList() ??
                             [];
-                        return FutureBuilder<List<ParkingSpace>>(
-                          future: getAvailableParkingSpaces,
-                          builder: (context, parkingSpaceSnapshot) {
-                            if (parkingSpaceSnapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const CircularProgressIndicator();
-                            }
 
-                            if (parkingSpaceSnapshot.hasError) {
-                              return Text(
-                                  'Error: ${parkingSpaceSnapshot.error}');
-                            }
-
-                            final parkingSpaces = parkingSpaceSnapshot.data
-                                    ?.where((p) => !parkingsSnapshot.any(
-                                        (parking) =>
-                                            parking.parkingSpace.target?.id ==
-                                                p.id &&
-                                            parking.endTime == null))
-                                    .toList() ??
-                                [];
-                            return Form(
-                              key: formKey,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  DropdownButtonFormField<Vehicle>(
-                                    decoration: const InputDecoration(
-                                        labelText: 'Select Vehicle'),
-                                    items: vehicles.map((vehicle) {
-                                      return DropdownMenuItem<Vehicle>(
-                                        value: vehicle,
-                                        child: Text(vehicle.licensePlate),
-                                      );
-                                    }).toList(),
-                                    onChanged: (value) {
-                                      selectedVehicle = value;
-                                    },
-                                    validator: (value) {
-                                      if (value == null) {
-                                        return 'Please select a vehicle';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                  DropdownButtonFormField<ParkingSpace>(
-                                    decoration: const InputDecoration(
-                                        labelText: 'Select Parking Space'),
-                                    items: parkingSpaces.map((space) {
-                                      return DropdownMenuItem<ParkingSpace>(
-                                        value: space,
-                                        child: Text(space.address),
-                                      );
-                                    }).toList(),
-                                    onChanged: (value) {
-                                      selectedParkingSpace = value;
-                                    },
-                                    validator: (value) {
-                                      if (value == null) {
-                                        return 'Please select a parking space';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ],
+                        return Form(
+                          key: formKey,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              DropdownButtonFormField<Vehicle>(
+                                decoration: const InputDecoration(
+                                    labelText: 'Select Vehicle'),
+                                items: vehicles.map((vehicle) {
+                                  return DropdownMenuItem<Vehicle>(
+                                    value: vehicle,
+                                    child: Text(vehicle.licensePlate),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  selectedVehicle = value;
+                                },
+                                validator: (value) {
+                                  if (value == null) {
+                                    return 'Please select a vehicle';
+                                  }
+                                  return null;
+                                },
                               ),
-                            );
-                          },
+                              DropdownButtonFormField<ParkingSpace>(
+                                decoration: const InputDecoration(
+                                    labelText: 'Select Parking Space'),
+                                items: availableParkingSpaces.map((space) {
+                                  return DropdownMenuItem<ParkingSpace>(
+                                    value: space,
+                                    child: Text(space.address),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  selectedParkingSpace = value;
+                                },
+                                validator: (value) {
+                                  if (value == null) {
+                                    return 'Please select a parking space';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ],
+                          ),
                         );
                       },
                     ),
