@@ -3,7 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:client_repositories/async_http_repos.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared/shared.dart'; // Ensure that the Vehicle and Person models are imported correctly
+import 'package:shared/shared.dart';
+import 'package:provider/provider.dart';
+import '../auth_service.dart';
 
 class VehiclesView extends StatefulWidget {
   const VehiclesView({super.key});
@@ -13,9 +15,16 @@ class VehiclesView extends StatefulWidget {
 }
 
 class _VehiclesViewState extends State<VehiclesView> {
-  Future<List<Vehicle>> getVehicles = VehicleRepository().getAll();
-  Future<List<Person>> getPersons =
-      PersonRepository().getAll(); // To fetch the list of owners
+  late Future<List<Vehicle>> getVehicles;
+  Future<List<Person>> getPersons = PersonRepository().getAll();
+
+  @override
+  void initState() {
+    super.initState();
+    final loggedInUser = context.read<AuthService>().username;
+    getVehicles = VehicleRepository().getAll().then((vehicles) =>
+        vehicles.where((v) => v.owner.target?.name == loggedInUser).toList());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,8 +36,7 @@ class _VehiclesViewState extends State<VehiclesView> {
         future: getVehicles,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-                child: CircularProgressIndicator()); // Loading spinner
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (snapshot.hasError) {
@@ -74,8 +82,7 @@ class _VehiclesViewState extends State<VehiclesView> {
                                   if (snapshot.connectionState ==
                                       ConnectionState.waiting) {
                                     return const Center(
-                                        child:
-                                            CircularProgressIndicator()); // Loading spinner
+                                        child: CircularProgressIndicator());
                                   }
 
                                   if (snapshot.hasError) {
@@ -178,10 +185,8 @@ class _VehiclesViewState extends State<VehiclesView> {
                             id: vehicle.id,
                           );
 
-                          // Set the selected owner for the vehicle
                           updatedVehicle.setOwner(result['owner']);
 
-                          // Update the vehicle using the repository
                           await VehicleRepository()
                               .update(vehicle.id, updatedVehicle);
 
@@ -190,9 +195,14 @@ class _VehiclesViewState extends State<VehiclesView> {
                                   content:
                                       Text('Vehicle updated successfully')));
 
-                          // Reload the list of vehicles
                           setState(() {
-                            getVehicles = VehicleRepository().getAll();
+                            final loggedInUser =
+                                context.read<AuthService>().username;
+                            getVehicles = VehicleRepository().getAll().then(
+                                (vehicles) => vehicles
+                                    .where((v) =>
+                                        v.owner.target?.name == loggedInUser)
+                                    .toList());
                           });
                         }
                       },
@@ -200,15 +210,44 @@ class _VehiclesViewState extends State<VehiclesView> {
                     IconButton(
                       icon: const Icon(Icons.delete),
                       onPressed: () async {
-                        await VehicleRepository().delete(vehicle.id);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Vehicle deleted successfully')));
+                        final confirmDelete = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Confirm Deletion'),
+                            content: const Text(
+                                'Are you sure you want to delete this vehicle?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(false),
+                                child: const Text('Cancel'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(true),
+                                child: const Text('Delete'),
+                              ),
+                            ],
+                          ),
+                        );
 
-                        // Reload vehicles after deletion
-                        setState(() {
-                          getVehicles = VehicleRepository().getAll();
-                        });
+                        if (confirmDelete == true) {
+                          await VehicleRepository().delete(vehicle.id);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                      Text('Vehicle deleted successfully')));
+
+                          setState(() {
+                            final loggedInUser =
+                                context.read<AuthService>().username;
+                            getVehicles = VehicleRepository().getAll().then(
+                                (vehicles) => vehicles
+                                    .where((v) =>
+                                        v.owner.target?.name == loggedInUser)
+                                    .toList());
+                          });
+                        }
                       },
                     ),
                   ],
@@ -224,8 +263,7 @@ class _VehiclesViewState extends State<VehiclesView> {
           FloatingActionButton(
             heroTag: 'home',
             onPressed: () {
-              // Navigator.of(context).pop(); // Navigate back to the start page
-              context.go('/'); // Navigate back to the start page
+              context.go('/');
             },
             child: const Icon(Icons.home),
           ),
@@ -234,7 +272,11 @@ class _VehiclesViewState extends State<VehiclesView> {
             heroTag: 'reload',
             onPressed: () {
               setState(() {
-                getVehicles = VehicleRepository().getAll(); // Reload vehicles
+                final loggedInUser = context.read<AuthService>().username;
+                getVehicles = VehicleRepository().getAll().then((vehicles) =>
+                    vehicles
+                        .where((v) => v.owner.target?.name == loggedInUser)
+                        .toList());
               });
             },
             child: const Icon(Icons.refresh),
@@ -259,8 +301,7 @@ class _VehiclesViewState extends State<VehiclesView> {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
                           return const Center(
-                              child:
-                                  CircularProgressIndicator()); // Loading spinner
+                              child: CircularProgressIndicator());
                         }
 
                         if (snapshot.hasError) {
@@ -356,18 +397,19 @@ class _VehiclesViewState extends State<VehiclesView> {
                   vehicleType: result['vehicleType'],
                 );
 
-                // Set the selected owner for the vehicle
                 newVehicle.setOwner(result['owner']);
 
-                // Create the vehicle using the repository
                 await VehicleRepository().create(newVehicle);
 
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                     content: Text('Vehicle created successfully')));
 
-                // Reload the list of vehicles
                 setState(() {
-                  getVehicles = VehicleRepository().getAll();
+                  final loggedInUser = context.read<AuthService>().username;
+                  getVehicles = VehicleRepository().getAll().then((vehicles) =>
+                      vehicles
+                          .where((v) => v.owner.target?.name == loggedInUser)
+                          .toList());
                 });
               }
             },
