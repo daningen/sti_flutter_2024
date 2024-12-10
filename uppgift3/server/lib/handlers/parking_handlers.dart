@@ -79,6 +79,7 @@ Future<Response> updateParkingHandler(Request request) async {
     // Set end time for stopping the session
     parking.endTime = DateTime.now();
     await parkingRepository.update(id, parking);
+    print("setting endtime in updateParkingHandler");
 
     return Response.ok(
       jsonEncode({'message': 'Parking stopped successfully'}),
@@ -116,28 +117,47 @@ Future<Response> deleteParkingHandler(Request request) async {
 
 // stop parking
 Future<Response> stopParkingHandler(Request request) async {
+  // Parse the ID from the request
   final id = int.tryParse(request.params['id'] ?? '');
+  print("in  stopParkingHandler");
   if (id == null) {
+    // Log the invalid ID
+    print('Invalid ID received for stopping parking');
     return Response.badRequest(
       body: jsonEncode({'error': 'Invalid ID'}),
       headers: {'Content-Type': 'application/json'},
     );
   }
 
+  // Log the received request with ID
+  print('Received request to stop parking with ID: $id');
+
+  // Attempt to retrieve the parking session
   final parking = await parkingRepository.getById(id);
   if (parking == null) {
+    // Log if the parking session is not found
+    print('Parking session with ID $id not found');
     return Response.notFound(
       jsonEncode({'error': 'Parking session not found'}),
       headers: {'Content-Type': 'application/json'},
     );
   }
 
+  // Set the end time for the parking session
   parking.endTime = DateTime.now();
+  print("call parkingRepository.update now to set end time with $parking");
   await parkingRepository.update(id, parking);
 
+  // Log the successful update
+  print(
+      'Parking session with ID $id successfully stopped at ${parking.endTime}');
+
+  // Return a successful response
   return Response.ok(
-    jsonEncode(
-        {'message': 'Parking session stopped', 'parking': parking.toJson()}),
+    jsonEncode({
+      'message': 'Parking session stopped successfully',
+      'parking': parking.toJson(),
+    }),
     headers: {'Content-Type': 'application/json'},
   );
 }
