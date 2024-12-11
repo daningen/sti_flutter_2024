@@ -125,7 +125,7 @@ class _ParkingViewState extends State<ParkingView> {
           FloatingActionButton(
             heroTag: 'home',
             onPressed: () {
-              context.go('/'); // Navigate to the home page
+              context.go('/'); // to the home page
             },
             child: const Icon(Icons.home),
           ),

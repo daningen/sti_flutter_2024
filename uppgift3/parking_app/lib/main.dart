@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:parking_app/views/register_view.dart';
+import 'package:parking_app/views/start_view.dart';
 import 'package:parking_app/views/user_page.dart';
 import 'package:parking_app/views/vehicles_page.dart';
 import 'package:provider/provider.dart';
@@ -28,8 +30,17 @@ class ParkingApp extends StatelessWidget {
   }
 
   final GoRouter _router = GoRouter(
-    initialLocation: '/login', // Start with the login page
+    // initialLocation: '/login', // Start with the login page
+    initialLocation: '/start',
     routes: [
+      GoRoute(
+        path: '/start',
+        builder: (context, state) => const StartView(),
+      ),
+      GoRoute(
+        path: '/register',
+        builder: (context, state) => const RegisterView(),
+      ),
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginView(),
@@ -52,7 +63,7 @@ class ParkingApp extends StatelessWidget {
       ),
       GoRoute(
         path: '/user-page',
-        builder: (context, state) => const UserPage(),
+        builder: (context, state) => const UserView(),
       ),
     ],
   );

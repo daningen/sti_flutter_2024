@@ -2,17 +2,17 @@
 
 import 'package:client_repositories/async_http_repos.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:shared/shared.dart'; // Import the Person model
+import 'custom_bottom_nav_bar.dart';
 
-class UserPage extends StatefulWidget {
-  const UserPage({super.key});
+class UserView extends StatefulWidget {
+  const UserView({super.key});
 
   @override
-  State<UserPage> createState() => _UserPageState();
+  State<UserView> createState() => _UserViewState();
 }
 
-class _UserPageState extends State<UserPage> {
+class _UserViewState extends State<UserView> {
   final PersonRepository _personRepository = PersonRepository();
   late Future<List<Person>> _usersFuture;
 
@@ -33,15 +33,9 @@ class _UserPageState extends State<UserPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Users'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadUsers, // Reload data when the button is pressed
-          ),
-        ],
       ),
       body: FutureBuilder<List<Person>>(
-        future: _usersFuture, // Use the stored Future here
+        future: _usersFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -71,8 +65,6 @@ class _UserPageState extends State<UserPage> {
                     IconButton(
                       icon: const Icon(Icons.edit),
                       onPressed: () {
-                        // Add logic to edit user here
-                        // e.g., opening an edit dialog
                         _editUser(context, person);
                       },
                     ),
@@ -92,28 +84,12 @@ class _UserPageState extends State<UserPage> {
           );
         },
       ),
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            heroTag: 'home',
-            onPressed: () {
-              context.go('/'); // Navigate back to the start page
-            },
-            child: const Icon(Icons.home),
-          ),
-          const SizedBox(width: 16),
-          FloatingActionButton(
-            heroTag: 'reload',
-            onPressed: _loadUsers, // Reload data when the button is pressed
-            child: const Icon(Icons.refresh),
-          ),
-        ],
-      ),
+      bottomNavigationBar: const CustomBottomNavigationBar(currentIndex: 1),
     );
   }
 
   void _editUser(BuildContext context, Person person) {
+    final formKey = GlobalKey<FormState>();
     final TextEditingController nameController =
         TextEditingController(text: person.name);
     final TextEditingController ssnController =
@@ -124,18 +100,39 @@ class _UserPageState extends State<UserPage> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Edit User'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
-              ),
-              TextField(
-                controller: ssnController,
-                decoration: const InputDecoration(labelText: 'SSN'),
-              ),
-            ],
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: 'Name'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Name is required';
+                    }
+                    if (RegExp(r'[0-9]').hasMatch(value)) {
+                      return 'Name cannot contain numbers';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: ssnController,
+                  decoration: const InputDecoration(labelText: 'SSN'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'SSN is required';
+                    }
+                    if (!RegExp(r'^\d{6}$').hasMatch(value)) {
+                      return 'SSN must be in YYMMDD format';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -144,16 +141,18 @@ class _UserPageState extends State<UserPage> {
               },
               child: const Text('Cancel'),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () async {
-                // Save updated data
-                person.name = nameController.text;
-                person.ssn = ssnController.text;
-                await _personRepository.update(person.id, person);
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                    content: Text('User information updated successfully')));
-                _loadUsers();
-                Navigator.of(context).pop();
+                if (formKey.currentState!.validate()) {
+                  // Save updated data
+                  person.name = nameController.text;
+                  person.ssn = ssnController.text;
+                  await _personRepository.update(person.id, person);
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text('User information updated successfully')));
+                  _loadUsers();
+                  Navigator.of(context).pop();
+                }
               },
               child: const Text('Save'),
             ),
