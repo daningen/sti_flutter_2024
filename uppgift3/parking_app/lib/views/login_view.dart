@@ -18,10 +18,6 @@ class LoginView extends StatelessWidget {
     final passwordFocus = FocusNode();
     final authService = context.watch<AuthService>();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      usernameFocus.requestFocus();
-    });
-
     save(BuildContext context) {
       if (formKey.currentState!.validate()) {
         final username = usernameController.text.trim();
@@ -39,48 +35,54 @@ class LoginView extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Login'),
       ),
-      body: Center(
-        child: Form(
-          key: formKey,
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 400),
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Welcome Back',
-                    style: Theme.of(context).textTheme.headlineLarge),
-                const SizedBox(height: 32),
-                TextFormField(
-                  controller: usernameController,
-                  focusNode: usernameFocus,
-                  enabled: authService.status != AuthStatus.authenticating,
-                  decoration: const InputDecoration(
-                      labelText: 'Username', prefixIcon: Icon(Icons.person)),
-                  validator: (value) =>
-                      value?.isEmpty ?? true ? 'Please enter a username' : null,
-                  onFieldSubmitted: (_) => passwordFocus.requestFocus(),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: passwordController,
-                  focusNode: passwordFocus,
-                  obscureText: true,
-                  enabled: authService.status != AuthStatus.authenticating,
-                  decoration: const InputDecoration(
-                      labelText: 'Password', prefixIcon: Icon(Icons.lock)),
-                  validator: (value) =>
-                      value?.isEmpty ?? true ? 'Please enter a password' : null,
-                  onFieldSubmitted: (_) => save(context),
-                ),
-                const SizedBox(height: 32),
-                authService.status == AuthStatus.authenticating
-                    ? const Center(child: CircularProgressIndicator())
-                    : ElevatedButton(
-                        onPressed: () => save(context),
-                        child: const Text('Login'),
-                      ),
-              ],
+      body: GestureDetector(
+        onTap: () =>
+            FocusScope.of(context).unfocus(), // Dismiss keyboard on tap
+        child: Center(
+          child: Form(
+            key: formKey,
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 400),
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Welcome Back',
+                      style: Theme.of(context).textTheme.headlineLarge),
+                  const SizedBox(height: 32),
+                  TextFormField(
+                    controller: usernameController,
+                    focusNode: usernameFocus,
+                    enabled: authService.status != AuthStatus.authenticating,
+                    decoration: const InputDecoration(
+                        labelText: 'Username', prefixIcon: Icon(Icons.person)),
+                    validator: (value) => value?.isEmpty ?? true
+                        ? 'Please enter a username'
+                        : null,
+                    onFieldSubmitted: (_) => passwordFocus.requestFocus(),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: passwordController,
+                    focusNode: passwordFocus,
+                    obscureText: true,
+                    enabled: authService.status != AuthStatus.authenticating,
+                    decoration: const InputDecoration(
+                        labelText: 'Password', prefixIcon: Icon(Icons.lock)),
+                    validator: (value) => value?.isEmpty ?? true
+                        ? 'Please enter a password'
+                        : null,
+                    onFieldSubmitted: (_) => save(context),
+                  ),
+                  const SizedBox(height: 32),
+                  authService.status == AuthStatus.authenticating
+                      ? const Center(child: CircularProgressIndicator())
+                      : ElevatedButton(
+                          onPressed: () => save(context),
+                          child: const Text('Login'),
+                        ),
+                ],
+              ),
             ),
           ),
         ),

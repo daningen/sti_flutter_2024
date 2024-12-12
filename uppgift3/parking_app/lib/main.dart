@@ -30,7 +30,6 @@ class ParkingApp extends StatelessWidget {
   }
 
   final GoRouter _router = GoRouter(
-    // initialLocation: '/login', // Start with the login page
     initialLocation: '/start',
     routes: [
       GoRoute(

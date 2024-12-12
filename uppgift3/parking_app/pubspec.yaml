@@ -47,6 +47,7 @@ dependencies:
   #   path: '../shared_widgets'
   client_repositories: 
     path: '../client_repositories'
+  intl: ^0.20.1
 
 dev_dependencies:
   flutter_test:

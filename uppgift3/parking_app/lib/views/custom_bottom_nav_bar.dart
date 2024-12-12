@@ -2,48 +2,79 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class CustomBottomNavigationBar extends StatelessWidget {
-  final int currentIndex;
+  final String currentRoute;
 
-  const CustomBottomNavigationBar({
-    super.key,
-    required this.currentIndex,
-  });
+  const CustomBottomNavigationBar({required this.currentRoute, super.key});
 
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
-      currentIndex: currentIndex,
-      onTap: (index) => _onItemTapped(context, index),
+      currentIndex: _getIndexForRoute(currentRoute),
+      onTap: (index) => _handleNavigation(context, index),
       items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.refresh),
-          label: 'Reload',
-        ),
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+        BottomNavigationBarItem(icon: Icon(Icons.refresh), label: 'Reload'),
+        BottomNavigationBarItem(icon: Icon(Icons.logout), label: 'Logout'),
       ],
+      selectedItemColor: Colors.blue,
+      unselectedItemColor: Colors.grey,
+      showSelectedLabels: true,
+      showUnselectedLabels: true,
+      type: BottomNavigationBarType.fixed,
     );
   }
 
-  void _onItemTapped(BuildContext context, int index) {
+  void _handleNavigation(BuildContext context, int index) {
     switch (index) {
       case 0:
-        context.go('/'); // Navigate to the home page
-        break;
-      case 1:
-        final currentRoute = GoRouter.of(context).location;
-        if (currentRoute == '/user-page') {
-          // Custom reload action for UserPage
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Reloading users...')),
-          );
-          Navigator.pushReplacementNamed(context, currentRoute); // Reload page
+        if (currentRoute != '/') {
+          context.go('/'); //   to Home
         }
         break;
-      default:
+      case 1:
+        // Reload the current page
+        _reloadPage(context);
+        break;
+      case 2:
+        // Handle logout logic
+        _logout(context);
         break;
     }
+  }
+
+  int _getIndexForRoute(String route) {
+    switch (route) {
+      case '/':
+        return 0;
+      default:
+        return 0; // Default to Home
+    }
+  }
+
+  void _reloadPage(BuildContext context) {
+    context.go(currentRoute); // Navigate to the same route to refresh the page
+  }
+
+  void _logout(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Logout'),
+        content: const Text('Are you sure you want to log out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close the dialog
+              context.go('/login');
+            },
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
+    );
   }
 }
