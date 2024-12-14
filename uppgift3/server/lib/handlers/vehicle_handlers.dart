@@ -19,11 +19,14 @@ Future<Response> postVehicleHandler(Request request) async {
 
     vehicle = await repo.create(vehicle);
 
-    return Response.ok(
-      jsonEncode(vehicle.toJson()),
+    // Return 201 Created with the vehicle data in the body
+    return Response(
+      201, // Status code for resource creation
+      body: jsonEncode(vehicle.toJson()),
       headers: {'Content-Type': 'application/json'},
     );
   } catch (e) {
+    print("Error occurred while creating vehicle: $e");
     return Response.internalServerError(
       body: jsonEncode({'error': 'Failed to create vehicle'}),
       headers: {'Content-Type': 'application/json'},

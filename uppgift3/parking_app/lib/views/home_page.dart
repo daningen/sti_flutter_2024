@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../auth_service.dart'; // Ensure the path is correct for your project
+import '../providers/theme_notifier.dart'; // Ensure the path is correct for your project
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -10,11 +11,22 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authService = context.watch<AuthService>();
+    final themeNotifier = context.watch<ThemeNotifier>();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Home Page'),
         actions: [
+          IconButton(
+            icon: Icon(
+              themeNotifier.themeMode == ThemeMode.light
+                  ? Icons.dark_mode
+                  : Icons.light_mode,
+            ),
+            onPressed: () {
+              themeNotifier.toggleTheme();
+            },
+          ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(

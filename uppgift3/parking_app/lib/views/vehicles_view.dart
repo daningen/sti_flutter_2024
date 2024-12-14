@@ -21,6 +21,10 @@ class _VehiclesViewState extends State<VehiclesView> {
   @override
   void initState() {
     super.initState();
+    refreshVehicles();
+  }
+
+  void refreshVehicles() {
     final loggedInUser = context.read<AuthService>().username;
     getVehicles = VehicleRepository().getAll().then((vehicles) =>
         vehicles.where((v) => v.owner.target?.name == loggedInUser).toList());
@@ -61,153 +65,6 @@ class _VehiclesViewState extends State<VehiclesView> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () async {
-                        var result = await showDialog<Map<String, dynamic>>(
-                          context: context,
-                          builder: (context) {
-                            final licensePlateController =
-                                TextEditingController(
-                                    text: vehicle.licensePlate);
-                            final vehicleTypeController = TextEditingController(
-                                text: vehicle.vehicleType);
-                            Person? selectedOwner = vehicle.owner.target;
-                            final formKey = GlobalKey<FormState>();
-
-                            return AlertDialog(
-                              title: const Text("Edit Vehicle"),
-                              content: FutureBuilder<List<Person>>(
-                                future: getPersons,
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return const Center(
-                                        child: CircularProgressIndicator());
-                                  }
-
-                                  if (snapshot.hasError) {
-                                    return Text('Error: ${snapshot.error}');
-                                  }
-
-                                  if (!snapshot.hasData ||
-                                      snapshot.data!.isEmpty) {
-                                    return const Text('No owners available');
-                                  }
-
-                                  final persons = snapshot.data!;
-                                  return Form(
-                                    key: formKey,
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        TextFormField(
-                                          controller: licensePlateController,
-                                          decoration: const InputDecoration(
-                                            labelText: "License Plate",
-                                          ),
-                                          validator: (value) {
-                                            if (value == null ||
-                                                value.isEmpty) {
-                                              return 'Please enter a license plate';
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                        TextFormField(
-                                          controller: vehicleTypeController,
-                                          decoration: const InputDecoration(
-                                            labelText: "Vehicle Type",
-                                          ),
-                                          validator: (value) {
-                                            if (value == null ||
-                                                value.isEmpty) {
-                                              return 'Please enter a vehicle type';
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                        DropdownButtonFormField<Person>(
-                                          value: selectedOwner,
-                                          decoration: const InputDecoration(
-                                            labelText: "Select Owner",
-                                          ),
-                                          items: persons.map((person) {
-                                            return DropdownMenuItem<Person>(
-                                              value: person,
-                                              child: Text(person.name),
-                                            );
-                                          }).toList(),
-                                          onChanged: (person) {
-                                            selectedOwner = person;
-                                          },
-                                          validator: (value) {
-                                            if (value == null) {
-                                              return 'Please select an owner';
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: const Text("Cancel"),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    if (formKey.currentState!.validate()) {
-                                      Navigator.of(context).pop({
-                                        'licensePlate':
-                                            licensePlateController.text,
-                                        'vehicleType':
-                                            vehicleTypeController.text,
-                                        'owner': selectedOwner,
-                                      });
-                                    }
-                                  },
-                                  child: const Text("Save"),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-
-                        if (result != null) {
-                          final updatedVehicle = Vehicle(
-                            licensePlate: result['licensePlate'],
-                            vehicleType: result['vehicleType'],
-                            id: vehicle.id,
-                          );
-
-                          updatedVehicle.setOwner(result['owner']);
-
-                          await VehicleRepository()
-                              .update(vehicle.id, updatedVehicle);
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content:
-                                      Text('Vehicle updated successfully')));
-
-                          setState(() {
-                            final loggedInUser =
-                                context.read<AuthService>().username;
-                            getVehicles = VehicleRepository().getAll().then(
-                                (vehicles) => vehicles
-                                    .where((v) =>
-                                        v.owner.target?.name == loggedInUser)
-                                    .toList());
-                          });
-                        }
-                      },
-                    ),
-                    IconButton(
                       icon: const Icon(Icons.delete),
                       onPressed: () async {
                         final confirmDelete = await showDialog<bool>(
@@ -237,15 +94,8 @@ class _VehiclesViewState extends State<VehiclesView> {
                               const SnackBar(
                                   content:
                                       Text('Vehicle deleted successfully')));
-
                           setState(() {
-                            final loggedInUser =
-                                context.read<AuthService>().username;
-                            getVehicles = VehicleRepository().getAll().then(
-                                (vehicles) => vehicles
-                                    .where((v) =>
-                                        v.owner.target?.name == loggedInUser)
-                                    .toList());
+                            refreshVehicles();
                           });
                         }
                       },
@@ -272,11 +122,7 @@ class _VehiclesViewState extends State<VehiclesView> {
             heroTag: 'reload',
             onPressed: () {
               setState(() {
-                final loggedInUser = context.read<AuthService>().username;
-                getVehicles = VehicleRepository().getAll().then((vehicles) =>
-                    vehicles
-                        .where((v) => v.owner.target?.name == loggedInUser)
-                        .toList());
+                refreshVehicles();
               });
             },
             child: const Icon(Icons.refresh),
@@ -289,7 +135,7 @@ class _VehiclesViewState extends State<VehiclesView> {
                 context: context,
                 builder: (context) {
                   final licensePlateController = TextEditingController();
-                  final vehicleTypeController = TextEditingController();
+                  String? selectedVehicleType;
                   Person? selectedOwner;
                   final formKey = GlobalKey<FormState>();
 
@@ -327,17 +173,40 @@ class _VehiclesViewState extends State<VehiclesView> {
                                   if (value == null || value.isEmpty) {
                                     return 'Please enter a license plate';
                                   }
+                                  if (!RegExp(r'^[A-Za-z]{3}[0-9]{3}$')
+                                      .hasMatch(value)) {
+                                    return 'License plate must be in format ABC123';
+                                  }
                                   return null;
                                 },
+                                onChanged: (value) {
+                                  licensePlateController.value =
+                                      TextEditingValue(
+                                    text: value.toUpperCase(),
+                                    selection: licensePlateController.selection,
+                                  );
+                                },
                               ),
-                              TextFormField(
-                                controller: vehicleTypeController,
+                              DropdownButtonFormField<String>(
                                 decoration: const InputDecoration(
                                   labelText: "Vehicle Type",
                                 ),
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: "Car",
+                                    child: Text("Car"),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: "Motorcycle",
+                                    child: Text("Motorcycle"),
+                                  ),
+                                ],
+                                onChanged: (value) {
+                                  selectedVehicleType = value;
+                                },
                                 validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter a vehicle type';
+                                  if (value == null) {
+                                    return 'Please select a vehicle type';
                                   }
                                   return null;
                                 },
@@ -379,7 +248,7 @@ class _VehiclesViewState extends State<VehiclesView> {
                           if (formKey.currentState!.validate()) {
                             Navigator.of(context).pop({
                               'licensePlate': licensePlateController.text,
-                              'vehicleType': vehicleTypeController.text,
+                              'vehicleType': selectedVehicleType,
                               'owner': selectedOwner,
                             });
                           }
@@ -392,6 +261,8 @@ class _VehiclesViewState extends State<VehiclesView> {
               );
 
               if (result != null) {
+                debugPrint(
+                    'Result is not null, attempting to create vehicle...');
                 final newVehicle = Vehicle(
                   licensePlate: result['licensePlate'],
                   vehicleType: result['vehicleType'],
@@ -399,18 +270,32 @@ class _VehiclesViewState extends State<VehiclesView> {
 
                 newVehicle.setOwner(result['owner']);
 
-                await VehicleRepository().create(newVehicle);
+                try {
+                  await VehicleRepository().create(newVehicle);
+                  debugPrint('Vehicle created successfully in repository');
 
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                    content: Text('Vehicle created successfully')));
+                  if (mounted) {
+                    debugPrint('Mounted is true, showing SnackBar');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Vehicle created successfully'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
 
-                setState(() {
-                  final loggedInUser = context.read<AuthService>().username;
-                  getVehicles = VehicleRepository().getAll().then((vehicles) =>
-                      vehicles
-                          .where((v) => v.owner.target?.name == loggedInUser)
-                          .toList());
-                });
+                    setState(() {
+                      debugPrint('Refreshing vehicles...');
+                      refreshVehicles();
+                    });
+                  } else {
+                    debugPrint('Mounted is false, not showing SnackBar');
+                  }
+                } catch (e) {
+                  debugPrint('Error creating vehicle: $e');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to create vehicle: $e')),
+                  );
+                }
               }
             },
             label: const Text("Add Vehicle"),

@@ -8,6 +8,8 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).bottomNavigationBarTheme;
+
     return BottomNavigationBar(
       currentIndex: _getIndexForRoute(currentRoute),
       onTap: (index) => _handleNavigation(context, index),
@@ -16,10 +18,13 @@ class CustomBottomNavigationBar extends StatelessWidget {
         BottomNavigationBarItem(icon: Icon(Icons.refresh), label: 'Reload'),
         BottomNavigationBarItem(icon: Icon(Icons.logout), label: 'Logout'),
       ],
-      selectedItemColor: Colors.blue,
-      unselectedItemColor: Colors.grey,
-      showSelectedLabels: true,
-      showUnselectedLabels: true,
+      selectedItemColor: theme.selectedItemColor ?? Colors.blue,
+      unselectedItemColor: theme.unselectedItemColor ??
+          Colors.lightGreen, //overwritten by main.dart
+      backgroundColor:
+          theme.backgroundColor ?? const Color.fromARGB(255, 101, 106, 180),
+      showSelectedLabels: theme.showSelectedLabels ?? true,
+      showUnselectedLabels: theme.showUnselectedLabels ?? true,
       type: BottomNavigationBarType.fixed,
     );
   }
@@ -28,16 +33,14 @@ class CustomBottomNavigationBar extends StatelessWidget {
     switch (index) {
       case 0:
         if (currentRoute != '/') {
-          context.go('/'); //   to Home
+          context.go('/'); // Navigate to Home
         }
         break;
       case 1:
-        // Reload the current page
-        _reloadPage(context);
+        _reloadPage(context); // Reload the current page
         break;
       case 2:
-        // Handle logout logic
-        _logout(context);
+        _logout(context); // Handle logout logic
         break;
     }
   }
@@ -69,7 +72,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop(); // Close the dialog
-              context.go('/login');
+              context.go('/login'); // Redirect to the login page
             },
             child: const Text('Logout'),
           ),
