@@ -40,7 +40,8 @@ class HomePage extends StatelessWidget {
                   icon: const Icon(Icons.logout),
                   onPressed: () {
                     authService.logout();
-                    context.go('/login'); // Navigate to login after logout
+                    debugPrint('Navigating to StartView from homePage...');
+                    context.go('/start');
                   },
                 ),
               ],

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:client_repositories/async_http_repos.dart';
 import 'package:go_router/go_router.dart';
+import 'package:parking_app/utils/validators.dart';
 import 'package:shared/shared.dart';
 
 class RegisterView extends StatefulWidget {
@@ -34,66 +35,55 @@ class _RegisterViewState extends State<RegisterView> {
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(labelText: 'Name'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a name';
-                  }
-                  if (RegExp(r'[0-9]').hasMatch(value)) {
-                    return 'Name should not contain numbers';
-                  }
-                  return null;
-                },
+                validator: Validators.validateName, // Use the validator
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _ssnController,
                 decoration: const InputDecoration(labelText: 'SSN (yymmdd)'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter an SSN';
-                  }
-                  if (!RegExp(r'^\d{6}$').hasMatch(value)) {
-                    return 'SSN must be in the format yymmdd';
-                  }
-                  return null;
-                },
+                validator: Validators.validateSSN, // Use the validator
               ),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    final name = _nameController.text;
-                    final ssn = _ssnController.text;
+                    final name = _nameController.text.trim();
+                    final ssn = _ssnController.text.trim();
+
+                    // Check if the user already exists
+                    final existingUsers = await _personRepository.getAll();
+                    final userExists = existingUsers.any(
+                        (person) => person.name == name && person.ssn == ssn);
+
+                    if (userExists) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('User already exists'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                      return;
+                    }
 
                     try {
-                      // Check if the user already exists
-                      final userExists = await _personRepository.getAll().then(
-                          (users) => users.any(
-                              (user) => user.name == name && user.ssn == ssn));
-
-                      if (userExists) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text(
-                                  'User with this name and SSN already exists')),
-                        );
-                        return;
-                      }
-
-                      // Create the user in the Person repository
+                      // Create the new user
                       final person = Person(name: name, ssn: ssn);
                       await _personRepository.create(person);
 
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Account created successfully'),
+                          duration: Duration(seconds: 2),
                         ),
                       );
 
-                      context.go('/login');
+                      context.go('/login'); // Redirect to login
                     } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Failed to create account: $e')),
+                        SnackBar(
+                          content: Text('Failed to create account: $e'),
+                          duration: const Duration(seconds: 2),
+                        ),
                       );
                     }
                   }

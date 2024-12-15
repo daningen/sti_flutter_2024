@@ -7,6 +7,7 @@ import 'package:client_repositories/async_http_repos.dart';
 import 'package:parking_app/widgets/custom_bottom_nav_bar.dart';
 import 'package:parking_app/providers/theme_notifier.dart';
 import 'package:shared/shared.dart';
+import 'package:parking_app/utils/validators.dart'; // Import the validators
 
 class UserView extends StatefulWidget {
   const UserView({super.key});
@@ -125,28 +126,12 @@ class _UserViewState extends State<UserView> {
                 TextFormField(
                   controller: nameController,
                   decoration: const InputDecoration(labelText: 'Name'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Name is required';
-                    }
-                    if (RegExp(r'[0-9]').hasMatch(value)) {
-                      return 'Name cannot contain numbers';
-                    }
-                    return null;
-                  },
+                  validator: Validators.validateName, // Use external validator
                 ),
                 TextFormField(
                   controller: ssnController,
                   decoration: const InputDecoration(labelText: 'SSN'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'SSN is required';
-                    }
-                    if (!RegExp(r'^\d{6}$').hasMatch(value)) {
-                      return 'SSN must be in YYMMDD format';
-                    }
-                    return null;
-                  },
+                  validator: Validators.validateSSN, // Use external validator
                 ),
               ],
             ),

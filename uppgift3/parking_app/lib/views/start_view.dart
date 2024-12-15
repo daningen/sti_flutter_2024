@@ -6,6 +6,8 @@ class StartView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('StartView is loaded');
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Welcome'),
@@ -14,6 +16,12 @@ class StartView extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const Text(
+              'Welcome! Please choose an option below:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () {
                 context.go('/login');

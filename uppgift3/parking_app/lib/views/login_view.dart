@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart'; // Import GoRouter for redirection
 import '../auth_service.dart';
+import '../utils/validators.dart'; // Import external validators
 
 class LoginView extends StatelessWidget {
   const LoginView({super.key});
@@ -56,9 +57,8 @@ class LoginView extends StatelessWidget {
                     enabled: authService.status != AuthStatus.authenticating,
                     decoration: const InputDecoration(
                         labelText: 'Username', prefixIcon: Icon(Icons.person)),
-                    validator: (value) => value?.isEmpty ?? true
-                        ? 'Please enter a username'
-                        : null,
+                    validator:
+                        Validators.validateUsername, // Use external validator
                     onFieldSubmitted: (_) => passwordFocus.requestFocus(),
                   ),
                   const SizedBox(height: 16),
@@ -69,9 +69,8 @@ class LoginView extends StatelessWidget {
                     enabled: authService.status != AuthStatus.authenticating,
                     decoration: const InputDecoration(
                         labelText: 'Password', prefixIcon: Icon(Icons.lock)),
-                    validator: (value) => value?.isEmpty ?? true
-                        ? 'Please enter a password'
-                        : null,
+                    validator:
+                        Validators.validatePassword, // Use external validator
                     onFieldSubmitted: (_) => save(context),
                   ),
                   const SizedBox(height: 32),

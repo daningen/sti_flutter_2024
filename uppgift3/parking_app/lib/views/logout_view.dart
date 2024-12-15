@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../auth_service.dart';
 
@@ -19,9 +20,15 @@ class LogoutView extends StatelessWidget {
                 style: TextStyle(fontSize: 18)),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => context.read<AuthService>().logout(),
+              onPressed: () {
+                // Call the logout method and navigate to the Start View
+                context.read<AuthService>().logout();
+                debugPrint('Navigating to StartView...');
+                context.go('/start'); // Redirect to Start View
+              },
               child: const Text('Logout'),
             ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
