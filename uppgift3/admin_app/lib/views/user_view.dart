@@ -3,7 +3,9 @@
 import 'package:admin_app/widgets/bottom_action_buttons.dart.dart';
 import 'package:flutter/material.dart';
 import 'package:client_repositories/async_http_repos.dart';
+import 'package:provider/provider.dart';
 import 'package:shared/shared.dart';
+import '../theme_notifier.dart';
 
 class UserView extends StatefulWidget {
   const UserView({super.key});
@@ -172,7 +174,22 @@ class _UserViewState extends State<UserView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('User Management')),
+      appBar: AppBar(
+        title: const Text('User Management'),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Provider.of<ThemeNotifier>(context).themeMode == ThemeMode.light
+                  ? Icons.dark_mode
+                  : Icons.light_mode,
+            ),
+            onPressed: () {
+              Provider.of<ThemeNotifier>(context, listen: false).toggleTheme();
+            },
+            tooltip: 'Toggle Theme',
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Expanded(
