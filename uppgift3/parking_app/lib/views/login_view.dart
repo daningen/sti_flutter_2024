@@ -1,11 +1,10 @@
-// login_view.dart
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart'; // Import GoRouter for redirection
+import 'package:go_router/go_router.dart';
 import '../auth_service.dart';
-import '../utils/validators.dart'; // Import external validators
+import '../utils/validators.dart';
 
 class LoginView extends StatelessWidget {
   const LoginView({super.key});
@@ -37,8 +36,7 @@ class LoginView extends StatelessWidget {
         title: const Text('Login'),
       ),
       body: GestureDetector(
-        onTap: () =>
-            FocusScope.of(context).unfocus(), // Dismiss keyboard on tap
+        onTap: () => FocusScope.of(context).unfocus(),
         child: Center(
           child: Form(
             key: formKey,
@@ -57,8 +55,7 @@ class LoginView extends StatelessWidget {
                     enabled: authService.status != AuthStatus.authenticating,
                     decoration: const InputDecoration(
                         labelText: 'Username', prefixIcon: Icon(Icons.person)),
-                    validator:
-                        Validators.validateUsername, // Use external validator
+                    validator: Validators.validateUsername,
                     onFieldSubmitted: (_) => passwordFocus.requestFocus(),
                   ),
                   const SizedBox(height: 16),
@@ -69,8 +66,7 @@ class LoginView extends StatelessWidget {
                     enabled: authService.status != AuthStatus.authenticating,
                     decoration: const InputDecoration(
                         labelText: 'Password', prefixIcon: Icon(Icons.lock)),
-                    validator:
-                        Validators.validatePassword, // Use external validator
+                    validator: Validators.validatePassword,
                     onFieldSubmitted: (_) => save(context),
                   ),
                   const SizedBox(height: 32),

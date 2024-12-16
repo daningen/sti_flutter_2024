@@ -39,7 +39,6 @@ class ParkingApp extends StatelessWidget {
             bottomNavigationBarTheme: const BottomNavigationBarThemeData(
               selectedItemColor: Colors.green,
               unselectedItemColor: Colors.lightGreen,
-              
               backgroundColor: Colors.white,
             ),
           ),

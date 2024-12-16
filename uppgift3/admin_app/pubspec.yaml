@@ -44,6 +44,8 @@ dependencies:
   #   path: '../shared_widgets'
   client_repositories: 
     path: '../client_repositories'
+  go_router: ^14.6.2
+  provider: ^6.1.2
 
 dev_dependencies:
   flutter_test:

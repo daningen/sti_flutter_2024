@@ -18,12 +18,13 @@ class _RegisterViewState extends State<RegisterView> {
   final _nameController = TextEditingController();
   final _ssnController = TextEditingController();
   final PersonRepository _personRepository = PersonRepository();
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Account'),
+        title: const Text('Create User'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -35,61 +36,71 @@ class _RegisterViewState extends State<RegisterView> {
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(labelText: 'Name'),
-                validator: Validators.validateName, // Use the validator
+                validator: Validators.validateName,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _ssnController,
                 decoration: const InputDecoration(labelText: 'SSN (yymmdd)'),
-                validator: Validators.validateSSN, // Use the validator
+                validator: Validators.validateSSN,
               ),
               const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    final name = _nameController.text.trim();
-                    final ssn = _ssnController.text.trim();
+              _isLoading
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: () async {
+                        if (_formKey.currentState!.validate()) {
+                          setState(() => _isLoading = true);
 
-                    // Check if the user already exists
-                    final existingUsers = await _personRepository.getAll();
-                    final userExists = existingUsers.any(
-                        (person) => person.name == name && person.ssn == ssn);
+                          final name = _nameController.text.trim();
+                          final ssn = _ssnController.text.trim();
 
-                    if (userExists) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('User already exists'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                      return;
-                    }
+                          // Check if the user already exists
+                          final existingUsers =
+                              await _personRepository.getAll();
+                          final userExists = existingUsers.any((person) =>
+                              person.name == name && person.ssn == ssn);
 
-                    try {
-                      // Create the new user
-                      final person = Person(name: name, ssn: ssn);
-                      await _personRepository.create(person);
+                          if (userExists) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('User already exists'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                            setState(() => _isLoading = false);
+                            return;
+                          }
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Account created successfully'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
+                          try {
+                            // Create the new user
+                            final person = Person(name: name, ssn: ssn);
+                            await _personRepository.create(person);
 
-                      context.go('/login'); // Redirect to login
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Failed to create account: $e'),
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
-                    }
-                  }
-                },
-                child: const Text('Create Account'),
-              ),
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Account created successfully'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+
+                            _nameController.clear();
+                            _ssnController.clear();
+                            context.go('/login'); // Redirect to login
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Failed to create account: $e'),
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          } finally {
+                            setState(() => _isLoading = false);
+                          }
+                        }
+                      },
+                      child: const Text('Create Account'),
+                    ),
             ],
           ),
         ),

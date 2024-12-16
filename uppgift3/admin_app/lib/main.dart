@@ -1,107 +1,195 @@
-import 'package:admin_app/views/example_view.dart';
-import 'package:admin_app/views/items_view.dart';
-import 'package:admin_app/views/parking_space_view.dart';
+// ignore_for_file: prefer_const_constructors
 
-import 'package:admin_app/views/parking_view.dart';
-
+import 'package:admin_app/views/user_view.dart'; // Renamed user_view2 to user_view
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'theme_notifier.dart';
+import 'views/example_view.dart';
+import 'views/items_view.dart';
+import 'views/parking_space_view.dart';
+import 'views/parking_view.dart';
+import 'views/vehicles_view.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeNotifier()),
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  MyApp({super.key});
+
+  final GoRouter _router = GoRouter(
+    initialLocation: '/items',
+    routes: [
+      GoRoute(
+        path: '/items',
+        builder: (context, state) => const NavRailView(index: 0),
+      ),
+      GoRoute(
+        path: '/statistics',
+        builder: (context, state) => const NavRailView(index: 1),
+      ),
+      GoRoute(
+        path: '/parkings',
+        builder: (context, state) => const NavRailView(index: 2),
+      ),
+      GoRoute(
+        path: '/parking-spaces',
+        builder: (context, state) => const NavRailView(index: 3),
+      ),
+      GoRoute(
+        path: '/vehicles',
+        builder: (context, state) => const NavRailView(index: 4),
+      ),
+      GoRoute(
+        path: '/users',
+        builder: (context, state) => const NavRailView(index: 5),
+      ),
+    ],
+  );
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Managing App',
-      debugShowCheckedModeBanner: false, // Debug banner disabled
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 159, 185, 138),
-        ),
-        useMaterial3: true, // Ensures Material 3 is used
-        scaffoldBackgroundColor:
-            const Color.fromARGB(255, 102, 126, 105), // Light background color
-      ),
-      home: const NavRailView(),
+    return Consumer<ThemeNotifier>(
+      builder: (context, themeNotifier, child) {
+        return MaterialApp.router(
+          title: 'Managing App',
+          debugShowCheckedModeBanner: false,
+          routerConfig: _router,
+          theme: ThemeData.light().copyWith(
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color.fromARGB(255, 221, 232, 211),
+            ),
+            // scaffoldBackgroundColor: const Color.fromARGB(255, 240, 80, 144),
+          ),
+          darkTheme: ThemeData.dark(),
+          themeMode: themeNotifier.themeMode,
+        );
+      },
     );
   }
 }
 
 class NavRailView extends StatefulWidget {
-  const NavRailView({super.key});
+  final int index;
+
+  const NavRailView({required this.index, super.key});
 
   @override
   State<NavRailView> createState() => _NavRailViewState();
 }
 
 class _NavRailViewState extends State<NavRailView> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
 
-  final destinations = const <NavigationRailDestination>[
-    NavigationRailDestination(
+  // Centralized color for selected icons
+  final Color selectedIconColor = const Color.fromARGB(255, 242, 153, 45);
+
+  final List<NavigationRailDestination> destinations = [
+    const NavigationRailDestination(
       icon: Icon(Icons.favorite_border),
       selectedIcon: Icon(Icons.favorite),
       label: Text('Items'),
     ),
-    NavigationRailDestination(
+    const NavigationRailDestination(
       icon: Icon(Icons.bookmark_border),
       selectedIcon: Icon(Icons.book),
       label: Text('Statistics'),
     ),
-    NavigationRailDestination(
-      icon: Icon(Icons.car_repair_sharp), // Icon for ParkingView
-      selectedIcon: Icon(Icons.car_repair_sharp,
-          color: Color.fromARGB(255, 242, 153, 45)),
-      label: Text('Parkings'), // Label for ParkingView
+    const NavigationRailDestination(
+      icon: Icon(Icons.car_repair_sharp),
+      selectedIcon: Icon(Icons.car_repair_sharp),
+      label: Text('Parkings'),
     ),
-    NavigationRailDestination(
-      icon: Icon(Icons.local_parking), // Icon for Parking space
-      selectedIcon:
-          Icon(Icons.local_parking, color: Color.fromARGB(255, 242, 153, 45)),
-      label: Text('Parking space'), // Label for ParkingView
+    const NavigationRailDestination(
+      icon: Icon(Icons.local_parking),
+      selectedIcon: Icon(Icons.local_parking),
+      label: Text('Parking Spaces'),
+    ),
+    const NavigationRailDestination(
+      icon: Icon(Icons.directions_car),
+      selectedIcon: Icon(Icons.directions_car),
+      label: Text('Vehicles'),
+    ),
+    const NavigationRailDestination(
+      icon: Icon(Icons.people),
+      selectedIcon: Icon(Icons.people),
+      label: Text('Users'),
     ),
   ];
 
-  final views = [
-    const ItemsView(index: 1),
-    const ExampleView(index: 2),
+  final List<Widget> views = [
+    const ItemsView(index: 0),
+    const ExampleView(index: 1),
     const ParkingView(),
-    const ParkingSpacesView(index: 3)
+    const ParkingSpacesView(index: 3),
+    const VehiclesView(),
+    const UserView(), // Updated UserView
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.index;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          const Color.fromARGB(255, 154, 179, 148), // Explicit background color
+      backgroundColor: const Color.fromARGB(255, 154, 179, 148),
       body: Row(
         children: <Widget>[
           NavigationRail(
-            backgroundColor:
-                const Color.fromARGB(255, 167, 188, 162), // Match theme
+            backgroundColor: const Color.fromARGB(255, 167, 188, 162),
             selectedIndex: _selectedIndex,
             onDestinationSelected: (int index) {
               setState(() {
-                _selectedIndex = index; //index is set when choosing a
+                _selectedIndex = index;
+                _navigateToRoute(context, index);
               });
             },
             labelType: NavigationRailLabelType.all,
-            destinations: destinations,
+            destinations: destinations.map((destination) {
+              return NavigationRailDestination(
+                icon: destination.icon,
+                selectedIcon: Icon(
+                  (destination.selectedIcon as Icon).icon,
+                  color: selectedIconColor,
+                ),
+                label: destination.label,
+              );
+            }).toList(),
           ),
           const VerticalDivider(thickness: 1, width: 1),
-          // Main content view
           Expanded(
             child: Container(
-              color: const Color.fromARGB(255, 200, 204, 207), // Match theme
-              child: views[_selectedIndex], //showing the rest of the page
+              color: const Color.fromARGB(255, 200, 204, 207),
+              child: views[_selectedIndex],
             ),
           ),
         ],
       ),
     );
+  }
+
+  void _navigateToRoute(BuildContext context, int index) {
+    final routes = [
+      '/items',
+      '/statistics',
+      '/parkings',
+      '/parking-spaces',
+      '/vehicles',
+      '/users',
+    ];
+    if (index >= 0 && index < routes.length) {
+      GoRouter.of(context).go(routes[index]);
+    }
   }
 }

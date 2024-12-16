@@ -20,7 +20,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
       ],
       selectedItemColor: theme.selectedItemColor ?? Colors.blue,
       unselectedItemColor: theme.unselectedItemColor ??
-          Colors.lightGreen, //overwritten by main.dart
+          Colors.lightGreen, // Overwritten by main.dart
       backgroundColor:
           theme.backgroundColor ?? const Color.fromARGB(255, 101, 106, 180),
       showSelectedLabels: theme.showSelectedLabels ?? true,
@@ -72,7 +72,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop(); // Close the dialog
-              context.go('/login'); // Redirect to the login page
+              context.go('/start'); // Redirect to the start page
             },
             child: const Text('Logout'),
           ),
