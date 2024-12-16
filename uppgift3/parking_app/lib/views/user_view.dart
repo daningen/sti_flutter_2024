@@ -7,7 +7,7 @@ import 'package:client_repositories/async_http_repos.dart';
 import 'package:parking_app/widgets/custom_bottom_nav_bar.dart';
 import 'package:parking_app/providers/theme_notifier.dart';
 import 'package:shared/shared.dart';
-import 'package:parking_app/utils/validators.dart'; // Import the validators
+import 'package:parking_app/utils/validators.dart';
 
 class UserView extends StatefulWidget {
   const UserView({super.key});
@@ -126,12 +126,12 @@ class _UserViewState extends State<UserView> {
                 TextFormField(
                   controller: nameController,
                   decoration: const InputDecoration(labelText: 'Name'),
-                  validator: Validators.validateName, // Use external validator
+                  validator: Validators.validateName,  
                 ),
                 TextFormField(
                   controller: ssnController,
                   decoration: const InputDecoration(labelText: 'SSN'),
-                  validator: Validators.validateSSN, // Use external validator
+                  validator: Validators.validateSSN,  
                 ),
               ],
             ),
