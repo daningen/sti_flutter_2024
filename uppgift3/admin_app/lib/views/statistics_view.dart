@@ -1,7 +1,7 @@
+import 'package:admin_app/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:client_repositories/async_http_repos.dart';
 import 'package:intl/intl.dart';
-import 'package:shared/shared.dart';
 
 class StatisticsView extends StatefulWidget {
   const StatisticsView({super.key});
@@ -65,26 +65,28 @@ class _StatisticsViewState extends State<StatisticsView> {
     }
 
     return parkingCounts.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
+      ..sort((a, b) => b.value.compareTo(a.value))
+      ..take(3).toList(); // Take only the top 3
   }
 
-  Future<ParkingSpace?> _getLeastUsedParking() async {
+  Future<List<MapEntry<String, int>>> _getLeastUsedParkings() async {
+    // Changed method name
     final parkings = await ParkingRepository().getAll();
-    final parkingCounts = <ParkingSpace, int>{};
+    final parkingCounts = <String, int>{}; // Use address as key
 
     for (var parking in parkings) {
       if (parking.parkingSpace.target != null) {
         parkingCounts.update(
-          parking.parkingSpace.target!,
+          parking.parkingSpace.target!.address, // Use address as key
           (value) => value + 1,
           ifAbsent: () => 1,
         );
       }
     }
 
-    return parkingCounts.entries.isNotEmpty
-        ? parkingCounts.entries.reduce((a, b) => a.value < b.value ? a : b).key
-        : null;
+    return parkingCounts.entries.toList()
+      ..sort((a, b) => a.value.compareTo(b.value)) // Sort in ascending order
+      ..take(3).toList(); // Take only the top 3
   }
 
   @override
@@ -103,18 +105,24 @@ class _StatisticsViewState extends State<StatisticsView> {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
           final stats = snapshot.data!;
-          return ListView(
+          return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
-            children: [
-              _buildStatCard(
-                  'Total Parkings', stats['totalParkings'].toString()),
-              _buildStatCard(
-                  'Active Parkings', stats['activeParkings'].toString()),
-              _buildStatCard('Total Parking Spaces',
-                  stats['totalParkingSpaces'].toString()),
-              _buildStatCard('Average Parking Duration',
-                  '${stats['averageDuration']} mins'), // Rounded to int
-            ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildStatCard(
+                    'Total Parkings', stats['totalParkings'].toString()),
+                const Divider(),
+                _buildStatCard(
+                    'Active Parkings', stats['activeParkings'].toString()),
+                const Divider(),
+                _buildStatCard('Total Parking Spaces',
+                    stats['totalParkingSpaces'].toString()),
+                const Divider(),
+                _buildStatCard('Average Parking Duration',
+                    '${stats['averageDuration']} mins'), // Rounded to int
+              ],
+            ),
           );
         },
       ),
@@ -124,22 +132,35 @@ class _StatisticsViewState extends State<StatisticsView> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryColor,
+                foregroundColor: AppColors.textColor,
+              ),
               onPressed: () async {
                 final top3 = await _getTop3Parkings();
                 _showTop3Dialog(top3);
               },
               icon: const Icon(Icons.star),
-              label: const Text('Top 3 Most Used'),
+              label: const Text('Most Used'),
             ),
             ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryColor,
+                foregroundColor: AppColors.textColor,
+              ),
               onPressed: () async {
-                final leastUsed = await _getLeastUsedParking();
+                final leastUsed =
+                    await _getLeastUsedParkings(); // Changed method name
                 _showLeastUsedDialog(leastUsed);
               },
               icon: const Icon(Icons.low_priority),
               label: const Text('Least Used'),
             ),
             ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryColor,
+                foregroundColor: AppColors.textColor,
+              ),
               onPressed: _loadStatistics,
               icon: const Icon(Icons.refresh),
               label: const Text('Reload'),
@@ -151,17 +172,20 @@ class _StatisticsViewState extends State<StatisticsView> {
   }
 
   Widget _buildStatCard(String title, String value) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      child: ListTile(
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        trailing: Text(
-          value,
-          style: const TextStyle(fontSize: 18.0, color: Colors.blueAccent),
-        ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 18.0, color: Colors.blueAccent),
+          ),
+        ],
       ),
     );
   }
@@ -192,15 +216,22 @@ class _StatisticsViewState extends State<StatisticsView> {
     );
   }
 
-  void _showLeastUsedDialog(ParkingSpace? space) {
+  void _showLeastUsedDialog(List<MapEntry<String, int>> leastUsed) {
+    // Changed parameter type
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Least Used Parking Space'),
-          content: space != null
-              ? Text('Address: ${space.address}')
-              : const Text('No data available'),
+          title: const Text('Least Used Parking Spaces'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: leastUsed.map((entry) {
+              return ListTile(
+                title: Text(entry.key),
+                trailing: Text('${entry.value} parkings'),
+              );
+            }).toList(),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),

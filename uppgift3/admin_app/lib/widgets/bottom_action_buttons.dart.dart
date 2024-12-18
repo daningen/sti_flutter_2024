@@ -5,12 +5,16 @@ class BottomActionButtons extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback onReload;
+  final Color buttonColor;
+  final Color textColor;
 
   const BottomActionButtons({
     required this.onNew,
     required this.onEdit,
     required this.onDelete,
     required this.onReload,
+    this.buttonColor = Colors.lightBlue,
+    this.textColor = Colors.white,
     super.key,
   });
 
@@ -20,14 +24,15 @@ class BottomActionButtons extends StatelessWidget {
       color: Colors.white,
       padding: const EdgeInsets.all(8.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           ElevatedButton.icon(
             onPressed: onNew,
             icon: const Icon(Icons.add),
             label: const Text('New'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orangeAccent,
+              backgroundColor: buttonColor,
+              foregroundColor: textColor,
             ),
           ),
           const SizedBox(width: 8),
@@ -36,7 +41,8 @@ class BottomActionButtons extends StatelessWidget {
             icon: const Icon(Icons.edit),
             label: const Text('Edit'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orangeAccent,
+              backgroundColor: buttonColor,
+              foregroundColor: textColor,
             ),
           ),
           const SizedBox(width: 8),
@@ -45,7 +51,8 @@ class BottomActionButtons extends StatelessWidget {
             icon: const Icon(Icons.delete),
             label: const Text('Delete'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orangeAccent,
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
             ),
           ),
           const SizedBox(width: 8),
@@ -54,7 +61,8 @@ class BottomActionButtons extends StatelessWidget {
             icon: const Icon(Icons.refresh),
             label: const Text('Reload'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orangeAccent,
+              backgroundColor: buttonColor,
+              foregroundColor: textColor,
             ),
           ),
         ],
