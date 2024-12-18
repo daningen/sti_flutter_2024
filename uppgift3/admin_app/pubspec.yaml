@@ -46,6 +46,7 @@ dependencies:
     path: '../client_repositories'
   go_router: ^14.6.2
   provider: ^6.1.2
+  intl: ^0.20.1
 
 dev_dependencies:
   flutter_test:

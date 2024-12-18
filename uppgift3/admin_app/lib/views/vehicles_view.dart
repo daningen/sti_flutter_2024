@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:admin_app/app_constants.dart';
 import 'package:admin_app/utils/validators.dart';
 import 'package:admin_app/widgets/bottom_action_buttons.dart.dart';
 import 'package:flutter/material.dart';
@@ -63,20 +64,16 @@ class _VehiclesViewState extends State<VehiclesView> {
                       decoration:
                           const InputDecoration(labelText: 'License Plate'),
                       validator: Validators.validateLicensePlate,
-                    ),
-                    TextFormField(
-                      controller: licensePlateController,
-                      decoration:
-                          const InputDecoration(labelText: 'License Plate'),
-                      validator: Validators.validateLicensePlate,
+                      onChanged: (value) {
+                        licensePlateController.text = value.toUpperCase();
+                      },
                     ),
                     DropdownButtonFormField<String>(
                       decoration: const InputDecoration(labelText: 'Type'),
-                      items: const [
-                        DropdownMenuItem(value: 'Car', child: Text('Car')),
-                        DropdownMenuItem(
-                            value: 'Motorcycle', child: Text('Motorcycle')),
-                      ],
+                      items: vehicleTypes
+                          .map((type) =>
+                              DropdownMenuItem(value: type, child: Text(type)))
+                          .toList(),
                       onChanged: (value) => selectedVehicleType = value,
                       validator: (value) =>
                           value == null ? 'Please select a vehicle type' : null,
@@ -162,11 +159,10 @@ class _VehiclesViewState extends State<VehiclesView> {
                   DropdownButtonFormField<String>(
                     value: selectedVehicleType,
                     decoration: const InputDecoration(labelText: 'Type'),
-                    items: const [
-                      DropdownMenuItem(value: 'Car', child: Text('Car')),
-                      DropdownMenuItem(
-                          value: 'Motorcycle', child: Text('Motorcycle')),
-                    ],
+                    items: vehicleTypes
+                        .map((type) =>
+                            DropdownMenuItem(value: type, child: Text(type)))
+                        .toList(),
                     onChanged: (value) => selectedVehicleType = value,
                   ),
                   DropdownButtonFormField<Person>(

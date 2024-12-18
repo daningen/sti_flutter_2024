@@ -1,11 +1,12 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'package:admin_app/views/statistics_view.dart';
 import 'package:admin_app/views/user_view.dart'; // Renamed user_view2 to user_view
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'theme_notifier.dart';
-import 'views/example_view.dart';
+ 
 import 'views/items_view.dart';
 import 'views/parking_space_view.dart';
 import 'views/parking_view.dart';
@@ -127,9 +128,9 @@ class _NavRailViewState extends State<NavRailView> {
 
   final List<Widget> views = [
     const ItemsView(index: 0),
-    const ExampleView(index: 1),
+    const StatisticsView(),
     const ParkingView(),
-    const ParkingSpacesView(index: 3),
+    const ParkingSpacesView(),
     const VehiclesView(),
     const UserView(), // Updated UserView
   ];
