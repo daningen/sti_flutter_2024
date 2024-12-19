@@ -35,7 +35,7 @@ class ParkingApp extends StatelessWidget {
           routerConfig: _router,
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
-            primarySwatch: Colors.green,
+            primarySwatch: Colors.lightBlue,
             bottomNavigationBarTheme: const BottomNavigationBarThemeData(
               selectedItemColor: Colors.green,
               unselectedItemColor: Colors.lightGreen,

@@ -41,156 +41,13 @@ class _ParkingViewState extends State<ParkingView> {
     });
   }
 
-  // void _createParking() {
-  //   final formKey = GlobalKey<FormState>();
-  //   Person? selectedOwner;
-  //   Vehicle? selectedVehicle;
-  //   ParkingSpace? selectedParkingSpace;
-
-  //   // Load necessary data
-  //   Future.wait([
-  //     PersonRepository().getAll(),
-  //     ParkingSpaceRepository().getAll(),
-  //     ParkingRepository().getAll(),
-  //   ]).then((results) {
-  //     final allOwners = results[0] as List<Person>;
-  //     final allSpaces = results[1] as List<ParkingSpace>;
-  //     final allParkings = results[2] as List<Parking>;
-
-  //     // Filter owners: must have at least one vehicle
-  //     final ownersWithVehicles = allOwners.where((owner) {
-  //       return owner.vehicles.isNotEmpty; // Assumes 'vehicles' exists
-  //     }).toList();
-
-  //     showDialog(
-  //       context: context,
-  //       builder: (context) {
-  //         List<Vehicle> availableVehicles = [];
-
-  //         return StatefulBuilder(
-  //           builder: (context, setState) {
-  //             return AlertDialog(
-  //               title: const Text('Create New Parking'),
-  //               content: Form(
-  //                 key: formKey,
-  //                 child: Column(
-  //                   mainAxisSize: MainAxisSize.min,
-  //                   children: [
-  //                     // Owner Dropdown
-  //                     DropdownButtonFormField<Person>(
-  //                       decoration:
-  //                           const InputDecoration(labelText: 'Select Owner'),
-  //                       items: ownersWithVehicles.map((owner) {
-  //                         return DropdownMenuItem<Person>(
-  //                           value: owner,
-  //                           child: Text(owner.name),
-  //                         );
-  //                       }).toList(),
-  //                       onChanged: (owner) {
-  //                         setState(() {
-  //                           selectedOwner = owner;
-
-  //                           // Update vehicles for selected owner
-  //                           availableVehicles =
-  //                               owner!.vehicles.where((vehicle) {
-  //                             final hasOngoingParking = allParkings.any(
-  //                                 (parking) =>
-  //                                     parking.vehicle.target?.id ==
-  //                                         vehicle.id &&
-  //                                     parking.endTime == null);
-  //                             return !hasOngoingParking; // Exclude vehicles with ongoing parking
-  //                           }).toList();
-
-  //                           selectedVehicle = null; // Reset vehicle selection
-  //                         });
-  //                       },
-  //                       validator: (value) =>
-  //                           value == null ? 'Select an owner' : null,
-  //                     ),
-  //                     const SizedBox(height: 12),
-
-  //                     // Vehicle Dropdown (filtered based on selected owner)
-  //                     DropdownButtonFormField<Vehicle>(
-  //                       decoration:
-  //                           const InputDecoration(labelText: 'Select Vehicle'),
-  //                       items: availableVehicles.map((vehicle) {
-  //                         return DropdownMenuItem<Vehicle>(
-  //                           value: vehicle,
-  //                           child: Text(vehicle.licensePlate),
-  //                         );
-  //                       }).toList(),
-  //                       onChanged: (vehicle) => selectedVehicle = vehicle,
-  //                       validator: (value) =>
-  //                           value == null ? 'Select a vehicle' : null,
-  //                     ),
-  //                     const SizedBox(height: 12),
-
-  //                     // Parking Space Dropdown
-  //                     DropdownButtonFormField<ParkingSpace>(
-  //                       decoration: const InputDecoration(
-  //                           labelText: 'Select Parking Space'),
-  //                       items: allSpaces.map((space) {
-  //                         return DropdownMenuItem<ParkingSpace>(
-  //                           value: space,
-  //                           child: Text(space.address),
-  //                         );
-  //                       }).toList(),
-  //                       onChanged: (space) => selectedParkingSpace = space,
-  //                       validator: (value) =>
-  //                           value == null ? 'Select a parking space' : null,
-  //                     ),
-  //                   ],
-  //                 ),
-  //               ),
-  //               actions: [
-  //                 TextButton(
-  //                   onPressed: () => Navigator.of(context).pop(),
-  //                   child: const Text('Cancel'),
-  //                 ),
-  //                 ElevatedButton(
-  //                   onPressed: () {
-  //                     if (formKey.currentState!.validate()) {
-  //                       final newParking = Parking(startTime: DateTime.now());
-  //                       newParking.setDetails(
-  //                           selectedVehicle!, selectedParkingSpace!);
-
-  //                       ParkingRepository().create(newParking).then((_) {
-  //                         Navigator.of(context).pop();
-  //                         ScaffoldMessenger.of(context).showSnackBar(
-  //                           const SnackBar(
-  //                               content: Text('Parking created successfully')),
-  //                         );
-  //                         _loadParkings();
-  //                       });
-  //                     }
-  //                   },
-  //                   child: const Text('Create'),
-  //                 ),
-  //               ],
-  //             );
-  //           },
-  //         );
-  //       },
-  //     );
-  //   });
-  // }
-
-  // void _deleteParking() {
-  //   if (_selectedParking == null) return;
-
-  //   ParkingRepository().delete(_selectedParking!.id).then((_) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('Parking deleted successfully')),
-  //     );
-  //     _loadParkings();
-  //   });
-  // }
+  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Parking Management'),
+        title: const Text('Parking'),
         actions: [
           IconButton(
             icon: Icon(
@@ -229,7 +86,10 @@ class _ParkingViewState extends State<ParkingView> {
                 child: const Text('Active Parkings'),
               ),
             ],
+            
+            
           ),
+          
           Expanded(
             child: FutureBuilder<List<Parking>>(
               future: _parkingsFuture,
@@ -282,6 +142,7 @@ class _ParkingViewState extends State<ParkingView> {
                 );
               },
             ),
+            
           ),
           // BottomActionButtons(
           //   onNew: _createParking,

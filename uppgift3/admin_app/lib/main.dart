@@ -1,13 +1,14 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'package:admin_app/views/start_view.dart';
 import 'package:admin_app/views/statistics_view.dart';
 import 'package:admin_app/views/user_view.dart'; // Renamed user_view2 to user_view
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'theme_notifier.dart';
- 
-import 'views/items_view.dart';
+
+// import 'views/items_view.dart';
 import 'views/parking_space_view.dart';
 import 'views/parking_view.dart';
 import 'views/vehicles_view.dart';
@@ -27,10 +28,10 @@ class MyApp extends StatelessWidget {
   MyApp({super.key});
 
   final GoRouter _router = GoRouter(
-    initialLocation: '/items',
+    initialLocation: '/start',
     routes: [
       GoRoute(
-        path: '/items',
+        path: '/start',
         builder: (context, state) => const NavRailView(index: 0),
       ),
       GoRoute(
@@ -66,7 +67,7 @@ class MyApp extends StatelessWidget {
           routerConfig: _router,
           theme: ThemeData.light().copyWith(
             colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color.fromARGB(255, 221, 232, 211),
+              seedColor: const Color.fromARGB(255, 206, 234, 250),
             ),
             // scaffoldBackgroundColor: const Color.fromARGB(255, 240, 80, 144),
           ),
@@ -91,14 +92,19 @@ class _NavRailViewState extends State<NavRailView> {
   late int _selectedIndex;
 
   // Centralized color for selected icons
-  final Color selectedIconColor = const Color.fromARGB(255, 242, 153, 45);
+  final Color selectedIconColor = const Color.fromARGB(133, 246, 129, 135);
 
   final List<NavigationRailDestination> destinations = [
     const NavigationRailDestination(
-      icon: Icon(Icons.favorite_border),
-      selectedIcon: Icon(Icons.favorite),
-      label: Text('Items'),
+      icon: Icon(Icons.home),
+      selectedIcon: Icon(Icons.home),
+      label: Text('Start'),
     ),
+    // const NavigationRailDestination(
+    //   icon: Icon(Icons.favorite_border),
+    //   selectedIcon: Icon(Icons.favorite),
+    //   label: Text('Items'),
+    // ),
     const NavigationRailDestination(
       icon: Icon(Icons.bookmark_border),
       selectedIcon: Icon(Icons.book),
@@ -127,7 +133,8 @@ class _NavRailViewState extends State<NavRailView> {
   ];
 
   final List<Widget> views = [
-    const ItemsView(index: 0),
+    const StartView(),
+    // const ItemsView(index: 0),
     const StatisticsView(),
     const ParkingView(),
     const ParkingSpacesView(),
@@ -144,11 +151,11 @@ class _NavRailViewState extends State<NavRailView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 154, 179, 148),
+      backgroundColor: const Color.fromARGB(255, 193, 220, 238),
       body: Row(
         children: <Widget>[
           NavigationRail(
-            backgroundColor: const Color.fromARGB(255, 167, 188, 162),
+            backgroundColor: const Color.fromARGB(255, 234, 239, 243),
             selectedIndex: _selectedIndex,
             onDestinationSelected: (int index) {
               setState(() {
@@ -182,7 +189,8 @@ class _NavRailViewState extends State<NavRailView> {
 
   void _navigateToRoute(BuildContext context, int index) {
     final routes = [
-      '/items',
+      // '/items',
+      '/start',
       '/statistics',
       '/parkings',
       '/parking-spaces',
