@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, prefer_const_constructors
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -6,8 +6,7 @@ import 'package:client_repositories/async_http_repos.dart';
 import 'package:shared/shared.dart';
 import 'package:intl/intl.dart';
 import '../theme_notifier.dart';
-
-// import '../widgets/bottom_action_buttons.dart.dart';
+import '../widgets/bottom_action_buttons.dart.dart';
 
 class ParkingView extends StatefulWidget {
   const ParkingView({super.key});
@@ -18,16 +17,35 @@ class ParkingView extends StatefulWidget {
 
 class _ParkingViewState extends State<ParkingView> {
   late Future<List<Parking>> _parkingsFuture;
+  // ignore: unused_field
+  late Future<void> _initialDataLoad;
   Parking? _selectedParking;
   bool _showActiveOnly = false;
 
-  final DateFormat timeFormat =
-      DateFormat('yyyy-MM-dd HH:mm'); // Format to minutes
+  // Prefetched data
+  List<ParkingSpace> _parkingSpaces = [];
+  List<Vehicle> _vehicles = [];
+
+  final DateFormat timeFormat = DateFormat('yyyy-MM-dd HH:mm');
 
   @override
   void initState() {
     super.initState();
+    _initialDataLoad = _prefetchData();
     _loadParkings();
+  }
+
+  Future<void> _prefetchData() async {
+    try {
+      final vehicles = await VehicleRepository().getAll();
+      final parkingSpaces = await ParkingSpaceRepository().getAll();
+      setState(() {
+        _vehicles = vehicles;
+        _parkingSpaces = parkingSpaces;
+      });
+    } catch (e) {
+      debugPrint('Error prefetching data: $e');
+    }
   }
 
   void _loadParkings() {
@@ -41,7 +59,278 @@ class _ParkingViewState extends State<ParkingView> {
     });
   }
 
-  
+  void _createParking() async {
+    String? selectedVehicle;
+    String? selectedParkingSpace;
+
+    if (_vehicles.isEmpty || _parkingSpaces.isEmpty) {
+      debugPrint('No prefetched data available.');
+      return;
+    }
+
+    final ongoingSessions = (await ParkingRepository().getAll())
+        .where((p) => p.endTime == null)
+        .toList();
+
+    final availableVehicles = _vehicles.where((vehicle) {
+      return !ongoingSessions
+          .any((session) => session.vehicle.target?.id == vehicle.id);
+    }).toList();
+
+    final availableParkingSpaces = _parkingSpaces.where((space) {
+      return !ongoingSessions
+          .any((session) => session.parkingSpace.target?.id == space.id);
+    }).toList();
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Create Parking'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButtonFormField<String>(
+                    decoration:
+                        const InputDecoration(labelText: 'Select Vehicle'),
+                    items: availableVehicles
+                        .map((vehicle) => DropdownMenuItem(
+                              value: vehicle.id.toString(),
+                              child: Text(vehicle.licensePlate),
+                            ))
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedVehicle = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                        labelText: 'Select Parking Space'),
+                    items: availableParkingSpaces
+                        .map((space) => DropdownMenuItem(
+                              value: space.id.toString(),
+                              child: Text(space.address),
+                            ))
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedParkingSpace = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (selectedVehicle != null &&
+                        selectedParkingSpace != null) {
+                          
+                      final selectedVehicleData = availableVehicles.firstWhere(
+                          (vehicle) =>
+                              vehicle.id.toString() == selectedVehicle);
+
+                      final selectedParkingSpaceData =
+                          availableParkingSpaces.firstWhere((space) =>
+                              space.id.toString() == selectedParkingSpace);
+
+                      final newParking = Parking(
+                        startTime: DateTime.now(),
+                      );
+                      newParking.setDetails(
+                        selectedVehicleData,
+                        selectedParkingSpaceData,
+                      );
+                      await ParkingRepository().create(newParking);
+                      debugPrint('Parking created: $newParking');
+                      _loadParkings(); // Reload data after creation
+                      Navigator.of(context).pop();
+                    } else {
+                      debugPrint('All fields must be selected.');
+                    }
+                  },
+                  child: const Text('Create'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+// I should only be allowed to update an address for an ongoing parking
+  void _editParking() async {
+    if (_selectedParking?.endTime != null) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Cannot Edit Parking'),
+            content: const Text('You can only edit ongoing parking sessions.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+
+    String? selectedParkingSpace;
+
+    final ongoingSessions = (await ParkingRepository().getAll())
+        .where((p) => p.endTime == null)
+        .toList();
+
+    final availableParkingSpaces = _parkingSpaces.where((space) {
+      return !ongoingSessions
+          .any((session) => session.parkingSpace.target?.id == space.id);
+    }).toList();
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Edit Parking Address'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                        labelText: 'Select Parking Space'),
+                    items: availableParkingSpaces
+                        .map((space) => DropdownMenuItem(
+                              value: space.id.toString(),
+                              child: Text(space.address),
+                            ))
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedParkingSpace = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    debugPrint('onPressed now');
+                    if (selectedParkingSpace != null) {
+                      
+                      
+                      
+                      
+                      final selectedParkingSpaceData =
+                          availableParkingSpaces.firstWhere((space) =>
+                              space.id.toString() == selectedParkingSpace);
+
+                      final updatedParking = Parking(
+                        id: _selectedParking!.id,
+                        startTime: _selectedParking!.startTime,
+                        // endTime: _selectedParking!.endTime,
+                        endTime: null, // Keep endTime null for ongoing sessions
+                      );
+                      updatedParking.setDetails(
+                        _selectedParking!.vehicle.target!,
+                        selectedParkingSpaceData,
+                      );
+                      await ParkingRepository()
+                          .update(updatedParking.id, updatedParking);
+                      debugPrint('Parking updated: ${updatedParking.toJson()}');
+                      _loadParkings(); // Reload data after update
+                      Navigator.of(context)
+                          .pop(); // Close the dialog after update
+                    } else {
+                      debugPrint('No changes were made.');
+                    }
+                  },
+                  child: const Text('Update'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _deleteParking() async {
+    if (_selectedParking == null) {
+      debugPrint('No parking selected for deletion.');
+      return;
+    }
+
+    // Show confirmation dialog
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Deletion'),
+          content: const Text('Are you sure you want to delete this parking'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false); // Return false
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(true); // Return true
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      try {
+        final result = await ParkingRepository().delete(_selectedParking!.id);
+        if (result == null) {
+          debugPrint('Parking deleted successfully.');
+          setState(() {
+            _selectedParking = null; // Clear selection
+          });
+          _loadParkings(); // Reload data after deletion
+        } else {
+          debugPrint('Unexpected result during deletion: $result');
+        }
+      } catch (e) {
+        debugPrint('Error deleting parking: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to delete parking: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,10 +375,7 @@ class _ParkingViewState extends State<ParkingView> {
                 child: const Text('Active Parkings'),
               ),
             ],
-            
-            
           ),
-          
           Expanded(
             child: FutureBuilder<List<Parking>>(
               future: _parkingsFuture,
@@ -132,9 +418,54 @@ class _ParkingViewState extends State<ParkingView> {
                           DataCell(Text(
                               parking.parkingSpace.target?.address ?? 'N/A')),
                           DataCell(Text(timeFormat.format(parking.startTime))),
-                          DataCell(Text(parking.endTime != null
-                              ? timeFormat.format(parking.endTime!)
-                              : 'Ongoing')),
+                          DataCell(
+                            parking.endTime != null
+                                ? Text(timeFormat.format(parking.endTime!))
+                                : ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      foregroundColor: Colors.white,
+                                      backgroundColor:
+                                          Colors.red, // Button text color
+                                    ),
+                                    onPressed: () async {
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return AlertDialog(
+                                            title: const Text(
+                                                'Confirm Stop Parking'),
+                                            content: const Text(
+                                                'Are you sure you want to stop this parking session?'),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                                child: const Text('Cancel'),
+                                              ),
+                                              ElevatedButton(
+                                                onPressed: () async {
+                                                  Navigator.of(context).pop();
+                                                  parking.endTime =
+                                                      DateTime.now();
+                                                  // ParkingRepository().update(
+                                                  //     parking.id, parking);
+                                                      await ParkingRepository().stop(parking.id);
+                                                  setState(() {
+                                                    // Force a rebuild
+                                                  });
+                                                  _loadParkings(); // Reload data for future updates
+                                                },
+                                                child: const Text('Stop'),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
+                                    child: const Text('Stop'),
+                                  ),
+                          ),
                         ],
                       );
                     }).toList(),
@@ -142,14 +473,13 @@ class _ParkingViewState extends State<ParkingView> {
                 );
               },
             ),
-            
           ),
-          // BottomActionButtons(
-          //   onNew: _createParking,
-          //   onEdit: () {}, // Add edit logic when needed
-          //   onDelete: _deleteParking,
-          //   onReload: _loadParkings,
-          // ),
+          BottomActionButtons(
+            onNew: _createParking,
+            onEdit: _editParking,
+            onDelete: _deleteParking,
+            onReload: _loadParkings,
+          ),
         ],
       ),
     );

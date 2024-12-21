@@ -60,29 +60,59 @@ Future<Response> getParkingByIdHandler(Request request) async {
   }
 }
 
-// Update by ID
+// // Update by ID , as now I us this for stopping a parking not the best naming
+// Future<Response> updateParkingHandler(Request request) async {
+//   final id = int.tryParse(request.params['id']!);
+//   if (id == null) {
+//     return Response(400,
+//         body: jsonEncode({'error': 'Invalid ID'}),
+//         headers: {'Content-Type': 'application/json'});
+//   }
+
+//   try {
+//     final parking = await parkingRepository.getById(id);
+//     if (parking == null) {
+//       return Response.notFound(jsonEncode({'error': 'Parking not found'}),
+//           headers: {'Content-Type': 'application/json'});
+//     }
+
+//     // Set end time for stopping the session
+//     parking.endTime = DateTime.now();
+//     await parkingRepository.update(id, parking);
+//     print("setting endtime in updateParkingHandler");
+
+//     return Response.ok(
+//       jsonEncode({'message': 'Parking stopped successfully'}),
+//       headers: {'Content-Type': 'application/json'},
+//     );
+//   } catch (e) {
+//     return Response.internalServerError(
+//       body: jsonEncode({'error': 'Failed to update parking'}),
+//       headers: {'Content-Type': 'application/json'},
+//     );
+//   }
+// }
+
+//use this when I update the details on a parking
 Future<Response> updateParkingHandler(Request request) async {
   final id = int.tryParse(request.params['id']!);
   if (id == null) {
-    return Response(400,
-        body: jsonEncode({'error': 'Invalid ID'}),
-        headers: {'Content-Type': 'application/json'});
+    return Response.badRequest(body: jsonEncode({'error': 'Invalid ID'}));
   }
 
   try {
-    final parking = await parkingRepository.getById(id);
-    if (parking == null) {
-      return Response.notFound(jsonEncode({'error': 'Parking not found'}),
-          headers: {'Content-Type': 'application/json'});
-    }
+    final payload = await request.readAsString();
+    final data = jsonDecode(payload);
+    final updatedParking = Parking.fromJson(data);
 
-    // Set end time for stopping the session
-    parking.endTime = DateTime.now();
-    await parkingRepository.update(id, parking);
-    print("setting endtime in updateParkingHandler");
+    // Update the parking details in repository (excluding end time)
+    await parkingRepository.update(id, updatedParking);
+
+    // Retrieve the updated parking object (optional)
+    final updatedParkingFromDb = await parkingRepository.getById(id);
 
     return Response.ok(
-      jsonEncode({'message': 'Parking stopped successfully'}),
+      jsonEncode(updatedParkingFromDb?.toJson() ?? {}),
       headers: {'Content-Type': 'application/json'},
     );
   } catch (e) {

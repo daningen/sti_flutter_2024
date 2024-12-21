@@ -91,4 +91,23 @@ class ParkingSpaceRepository implements RepositoryInterface<ParkingSpace> {
       return null;
     }
   }
+
+  /// Check if a parking space is occupied
+  Future<bool> isOccupied(int parkingSpaceId) async {
+    final uri = Uri.parse(
+        '${Config.parkingsEndpoint}?parkingSpaceId=$parkingSpaceId&status=active');
+    final response = await http.get(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final jsonList = jsonDecode(response.body) as List;
+      // If there are active parkings associated with this parking space, it is occupied
+      return jsonList.isNotEmpty;
+    } else {
+      throw Exception(
+          'Failed to fetch parking status for space ID $parkingSpaceId');
+    }
+  }
 }

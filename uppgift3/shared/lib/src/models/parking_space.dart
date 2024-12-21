@@ -26,6 +26,13 @@ class ParkingSpace {
     };
   }
 
+// Computed property to check if the parking space is occupied
+  bool get isOccupied {
+    // Logic to check if the space is occupied
+    // For example, you can fetch all parkings and filter active ones
+    return false; // Replace with actual logic
+  }
+
   @override
   String toString() {
     return 'ParkingSpace{id: $id, address: $address, pricePerHour: $pricePerHour}';

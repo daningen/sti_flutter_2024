@@ -66,8 +66,9 @@ class ServerConfig {
     router.get('/parkings', getAllParkingsHandler);
     router.get('/parkings/<id>', getParkingByIdHandler);
 
-    router.put('/parkings/<id>', updateParkingHandler);
+    router.put('/parkings/<id>', updateParkingHandler);  
+ 
     router.delete('/parkings/<id>', deleteParkingHandler);
-    router.put('/parkings/<id>', stopParkingHandler);
+    router.put('/parkings/<id>/stop', stopParkingHandler); //use for stopping
   }
 }

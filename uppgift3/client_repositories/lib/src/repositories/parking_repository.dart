@@ -51,6 +51,7 @@ class ParkingRepository implements RepositoryInterface<Parking> {
   @override
   Future<Parking> update(int id, Parking parking) async {
     print("[ParkingRepository] Updating parking session with ID: $id");
+
     final uri = Uri.parse('$endpoint/$id');
     final response = await http.put(
       uri,
@@ -69,6 +70,7 @@ class ParkingRepository implements RepositoryInterface<Parking> {
   }
 
   @override
+  @override
   Future<Parking?> delete(int id) async {
     print("[ParkingRepository] Deleting parking session with ID: $id");
     final uri = Uri.parse('$endpoint/$id');
@@ -80,7 +82,13 @@ class ParkingRepository implements RepositoryInterface<Parking> {
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
       print("[ParkingRepository] Parking deleted: $json");
-      return Parking.fromJson(json);
+      if (json is Map<String, dynamic> && json.containsKey('message')) {
+        // If the response contains a success message, handle it
+        return null; // Indicate that deletion was successful without returning a Parking object
+      } else {
+        return Parking.fromJson(
+            json); // Convert to Parking if the API returns the deleted object
+      }
     } else if (response.statusCode == 404) {
       print("[ParkingRepository] Parking not found for deletion.");
       return null;
@@ -110,8 +118,12 @@ class ParkingRepository implements RepositoryInterface<Parking> {
   }
 
   Future<void> stop(int id) async {
+    debugPrint("in ParkingRepository.stop");
     print("[ParkingRepository] Stopping parking session with ID: $id");
-    final uri = Uri.parse('$endpoint/$id');
+
+    // Use Config.parkingsEndpoint for the base URL
+    final uri = Uri.parse('${Config.parkingsEndpoint}/$id/stop');
+
     final response = await http.put(
       uri,
       headers: {'Content-Type': 'application/json'},
@@ -125,4 +137,6 @@ class ParkingRepository implements RepositoryInterface<Parking> {
       throw Exception('Failed to stop parking: ${response.body}');
     }
   }
+
+  void debugPrint(String s) {}
 }
