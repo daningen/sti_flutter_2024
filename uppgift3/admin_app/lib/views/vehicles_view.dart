@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:admin_app/app_constants.dart';
+import 'package:admin_app/app_theme.dart';
 import 'package:admin_app/utils/validators.dart';
 import 'package:admin_app/widgets/bottom_action_buttons.dart.dart';
 import 'package:flutter/material.dart';
@@ -259,7 +260,14 @@ class _VehiclesViewState extends State<VehiclesView> {
                 final vehicles = snapshot.data ?? [];
                 return SingleChildScrollView(
                   child: DataTable(
-                    headingRowColor: WidgetStateProperty.all(Colors.grey[200]),
+                    headingRowColor: WidgetStateProperty.resolveWith<Color?>(
+                        (Set<WidgetState> states) {
+                      if (Theme.of(context).brightness == Brightness.dark) {
+                        return AppColors.headingRowColor;
+                      }
+                      return null;
+                    }),
+                    // headingRowColor: WidgetStateProperty.all(Colors.grey[200]),
                     showCheckboxColumn: false,
                     columns: const [
                       DataColumn(label: Text('LICENSE PLATE')),

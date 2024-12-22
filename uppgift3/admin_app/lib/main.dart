@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'theme_notifier.dart';
+// ignore: unused_import
+import 'package:admin_app/app_theme.dart';
 
 // import 'views/items_view.dart';
 import 'views/parking_space_view.dart';
@@ -90,9 +92,14 @@ class NavRailView extends StatefulWidget {
 
 class _NavRailViewState extends State<NavRailView> {
   late int _selectedIndex;
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.index;
+  }
 
   // Centralized color for selected icons
-  final Color selectedIconColor = const Color.fromARGB(133, 246, 129, 135);
+  final Color selectedIconColor = const Color.fromARGB(133, 209, 12, 22);
 
   final List<NavigationRailDestination> destinations = [
     const NavigationRailDestination(
@@ -100,11 +107,6 @@ class _NavRailViewState extends State<NavRailView> {
       selectedIcon: Icon(Icons.home),
       label: Text('Start'),
     ),
-    // const NavigationRailDestination(
-    //   icon: Icon(Icons.favorite_border),
-    //   selectedIcon: Icon(Icons.favorite),
-    //   label: Text('Items'),
-    // ),
     const NavigationRailDestination(
       icon: Icon(Icons.bookmark_border),
       selectedIcon: Icon(Icons.book),
@@ -142,20 +144,27 @@ class _NavRailViewState extends State<NavRailView> {
     const UserView(), // Updated UserView
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _selectedIndex = widget.index;
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _selectedIndex = widget.index;
+  // }
 
   @override
+  @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 193, 220, 238),
+      backgroundColor: isDarkMode
+          ? AppColors.darkScaffoldBackgroundColor
+          : AppColors.lightBackgroundColor,
       body: Row(
         children: <Widget>[
           NavigationRail(
-            backgroundColor: const Color.fromARGB(255, 234, 239, 243),
+            backgroundColor: isDarkMode
+                ? AppColors.darkBackgroundColor
+                : AppColors.lightBackgroundColor, // Use AppColors
             selectedIndex: _selectedIndex,
             onDestinationSelected: (int index) {
               setState(() {
@@ -165,6 +174,7 @@ class _NavRailViewState extends State<NavRailView> {
             },
             labelType: NavigationRailLabelType.all,
             destinations: destinations.map((destination) {
+              
               return NavigationRailDestination(
                 icon: destination.icon,
                 selectedIcon: Icon(
@@ -178,7 +188,9 @@ class _NavRailViewState extends State<NavRailView> {
           const VerticalDivider(thickness: 1, width: 1),
           Expanded(
             child: Container(
-              color: const Color.fromARGB(255, 200, 204, 207),
+              color: isDarkMode
+                  ? AppColors.darkBackgroundColor
+                  : AppColors.lightBackgroundColor,
               child: views[_selectedIndex],
             ),
           ),

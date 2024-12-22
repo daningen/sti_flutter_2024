@@ -1,5 +1,3 @@
-// utils/validators.dart
-
 class Validators {
   static String? validateLicensePlate(String? value) {
     if (value == null || value.isEmpty) {
@@ -43,21 +41,46 @@ class Validators {
       return 'SSN must be in YYMMDD format';
     }
 
-    // Validate YYMMDD components
-    final year = int.tryParse(value.substring(0, 2));
-    final month = int.tryParse(value.substring(2, 4));
-    final day = int.tryParse(value.substring(4, 6));
+    // Validate YYMMDD
+    try {
+      // ignore: unused_local_variable
+      final year = int.parse('20${value.substring(0, 2)}');
+      final month = int.parse(value.substring(2, 4));
+      final day = int.parse(value.substring(4, 6));
 
-    if (year == null || month == null || day == null) {
+      if (month < 1 || month > 12) return 'Invalid month';
+       
+      if (day < 1 || day > 31) {
+        return 'Day must be between 01 and 31';
+      }
+    } catch (e) {
       return 'Invalid SSN format';
     }
-    if (month < 1 || month > 12) {
-      return 'Month must be between 01 and 12';
-    }
-    if (day < 1 || day > 31) {
-      return 'Day must be between 01 and 31';
-    }
 
+    return null;
+  }
+
+  static String? validateAddress(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Address is required';
+    }
+    if (!RegExp(r'^[a-zA-Z]').hasMatch(value)) {
+      return 'Address must start with a letter';
+    }
+    return null;
+  }
+
+  static String? validatePrice(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Price is required';
+    }
+    final price = int.tryParse(value);
+    if (price == null) {
+      return 'Invalid price';
+    }
+    if (price < 10 || price > 100) {
+      return 'Price must be between 10 and 100';
+    }
     return null;
   }
 }

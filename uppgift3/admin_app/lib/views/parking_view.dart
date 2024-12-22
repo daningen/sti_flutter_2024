@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously, prefer_const_constructors
 
+import 'package:admin_app/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:client_repositories/async_http_repos.dart';
@@ -136,7 +137,6 @@ class _ParkingViewState extends State<ParkingView> {
                   onPressed: () async {
                     if (selectedVehicle != null &&
                         selectedParkingSpace != null) {
-                          
                       final selectedVehicleData = availableVehicles.firstWhere(
                           (vehicle) =>
                               vehicle.id.toString() == selectedVehicle);
@@ -242,10 +242,6 @@ class _ParkingViewState extends State<ParkingView> {
                   onPressed: () async {
                     debugPrint('onPressed now');
                     if (selectedParkingSpace != null) {
-                      
-                      
-                      
-                      
                       final selectedParkingSpaceData =
                           availableParkingSpaces.firstWhere((space) =>
                               space.id.toString() == selectedParkingSpace);
@@ -390,7 +386,13 @@ class _ParkingViewState extends State<ParkingView> {
                 final parkings = snapshot.data ?? [];
                 return SingleChildScrollView(
                   child: DataTable(
-                    headingRowColor: WidgetStateProperty.all(Colors.grey[200]),
+                    headingRowColor: WidgetStateProperty.resolveWith<Color?>(
+                        (Set<WidgetState> states) {
+                      if (Theme.of(context).brightness == Brightness.dark) {
+                        return AppColors.headingRowColor;
+                      }
+                      return null;
+                    }),
                     showCheckboxColumn: false,
                     columns: const [
                       DataColumn(label: Text('VEHICLE')),
@@ -450,7 +452,8 @@ class _ParkingViewState extends State<ParkingView> {
                                                       DateTime.now();
                                                   // ParkingRepository().update(
                                                   //     parking.id, parking);
-                                                      await ParkingRepository().stop(parking.id);
+                                                  await ParkingRepository()
+                                                      .stop(parking.id);
                                                   setState(() {
                                                     // Force a rebuild
                                                   });

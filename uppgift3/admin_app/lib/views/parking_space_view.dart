@@ -1,12 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:admin_app/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:client_repositories/async_http_repos.dart';
 import 'package:shared/shared.dart';
 import '../theme_notifier.dart';
-
-// import '../utils/validators.dart';
+import 'package:admin_app/utils/validators.dart';
 import '../widgets/bottom_action_buttons.dart.dart';
 
 class ParkingSpacesView extends StatefulWidget {
@@ -51,14 +51,16 @@ class _ParkingSpacesViewState extends State<ParkingSpacesView> {
                 TextFormField(
                   controller: addressController,
                   decoration: const InputDecoration(labelText: 'Address'),
-                  // validator: Validators.validateName,
+                  validator:
+                      Validators.validateAddress, // Use the address validator
                 ),
                 TextFormField(
                   controller: priceController,
                   decoration:
                       const InputDecoration(labelText: 'Price (SEK/hr)'),
                   keyboardType: TextInputType.number,
-                  // validator: Validators.validatePositiveNumber,
+                  validator:
+                      Validators.validatePrice, // Use the price validator
                 ),
               ],
             ),
@@ -71,17 +73,31 @@ class _ParkingSpacesViewState extends State<ParkingSpacesView> {
             ElevatedButton(
               onPressed: () {
                 if (formKey.currentState!.validate()) {
-                  final newParkingSpace = ParkingSpace(
-                    address: addressController.text,
-                    pricePerHour: int.parse(priceController.text),
-                  );
-                  ParkingSpaceRepository().create(newParkingSpace).then((_) {
-                    Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Parking Space created')),
+                  try {
+                    final newParkingSpace = ParkingSpace(
+                      address: addressController.text,
+                      pricePerHour: int.parse(priceController.text),
                     );
-                    _loadParkingSpaces();
-                  });
+                    ParkingSpaceRepository().create(newParkingSpace).then((_) {
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Parking Space created')),
+                      );
+                      _loadParkingSpaces();
+                    }).catchError((error) {
+                      // Handle creation errors, e.g., show a snackbar
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content:
+                                Text('Failed to create parking space: $error')),
+                      );
+                    });
+                  } catch (e) {
+                    // Handle parsing errors (should be caught by the validator, but good to have)
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Invalid price format')),
+                    );
+                  }
                 }
               },
               child: const Text('Create'),
@@ -114,14 +130,16 @@ class _ParkingSpacesViewState extends State<ParkingSpacesView> {
                 TextFormField(
                   controller: addressController,
                   decoration: const InputDecoration(labelText: 'Address'),
-                  // validator: Validators.validateName,
+                  validator:
+                      Validators.validateAddress, // Use the address validator
                 ),
                 TextFormField(
                   controller: priceController,
                   decoration:
                       const InputDecoration(labelText: 'Price (SEK/hr)'),
                   keyboardType: TextInputType.number,
-                  // validator: Validators.validatePositiveNumber,
+                  validator:
+                      Validators.validatePrice, // Use the price validator
                 ),
               ],
             ),
@@ -134,19 +152,32 @@ class _ParkingSpacesViewState extends State<ParkingSpacesView> {
             ElevatedButton(
               onPressed: () {
                 if (formKey.currentState!.validate()) {
-                  _selectedParkingSpace!.address = addressController.text;
-                  _selectedParkingSpace!.pricePerHour =
-                      int.parse(priceController.text);
+                  try {
+                    _selectedParkingSpace!.address = addressController.text;
+                    _selectedParkingSpace!.pricePerHour =
+                        int.parse(priceController.text);
 
-                  ParkingSpaceRepository()
-                      .update(_selectedParkingSpace!.id, _selectedParkingSpace!)
-                      .then((_) {
-                    Navigator.of(context).pop();
+                    ParkingSpaceRepository()
+                        .update(
+                            _selectedParkingSpace!.id, _selectedParkingSpace!)
+                        .then((_) {
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Parking Space updated')),
+                      );
+                      _loadParkingSpaces();
+                    }).catchError((error) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content:
+                                Text('Failed to update parking space: $error')),
+                      );
+                    });
+                  } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Parking Space updated')),
+                      const SnackBar(content: Text('Invalid price format')),
                     );
-                    _loadParkingSpaces();
-                  });
+                  }
                 }
               },
               child: const Text('Save'),
@@ -163,8 +194,8 @@ class _ParkingSpacesViewState extends State<ParkingSpacesView> {
     ParkingSpaceRepository().delete(_selectedParkingSpace!.id).then((_) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content:
-                Text('Deleted Parking Space: ${_selectedParkingSpace!.id}')),
+            content: Text(
+                'Deleted Parking Space: ${_selectedParkingSpace!.address}')),
       );
       setState(() {
         _selectedParkingSpace = null;
@@ -206,7 +237,13 @@ class _ParkingSpacesViewState extends State<ParkingSpacesView> {
                 final parkingSpaces = snapshot.data ?? [];
                 return SingleChildScrollView(
                   child: DataTable(
-                    headingRowColor: WidgetStateProperty.all(Colors.grey[200]),
+                    headingRowColor: WidgetStateProperty.resolveWith<Color?>(
+                        (Set<WidgetState> states) {
+                      if (Theme.of(context).brightness == Brightness.dark) {
+                        return AppColors.headingRowColor;
+                      }
+                      return null;
+                    }),
                     showCheckboxColumn: false,
                     columns: const [
                       DataColumn(label: Text('ADDRESS')),

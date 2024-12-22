@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:admin_app/app_theme.dart';
 import 'package:admin_app/widgets/bottom_action_buttons.dart.dart';
 import 'package:flutter/material.dart';
 import 'package:client_repositories/async_http_repos.dart';
@@ -205,7 +206,13 @@ class _UserViewState extends State<UserView> {
                 final users = snapshot.data ?? [];
                 return SingleChildScrollView(
                   child: DataTable(
-                    headingRowColor: WidgetStateProperty.all(Colors.grey[200]),
+                    headingRowColor: WidgetStateProperty.resolveWith<Color?>(
+                        (Set<WidgetState> states) {
+                      if (Theme.of(context).brightness == Brightness.dark) {
+                        return AppColors.headingRowColor;
+                      }
+                      return null;
+                    }),
                     showCheckboxColumn: false, // No checkboxes
                     columns: const [
                       DataColumn(label: Text('NAME')),

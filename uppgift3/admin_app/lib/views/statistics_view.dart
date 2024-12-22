@@ -2,6 +2,8 @@ import 'package:admin_app/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:client_repositories/async_http_repos.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../theme_notifier.dart';
 
 class StatisticsView extends StatefulWidget {
   const StatisticsView({super.key});
@@ -89,11 +91,34 @@ class _StatisticsViewState extends State<StatisticsView> {
       ..take(3).toList(); // Take only the top 3
   }
 
+  String _formatAverageDuration(int averageDurationInMinutes) {
+    if (averageDurationInMinutes <= 60) {
+      return '$averageDurationInMinutes mins';
+    } else {
+      int hours = averageDurationInMinutes ~/ 60;
+      int remainingMinutes = averageDurationInMinutes % 60;
+      return '$hours hr $remainingMinutes mins';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Parking Statistics'),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Provider.of<ThemeNotifier>(context).themeMode == ThemeMode.light
+                  ? Icons.dark_mode
+                  : Icons.light_mode,
+            ),
+            onPressed: () {
+              Provider.of<ThemeNotifier>(context, listen: false).toggleTheme();
+            },
+            tooltip: 'Toggle Theme',
+          ),
+        ],
       ),
       body: FutureBuilder<Map<String, dynamic>>(
         future: _statisticsFuture,
@@ -104,7 +129,9 @@ class _StatisticsViewState extends State<StatisticsView> {
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
+
           final stats = snapshot.data!;
+
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -119,8 +146,10 @@ class _StatisticsViewState extends State<StatisticsView> {
                 _buildStatCard('Total Parking Spaces',
                     stats['totalParkingSpaces'].toString()),
                 const Divider(),
-                _buildStatCard('Average Parking Duration',
-                    '${stats['averageDuration']} mins'), // Rounded to int
+                _buildStatCard(
+                    'Average Parking Duration',
+                    _formatAverageDuration(stats['averageDuration']
+                        as int)), // Pass int and format
               ],
             ),
           );
@@ -194,16 +223,27 @@ class _StatisticsViewState extends State<StatisticsView> {
     showDialog(
       context: context,
       builder: (context) {
+        final top3Limited = top3.take(3).toList(); // Take only the first 3
+
         return AlertDialog(
           title: const Text('Top 3 Most Used Parking Spaces'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: top3.map((entry) {
-              return ListTile(
-                title: Text(entry.key), // Display the address directly
-                trailing: Text('${entry.value} parkings'),
-              );
-            }).toList(),
+          content: SizedBox(
+            height: top3Limited.isEmpty
+                ? null
+                : 200, // Dynamic height or null if empty
+            width: 300,
+            child: top3Limited.isEmpty
+                ? const Center(child: Text('No data available'))
+                : ListView.builder(
+                    itemCount: top3Limited.length,
+                    itemBuilder: (context, index) {
+                      final entry = top3Limited[index];
+                      return ListTile(
+                        title: Text(entry.key),
+                        trailing: Text('${entry.value} parkings'),
+                      );
+                    },
+                  ),
           ),
           actions: [
             TextButton(
@@ -217,20 +257,34 @@ class _StatisticsViewState extends State<StatisticsView> {
   }
 
   void _showLeastUsedDialog(List<MapEntry<String, int>> leastUsed) {
-    // Changed parameter type
     showDialog(
       context: context,
       builder: (context) {
+        // Sort leastUsed in ascending order by value (number of parkings)
+        final leastUsedSorted = leastUsed.toList()
+          ..sort((a, b) => a.value.compareTo(b.value));
+        final top3LeastUsed =
+            leastUsedSorted.take(3).toList(); // Take only the first 3
+
         return AlertDialog(
           title: const Text('Least Used Parking Spaces'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: leastUsed.map((entry) {
-              return ListTile(
-                title: Text(entry.key),
-                trailing: Text('${entry.value} parkings'),
-              );
-            }).toList(),
+          content: SizedBox(
+            height: top3LeastUsed.isEmpty
+                ? null
+                : 200, // Dynamic height or null if empty
+            width: 300,
+            child: top3LeastUsed.isEmpty
+                ? const Center(child: Text('No data available'))
+                : ListView.builder(
+                    itemCount: top3LeastUsed.length,
+                    itemBuilder: (context, index) {
+                      final entry = top3LeastUsed[index];
+                      return ListTile(
+                        title: Text(entry.key),
+                        trailing: Text('${entry.value} parkings'),
+                      );
+                    },
+                  ),
           ),
           actions: [
             TextButton(
