@@ -174,7 +174,6 @@ class _NavRailViewState extends State<NavRailView> {
             },
             labelType: NavigationRailLabelType.all,
             destinations: destinations.map((destination) {
-              
               return NavigationRailDestination(
                 icon: destination.icon,
                 selectedIcon: Icon(

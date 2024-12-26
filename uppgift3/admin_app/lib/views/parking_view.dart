@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:client_repositories/async_http_repos.dart';
 import 'package:shared/shared.dart';
+// ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
 import '../theme_notifier.dart';
 import '../widgets/bottom_action_buttons.dart.dart';
