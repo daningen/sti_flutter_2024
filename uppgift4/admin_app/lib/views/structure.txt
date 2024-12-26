@@ -1,0 +1,34 @@
+ParkingSpacesView (Widget)
+│
+├── AppBar: "Parking places"
+│
+├── Body: FutureBuilder<List<ParkingSpace>>
+│   ├── Waiting: CircularProgressIndicator
+│   ├── Error: Text('Error: ${snapshot.error}')
+│   ├── Empty: Text('No available parking spaces')
+│   ├── List of ParkingSpaces
+│       ├── Each ListTile:
+│           ├── Title: "Address: ${parkingSpace.address}"
+│           ├── Subtitle: "Price per hour: ${parkingSpace.pricePerHour} SEK"
+│           ├── Trailing:
+│               ├── Edit Button (Icon: Edit)
+│               │   └── On Press:
+│               │       ├── Open Edit Dialog
+│               │       ├── Submit Updates
+│               │       ├── Call repository.update()
+│               │       └── Refresh List
+│               ├── Delete Button (Icon: Delete)
+│                   └── On Press:
+│                       ├── Show Confirmation Dialog
+│                       │   ├── Cancel: Do nothing
+│                       │   └── Confirm:
+│                       │       ├── Call repository.delete(parkingSpace.id)
+│                       │       ├── Refresh List
+│                       │       └── Show SnackBar (Success/Failure)
+│
+└── FloatingActionButton: "Create"
+    └── On Press:
+        ├── Show Create Dialog
+        ├── Submit New ParkingSpace
+        ├── Call repository.create(newParkingSpace)
+        └── Refresh List

@@ -1,0 +1,214 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:5734646974315608523",
+      "lastPropertyId": "3:5912940655653160131",
+      "name": "Bag",
+      "properties": [
+        {
+          "id": "1:2913043497242712178",
+          "name": "description",
+          "type": 9
+        },
+        {
+          "id": "2:6977688743717899067",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "3:5912940655653160131",
+          "name": "itemsInDb",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "2:8451282599434045579",
+      "lastPropertyId": "2:7672144424753055690",
+      "name": "Item",
+      "properties": [
+        {
+          "id": "1:5284212236574591023",
+          "name": "description",
+          "type": 9
+        },
+        {
+          "id": "2:7672144424753055690",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "3:6361105331499020977",
+      "lastPropertyId": "10:8453192963093825079",
+      "name": "Person",
+      "properties": [
+        {
+          "id": "2:1896031891015238284",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "8:5553561847851411563",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "9:7212588147923256981",
+          "name": "ssn",
+          "type": 9
+        },
+        {
+          "id": "10:8453192963093825079",
+          "name": "itemsInDb",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "6:6322958116010445661",
+      "lastPropertyId": "3:5608482441508257846",
+      "name": "ParkingSpace",
+      "properties": [
+        {
+          "id": "1:2069394012398517009",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:8195065975246932491",
+          "name": "address",
+          "type": 9
+        },
+        {
+          "id": "3:5608482441508257846",
+          "name": "pricePerHour",
+          "type": 6
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "8:4947039560727772286",
+      "lastPropertyId": "5:7589300267080396296",
+      "name": "Parking",
+      "properties": [
+        {
+          "id": "1:1690024171666092378",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:5729697005842833787",
+          "name": "startTime",
+          "type": 10
+        },
+        {
+          "id": "3:4746023821207332868",
+          "name": "endTime",
+          "type": 10
+        },
+        {
+          "id": "4:5072189699137887170",
+          "name": "vehicleId",
+          "type": 11,
+          "flags": 520,
+          "indexId": "4:8277506376588452714",
+          "relationTarget": "Vehicle"
+        },
+        {
+          "id": "5:7589300267080396296",
+          "name": "parkingSpaceId",
+          "type": 11,
+          "flags": 520,
+          "indexId": "5:3842738552290414629",
+          "relationTarget": "ParkingSpace"
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "10:3744316781313027710",
+      "lastPropertyId": "4:5480796796044026283",
+      "name": "Vehicle",
+      "properties": [
+        {
+          "id": "1:7255429291231494172",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:7995080852447567522",
+          "name": "licensePlate",
+          "type": 9
+        },
+        {
+          "id": "3:851170152724251543",
+          "name": "vehicleType",
+          "type": 9
+        },
+        {
+          "id": "4:5480796796044026283",
+          "name": "ownerId",
+          "type": 11,
+          "flags": 520,
+          "indexId": "7:7027168581809966975",
+          "relationTarget": "Person"
+        }
+      ],
+      "relations": []
+    }
+  ],
+  "lastEntityId": "10:3744316781313027710",
+  "lastIndexId": "7:7027168581809966975",
+  "lastRelationId": "0:0",
+  "lastSequenceId": "0:0",
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
+  "retiredEntityUids": [
+    6539104271398186167,
+    1555128805293743242,
+    9175493719539538660,
+    4611544989560169149
+  ],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [
+    7626779877698590705,
+    1141262634202698580,
+    6582545937594582363,
+    2542133461562607578,
+    1496041229761913517,
+    522273590172272964,
+    9028780978659742119,
+    1596206338814084163,
+    3292283472779470667,
+    1157594897086140100,
+    9192696004812464997,
+    167578117808558176,
+    4793760092919054410,
+    2495136290426339426,
+    4576736229213416591,
+    1748614264573016617,
+    4059034261802048682,
+    3461774580256256743,
+    4364822756144415362,
+    8401002822898253351,
+    5634770877231478866,
+    84680324938044488
+  ],
+  "retiredRelationUids": [],
+  "version": 1
+}
