@@ -1,7 +1,7 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../services/auth_service.dart';
-import 'auth_event.dart';
-import 'auth_state.dart';
+import 'package:flutter_bloc/flutter_bloc.dart'; // Ensure this import exists
+import 'package:shared/bloc/auth/auth_event.dart';
+import 'package:shared/bloc/auth/auth_state.dart';
+import 'package:shared/services/auth_service.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthService authService;

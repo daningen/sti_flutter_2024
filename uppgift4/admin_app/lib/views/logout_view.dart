@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../services/auth_service.dart';
+import 'package:shared/services/auth_service.dart';
 
 class LogoutView extends StatelessWidget {
   const LogoutView({super.key});

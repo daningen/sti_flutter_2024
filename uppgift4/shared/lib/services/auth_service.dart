@@ -1,6 +1,8 @@
 // auth_service.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+// ignore: unused_import
+import 'package:shared/services/auth_service.dart';
 
 class AuthService {
   AuthService();

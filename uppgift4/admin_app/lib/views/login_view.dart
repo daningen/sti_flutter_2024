@@ -3,9 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../bloc/auth/auth_bloc.dart';
-import '../bloc/auth/auth_event.dart';
-import '../bloc/auth/auth_state.dart';
+import 'package:shared/bloc/auth/auth_bloc.dart';
+import 'package:shared/bloc/auth/auth_event.dart';
+import 'package:shared/bloc/auth/auth_state.dart';
+
 import '../utils/validators.dart';
 
 class LoginView extends StatelessWidget {
