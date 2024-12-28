@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import '../auth_service.dart'; // Ensure the path is correct for your project
+import '../services/auth_service.dart'; // Ensure the path is correct for your project
 import '../providers/theme_notifier.dart'; // Ensure the path is correct for your project
 
 class HomePage extends StatelessWidget {

@@ -5,7 +5,7 @@ import 'package:client_repositories/async_http_repos.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared/shared.dart';
 import 'package:provider/provider.dart';
-import '../auth_service.dart';
+import '../services/auth_service.dart';
 
 class VehiclesView extends StatefulWidget {
   const VehiclesView({super.key});

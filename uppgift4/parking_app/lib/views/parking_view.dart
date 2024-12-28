@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:client_repositories/async_http_repos.dart';
 import 'package:shared/shared.dart';
-import 'package:parking_app/auth_service.dart';
+import 'package:parking_app/services/auth_service.dart';
 import 'package:provider/provider.dart';
 
 class ParkingView extends StatefulWidget {

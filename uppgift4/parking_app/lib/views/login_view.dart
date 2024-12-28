@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
-import '../auth_service.dart';
+// import 'package:go_router/go_router.dart';
+import '../services/auth_service.dart';
 import '../utils/validators.dart';
 
 class LoginView extends StatelessWidget {
@@ -18,16 +18,15 @@ class LoginView extends StatelessWidget {
     final passwordFocus = FocusNode();
     final authService = context.watch<AuthService>();
 
-    save(BuildContext context) {
+    save(BuildContext context) async {
       if (formKey.currentState!.validate()) {
         final username = usernameController.text.trim();
         final password = passwordController.text.trim();
 
-        context.read<AuthService>().login(username, password).then((_) {
-          if (context.read<AuthService>().status == AuthStatus.authenticated) {
-            GoRouter.of(context).go('/'); // Redirect to start page if logged in
-          }
-        });
+        context.read<AuthService>().login(username, password);
+
+        // Login completed, check AuthService.status for success or failure
+        // (potentially use Provider or BLoC to manage navigation state)
       }
     }
 

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:parking_app/auth/auth_bloc.dart';
 import 'package:parking_app/views/register_view.dart';
 import 'package:parking_app/views/start_view.dart';
 import 'package:parking_app/views/user_view.dart';
 import 'package:parking_app/views/vehicles_view.dart';
 import 'package:provider/provider.dart';
-import 'package:parking_app/auth_service.dart';
+import 'package:parking_app/services/auth_service.dart';
 import 'package:parking_app/views/login_view.dart';
 import 'package:parking_app/providers/theme_notifier.dart';
 import 'package:go_router/go_router.dart';
@@ -18,6 +20,9 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthService()),
         ChangeNotifierProvider(create: (_) => ThemeNotifier()),
+        BlocProvider(
+            create: (context) => AuthBloc(
+                authService: context.read<AuthService>())), // Add AuthBloc here
       ],
       child: ParkingApp(),
     ),
