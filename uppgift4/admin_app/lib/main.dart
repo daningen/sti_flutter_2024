@@ -1,8 +1,9 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'package:admin_app/services/auth_service.dart';
 import 'package:shared/bloc/auth/auth_bloc.dart';
 import 'package:shared/bloc/auth/auth_state.dart';
-import 'package:shared/services/auth_service.dart';
+
 import 'package:admin_app/views/login_view.dart';
 import 'package:admin_app/views/nav_rail_view.dart';
 import 'package:flutter/material.dart';
@@ -17,28 +18,20 @@ import 'views/statistics_view.dart';
 import 'views/user_view.dart';
 import 'views/vehicles_view.dart';
 
-
-
-
 void main() {
-  final authService = AuthService();
+  final authService = AuthService(); 
 
   runApp(
-  MultiProvider(
-    providers: [
-      ChangeNotifierProvider<ThemeNotifier>(
-        create: (_) => ThemeNotifier(), // Provides theme management
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeNotifier()),
+      ],
+      child: BlocProvider(
+        create: (_) => AuthBloc(authService: authService),
+        child: MyApp(),
       ),
-      BlocProvider<AuthBloc>(
-        create: (_) => AuthBloc(
-          authService: authService, // AuthBloc handles authentication logic
-        ),
-      ),
-    ],
-    child: MyApp(), // Root of the application
-  ),
-);
-
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

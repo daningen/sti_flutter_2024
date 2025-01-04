@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -25,29 +23,27 @@ class LoginView extends StatelessWidget {
         final username = usernameController.text.trim();
         final password = passwordController.text.trim();
 
-        // Dispatch the login event to the AuthBloc
-        context
-            .read<AuthBloc>()
-            .add(LoginRequested(username: username, password: password));
+        debugPrint("Login attempted with username: $username");
+        context.read<AuthBloc>().add(
+              LoginRequested(username: username, password: password),
+            );
       }
     }
 
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          // Redirect to the start page on successful login
-          GoRouter.of(context).go('/vehicles');
-        } else if (state is AuthUnauthenticated && state.errorMessage != null) {
-          // Show error message if login fails
+          debugPrint("Login successful. Navigating to the home page...");
+          GoRouter.of(context).go('/');
+        } else if (state is AuthUnauthenticated) {
+          debugPrint("Authentication failed: ${state.errorMessage}");
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.errorMessage!)),
+            SnackBar(content: Text(state.errorMessage ?? 'Login failed')),
           );
         }
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Login'),
-        ),
+        appBar: AppBar(title: const Text('Login')),
         body: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
           child: Center(
@@ -59,10 +55,8 @@ class LoginView extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      'Welcome Back',
-                      style: Theme.of(context).textTheme.headlineLarge,
-                    ),
+                    Text('Welcome Back',
+                        style: Theme.of(context).textTheme.headlineLarge),
                     const SizedBox(height: 32),
                     TextFormField(
                       controller: usernameController,
@@ -90,8 +84,7 @@ class LoginView extends StatelessWidget {
                     BlocBuilder<AuthBloc, AuthState>(
                       builder: (context, state) {
                         if (state is AuthLoading) {
-                          return const Center(
-                              child: CircularProgressIndicator());
+                          return const CircularProgressIndicator();
                         }
                         return ElevatedButton(
                           onPressed: () => save(context),

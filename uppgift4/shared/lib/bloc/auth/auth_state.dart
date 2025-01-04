@@ -7,6 +7,6 @@ class AuthLoading extends AuthState {}
 class AuthAuthenticated extends AuthState {}
 
 class AuthUnauthenticated extends AuthState {
-  final String? errorMessage; // The ? is crucial!
+  final String? errorMessage;
   AuthUnauthenticated({this.errorMessage});
 }

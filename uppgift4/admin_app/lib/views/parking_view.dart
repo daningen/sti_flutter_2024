@@ -2,12 +2,11 @@
 
 import 'package:admin_app/app_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+
 import 'package:client_repositories/async_http_repos.dart';
 import 'package:shared/shared.dart';
-// ignore: depend_on_referenced_packages
-import 'package:intl/intl.dart';
-import '../theme_notifier.dart';
+import '../widgets/app_bar_actions.dart';
 import '../widgets/bottom_action_buttons.dart.dart';
 
 class ParkingView extends StatefulWidget {
@@ -171,180 +170,13 @@ class _ParkingViewState extends State<ParkingView> {
     );
   }
 
-// I should only be allowed to update an address for an ongoing parking
-  void _editParking() async {
-    if (_selectedParking?.endTime != null) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Cannot Edit Parking'),
-            content: const Text('You can only edit ongoing parking sessions.'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
-      return;
-    }
-
-    String? selectedParkingSpace;
-
-    final ongoingSessions = (await ParkingRepository().getAll())
-        .where((p) => p.endTime == null)
-        .toList();
-
-    final availableParkingSpaces = _parkingSpaces.where((space) {
-      return !ongoingSessions
-          .any((session) => session.parkingSpace.target?.id == space.id);
-    }).toList();
-
-    await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text('Edit Parking Address'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                        labelText: 'Select Parking Space'),
-                    items: availableParkingSpaces
-                        .map((space) => DropdownMenuItem(
-                              value: space.id.toString(),
-                              child: Text(space.address),
-                            ))
-                        .toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedParkingSpace = value;
-                      });
-                    },
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Cancel'),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    debugPrint('onPressed now');
-                    if (selectedParkingSpace != null) {
-                      final selectedParkingSpaceData =
-                          availableParkingSpaces.firstWhere((space) =>
-                              space.id.toString() == selectedParkingSpace);
-
-                      final updatedParking = Parking(
-                        id: _selectedParking!.id,
-                        startTime: _selectedParking!.startTime,
-                        // endTime: _selectedParking!.endTime,
-                        endTime: null, // Keep endTime null for ongoing sessions
-                      );
-                      updatedParking.setDetails(
-                        _selectedParking!.vehicle.target!,
-                        selectedParkingSpaceData,
-                      );
-                      await ParkingRepository()
-                          .update(updatedParking.id, updatedParking);
-                      debugPrint('Parking updated: ${updatedParking.toJson()}');
-                      _loadParkings(); // Reload data after update
-                      Navigator.of(context)
-                          .pop(); // Close the dialog after update
-                    } else {
-                      debugPrint('No changes were made.');
-                    }
-                  },
-                  child: const Text('Update'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _deleteParking() async {
-    if (_selectedParking == null) {
-      debugPrint('No parking selected for deletion.');
-      return;
-    }
-
-    // Show confirmation dialog
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Confirm Deletion'),
-          content: const Text('Are you sure you want to delete this parking'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(false); // Return false
-              },
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop(true); // Return true
-              },
-              child: const Text('Delete'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirm == true) {
-      try {
-        final result = await ParkingRepository().delete(_selectedParking!.id);
-        if (result == null) {
-          debugPrint('Parking deleted successfully.');
-          setState(() {
-            _selectedParking = null; // Clear selection
-          });
-          _loadParkings(); // Reload data after deletion
-        } else {
-          debugPrint('Unexpected result during deletion: $result');
-        }
-      } catch (e) {
-        debugPrint('Error deleting parking: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete parking: $e')),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Parking'),
-        actions: [
-          IconButton(
-            icon: Icon(
-              Provider.of<ThemeNotifier>(context).themeMode == ThemeMode.light
-                  ? Icons.dark_mode
-                  : Icons.light_mode,
-            ),
-            onPressed: () {
-              Provider.of<ThemeNotifier>(context, listen: false).toggleTheme();
-            },
-          ),
+        actions: const [
+          AppBarActions(), // Use shared AppBarActions
         ],
       ),
       body: Column(
@@ -413,8 +245,7 @@ class _ParkingViewState extends State<ParkingView> {
                           });
                         },
                         color: WidgetStateProperty.resolveWith<Color?>(
-                          (states) => isSelected ? Colors.blue[100] : null,
-                        ),
+                            (states) => isSelected ? Colors.blue[100] : null),
                         cells: [
                           DataCell(Text(
                               parking.vehicle.target?.licensePlate ?? 'N/A')),
@@ -451,8 +282,6 @@ class _ParkingViewState extends State<ParkingView> {
                                                   Navigator.of(context).pop();
                                                   parking.endTime =
                                                       DateTime.now();
-                                                  // ParkingRepository().update(
-                                                  //     parking.id, parking);
                                                   await ParkingRepository()
                                                       .stop(parking.id);
                                                   setState(() {
@@ -480,8 +309,8 @@ class _ParkingViewState extends State<ParkingView> {
           ),
           BottomActionButtons(
             onNew: _createParking,
-            onEdit: _editParking,
-            onDelete: _deleteParking,
+            onEdit: () {},
+            onDelete: () {},
             onReload: _loadParkings,
           ),
         ],

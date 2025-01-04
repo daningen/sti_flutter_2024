@@ -1,30 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:parking_app/auth/auth_bloc.dart';
+import 'package:parking_app/services/auth_service.dart';
+
 import 'package:parking_app/views/register_view.dart';
 import 'package:parking_app/views/start_view.dart';
 import 'package:parking_app/views/user_view.dart';
 import 'package:parking_app/views/vehicles_view.dart';
 import 'package:provider/provider.dart';
-import 'package:parking_app/services/auth_service.dart';
+
 import 'package:parking_app/views/login_view.dart';
 import 'package:parking_app/providers/theme_notifier.dart';
 import 'package:go_router/go_router.dart';
 import 'views/home_page.dart';
 import 'views/parking_view.dart';
 import 'views/parking_spaces_page.dart';
+import 'package:shared/bloc/auth/auth_bloc.dart';
+
 
 void main() {
+  // Initialize AuthService with parking mode
+  final authService = AuthService();
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthService()),
-        ChangeNotifierProvider(create: (_) => ThemeNotifier()),
+        ChangeNotifierProvider(
+          create: (_) => ThemeNotifier(), // Provide theme notifier
+        ),
+        Provider<AuthService>(
+          create: (_) => authService, // Provide AuthService for consistency
+        ),
         BlocProvider(
-            create: (context) => AuthBloc(
-                authService: context.read<AuthService>())), // Add AuthBloc here
+          create: (context) => AuthBloc(
+            authService: context.read<AuthService>(), // Use the AuthService
+          ),
+        ),
       ],
-      child: ParkingApp(),
+      child: ParkingApp(), // Ensure ParkingApp is const if possible
     ),
   );
 }

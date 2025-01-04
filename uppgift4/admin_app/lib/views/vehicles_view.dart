@@ -1,15 +1,13 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:admin_app/app_constants.dart';
-import 'package:admin_app/app_theme.dart';
-import 'package:admin_app/utils/validators.dart';
-import 'package:admin_app/widgets/bottom_action_buttons.dart.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import '../widgets/app_bar_actions.dart';
 import 'package:client_repositories/async_http_repos.dart';
 import 'package:shared/shared.dart';
-
-import '../theme_notifier.dart';
+import '../app_constants.dart';
+import '../app_theme.dart';
+import '../utils/validators.dart';
+import '../widgets/bottom_action_buttons.dart.dart';
 
 class VehiclesView extends StatefulWidget {
   const VehiclesView({super.key});
@@ -232,17 +230,8 @@ class _VehiclesViewState extends State<VehiclesView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Vehicles Management'),
-        actions: [
-          IconButton(
-            icon: Icon(
-              Provider.of<ThemeNotifier>(context).themeMode == ThemeMode.light
-                  ? Icons.dark_mode
-                  : Icons.light_mode,
-            ),
-            onPressed: () {
-              Provider.of<ThemeNotifier>(context, listen: false).toggleTheme();
-            },
-          ),
+        actions: const [
+          AppBarActions(), // Use shared AppBarActions
         ],
       ),
       body: Column(
@@ -267,7 +256,6 @@ class _VehiclesViewState extends State<VehiclesView> {
                       }
                       return null;
                     }),
-                    // headingRowColor: WidgetStateProperty.all(Colors.grey[200]),
                     showCheckboxColumn: false,
                     columns: const [
                       DataColumn(label: Text('LICENSE PLATE')),

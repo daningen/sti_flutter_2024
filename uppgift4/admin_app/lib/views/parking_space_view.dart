@@ -1,12 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:admin_app/app_theme.dart';
+import 'package:admin_app/utils/validators.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+
 import 'package:client_repositories/async_http_repos.dart';
 import 'package:shared/shared.dart';
-import '../theme_notifier.dart';
-import 'package:admin_app/utils/validators.dart';
+import '../widgets/app_bar_actions.dart';
 import '../widgets/bottom_action_buttons.dart.dart';
 
 class ParkingSpacesView extends StatefulWidget {
@@ -85,7 +85,6 @@ class _ParkingSpacesViewState extends State<ParkingSpacesView> {
                       );
                       _loadParkingSpaces();
                     }).catchError((error) {
-                      // Handle creation errors, e.g., show a snackbar
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                             content:
@@ -93,7 +92,6 @@ class _ParkingSpacesViewState extends State<ParkingSpacesView> {
                       );
                     });
                   } catch (e) {
-                    // Handle parsing errors (should be caught by the validator, but good to have)
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Invalid price format')),
                     );
@@ -209,17 +207,8 @@ class _ParkingSpacesViewState extends State<ParkingSpacesView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Parking Spaces Management'),
-        actions: [
-          IconButton(
-            icon: Icon(
-              Provider.of<ThemeNotifier>(context).themeMode == ThemeMode.light
-                  ? Icons.dark_mode
-                  : Icons.light_mode,
-            ),
-            onPressed: () {
-              Provider.of<ThemeNotifier>(context, listen: false).toggleTheme();
-            },
-          ),
+        actions: const [
+          AppBarActions(),
         ],
       ),
       body: Column(
