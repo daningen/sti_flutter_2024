@@ -10,24 +10,41 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+
 import 'theme_notifier.dart';
+import 'bloc/parking_bloc.dart';
 import 'views/parking_space_view.dart';
 import 'views/parking_view.dart';
 import 'views/start_view.dart';
 import 'views/statistics_view.dart';
 import 'views/user_view.dart';
 import 'views/vehicles_view.dart';
+import 'package:client_repositories/async_http_repos.dart'; // For repositories
 
 void main() {
-  final authService = AuthService(); 
+  final authService = AuthService();
+  final parkingRepository = ParkingRepository();
+  final parkingSpaceRepository = ParkingSpaceRepository();
+  final vehicleRepository = VehicleRepository(); // Initialize VehicleRepository
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeNotifier()),
       ],
-      child: BlocProvider(
-        create: (_) => AuthBloc(authService: authService),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (_) => AuthBloc(authService: authService),
+          ),
+          BlocProvider(
+            create: (_) => ParkingBloc(
+              parkingRepository: parkingRepository,
+              parkingSpaceRepository: parkingSpaceRepository,
+              vehicleRepository: vehicleRepository, // Pass the missing argument
+            ),
+          ),
+        ],
         child: MyApp(),
       ),
     ),

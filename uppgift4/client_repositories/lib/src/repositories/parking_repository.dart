@@ -40,7 +40,7 @@ class ParkingRepository implements RepositoryInterface<Parking> {
 
     if (response.statusCode == 200) {
       final jsonList = jsonDecode(response.body) as List;
-      print("[ParkingRepository] Parking sessions fetched: $jsonList");
+      // print("[ParkingRepository] Parking sessions fetched: $jsonList");
       return jsonList.map((json) => Parking.fromJson(json)).toList();
     } else {
       print("[ParkingRepository] Failed to fetch parkings: ${response.body}");
