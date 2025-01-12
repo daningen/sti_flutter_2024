@@ -26,17 +26,20 @@ class PersonRepository implements RepositoryInterface<Person> {
 
   @override
   Future<Person> create(Person person) async {
-    print("Creating person through cli_operations");
-    final uri = Uri.parse(endpoint);
+    try {
+      final uri = Uri.parse(endpoint);
+      final response = await client.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(person.toJson()),
+      );
 
-    final response = await client.post(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(person.toJson()),
-    );
-
-    final json = jsonDecode(response.body);
-    return Person.fromJson(json);
+      final json = jsonDecode(response.body);
+      return Person.fromJson(json);
+    } catch (e) {
+      throw Exception(
+          'Failed to create person: ${e.toString().replaceFirst('Exception: ', '')}');
+    }
   }
 
   @override

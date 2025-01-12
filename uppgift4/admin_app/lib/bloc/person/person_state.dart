@@ -22,7 +22,7 @@ class PersonLoaded extends PersonState {
 class PersonError extends PersonState {
   final String message;
 
-  PersonError(this.message);
+  PersonError(this.message); // Fixed constructor by removing duplicate parameter
 
   @override
   List<Object?> get props => [message];

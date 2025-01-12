@@ -32,6 +32,19 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
   Future<void> _onCreatePerson(
       CreatePerson event, Emitter<PersonState> emit) async {
     debugPrint('Creating person: Name: ${event.name}, SSN: ${event.ssn}');
+
+    if (event.name.isEmpty) {
+      debugPrint('Error: Name is required');
+      emit(PersonError('Failed to create person: Name is required'));
+      return;
+    }
+
+    if (event.ssn.isEmpty) {
+      debugPrint('Error: SSN is required');
+      emit(PersonError('Failed to create person: SSN is required'));
+      return;
+    }
+
     try {
       final newPerson = Person(name: event.name, ssn: event.ssn);
       await personRepository.create(newPerson);
