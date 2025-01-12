@@ -83,11 +83,9 @@ class ParkingRepository implements RepositoryInterface<Parking> {
       final json = jsonDecode(response.body);
       print("[ParkingRepository] Parking deleted: $json");
       if (json is Map<String, dynamic> && json.containsKey('message')) {
-        // If the response contains a success message, handle it
-        return null; // Indicate that deletion was successful without returning a Parking object
+        return null; // Deletion success message
       } else {
-        return Parking.fromJson(
-            json); // Convert to Parking if the API returns the deleted object
+        return Parking.fromJson(json); // Return the deleted object
       }
     } else if (response.statusCode == 404) {
       print("[ParkingRepository] Parking not found for deletion.");
@@ -98,6 +96,7 @@ class ParkingRepository implements RepositoryInterface<Parking> {
     }
   }
 
+  @override
   @override
   Future<Parking?> getById(int id) async {
     print("[ParkingRepository] Fetching parking session with ID: $id");
@@ -110,10 +109,10 @@ class ParkingRepository implements RepositoryInterface<Parking> {
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
       print("[ParkingRepository] Parking session fetched: $json");
-      return Parking.fromJson(json);
+      return Parking.fromJson(json); // Return a valid Parking object.
     } else {
       print("[ParkingRepository] Parking not found with ID: $id");
-      return null;
+      return null; // Explicitly return null if not found.
     }
   }
 

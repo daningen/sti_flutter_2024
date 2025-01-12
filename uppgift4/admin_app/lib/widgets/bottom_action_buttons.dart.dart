@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
 class BottomActionButtons extends StatelessWidget {
-  final VoidCallback onNew;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
-  final VoidCallback onReload;
+  final VoidCallback onNew; // Required for all views
+  final VoidCallback? onEdit; // Nullable to support conditional enabling
+  final VoidCallback? onDelete; // Nullable to support conditional enabling
+  final VoidCallback onReload; // Required for all views
   final Color buttonColor;
   final Color textColor;
 
   const BottomActionButtons({
     required this.onNew,
-    required this.onEdit,
-    required this.onDelete,
+    this.onEdit, // Allow nullable for flexibility
+    this.onDelete, // Allow nullable for flexibility
     required this.onReload,
     this.buttonColor = Colors.lightBlue,
     this.textColor = Colors.white,
@@ -27,7 +27,7 @@ class BottomActionButtons extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           ElevatedButton.icon(
-            onPressed: onNew,
+            onPressed: onNew, // Always enabled
             icon: const Icon(Icons.add),
             label: const Text('New'),
             style: ElevatedButton.styleFrom(
@@ -37,7 +37,7 @@ class BottomActionButtons extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           ElevatedButton.icon(
-            onPressed: onEdit,
+            onPressed: onEdit, // Nullable, can be disabled
             icon: const Icon(Icons.edit),
             label: const Text('Edit'),
             style: ElevatedButton.styleFrom(
@@ -47,7 +47,7 @@ class BottomActionButtons extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           ElevatedButton.icon(
-            onPressed: onDelete,
+            onPressed: onDelete, // Nullable, can be disabled
             icon: const Icon(Icons.delete),
             label: const Text('Delete'),
             style: ElevatedButton.styleFrom(
@@ -57,7 +57,7 @@ class BottomActionButtons extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           ElevatedButton.icon(
-            onPressed: onReload,
+            onPressed: onReload, // Always enabled
             icon: const Icon(Icons.refresh),
             label: const Text('Reload'),
             style: ElevatedButton.styleFrom(

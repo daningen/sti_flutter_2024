@@ -7,12 +7,19 @@ import 'parking_space_view.dart';
 import 'vehicles_view.dart';
 import 'user_view.dart';
 
+import 'package:shared/shared.dart';
+
 class NavRailView extends StatefulWidget {
   final GoRouter router;
   final int initialIndex;
+  final Parking? selectedParking; // Add this property
 
-  const NavRailView(
-      {required this.router, required this.initialIndex, super.key});
+  const NavRailView({
+    required this.router,
+    required this.initialIndex,
+    this.selectedParking, // Accept the selectedParking
+    super.key,
+  });
 
   @override
   State<NavRailView> createState() => _NavRailViewState();
@@ -20,43 +27,6 @@ class NavRailView extends StatefulWidget {
 
 class _NavRailViewState extends State<NavRailView> {
   late int _selectedIndex;
-  bool _isRailExtended = false;
-
-  final List<String> routes = [
-    '/start',
-    '/statistics',
-    '/parkings',
-    '/parking-spaces',
-    '/vehicles',
-    '/users',
-  ];
-
-  final List<NavigationRailDestination> destinations = [
-    const NavigationRailDestination(
-      icon: Icon(Icons.home),
-      label: Text('Start'),
-    ),
-    const NavigationRailDestination(
-      icon: Icon(Icons.bar_chart),
-      label: Text('Statistics'),
-    ),
-    const NavigationRailDestination(
-      icon: Icon(Icons.car_repair_sharp),
-      label: Text('Parkings'),
-    ),
-    const NavigationRailDestination(
-      icon: Icon(Icons.local_parking),
-      label: Text('Parking Spaces'),
-    ),
-    const NavigationRailDestination(
-      icon: Icon(Icons.directions_car),
-      label: Text('Vehicles'),
-    ),
-    const NavigationRailDestination(
-      icon: Icon(Icons.people),
-      label: Text('Users'),
-    ),
-  ];
 
   @override
   void initState() {
@@ -69,28 +39,40 @@ class _NavRailViewState extends State<NavRailView> {
     return Scaffold(
       body: Row(
         children: [
-          MouseRegion(
-            onEnter: (_) {
+          NavigationRail(
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: (index) {
               setState(() {
-                _isRailExtended = true;
+                _selectedIndex = index;
+                widget.router.go(_getRoute(index));
               });
             },
-            onExit: (_) {
-              setState(() {
-                _isRailExtended = false;
-              });
-            },
-            child: NavigationRail(
-              extended: _isRailExtended,
-              selectedIndex: _selectedIndex,
-              onDestinationSelected: (int index) {
-                setState(() {
-                  _selectedIndex = index;
-                  widget.router.go(routes[index]); // Navigate using GoRouter
-                });
-              },
-              destinations: destinations,
-            ),
+            destinations: const [
+              NavigationRailDestination(
+                icon: Icon(Icons.home),
+                label: Text('Start'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.bar_chart),
+                label: Text('Statistics'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.local_parking),
+                label: Text('Parkings'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.local_parking),
+                label: Text('Parking Spaces'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.car_rental),
+                label: Text('Vehicles'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.people),
+                label: Text('Users'),
+              ),
+            ],
           ),
           const VerticalDivider(thickness: 1, width: 1),
           Expanded(
@@ -109,5 +91,24 @@ class _NavRailViewState extends State<NavRailView> {
         ],
       ),
     );
+  }
+
+  String _getRoute(int index) {
+    switch (index) {
+      case 0:
+        return '/start';
+      case 1:
+        return '/statistics';
+      case 2:
+        return '/parkings';
+      case 3:
+        return '/parking-spaces';
+      case 4:
+        return '/vehicles';
+      case 5:
+        return '/users';
+      default:
+        return '/start';
+    }
   }
 }

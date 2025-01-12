@@ -1,4 +1,4 @@
-import 'package:admin_app/bloc/items_bloc.dart';
+import 'package:admin_app/bloc/items/items_bloc.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:client_repositories/async_http_repos.dart';
 import 'package:flutter/foundation.dart'; // Import for debugPrint
@@ -6,8 +6,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared/shared.dart';
 
+/// Mock implementation of the ItemRepository for testing purposes.
 class MockItemRepository extends Mock implements ItemRepository {}
 
+/// Fake implementation of the Item class for testing purposes.
 class FakeItem extends Fake implements Item {}
 
 void main() {
@@ -49,7 +51,7 @@ void main() {
     );
 
     blocTest<ItemsBloc, ItemsState>(
-      'Load items test',
+      'Load items test - Empty list', // More descriptive test name
       setUp: () {
         when(() => itemRepository.getAll()).thenAnswer((_) async {
           debugPrint('Mock Repository: Returning empty list');

@@ -7,7 +7,7 @@ class Item {
   @Id()
   int id;
 
-  Item(this.description, [this.id = -1]);
+  Item(this.description, [this.id = 0]); // Default id to 0 for new entities
 
   factory Item.fromJson(Map<String, dynamic> json) {
     return Item(json['description'], json['id']);
@@ -15,5 +15,9 @@ class Item {
 
   Map<String, dynamic> toJson() {
     return {"description": description, "id": id};
+  }
+
+  Item copyWith({String? description, int? id}) {
+    return Item(description ?? this.description, id ?? this.id);
   }
 }

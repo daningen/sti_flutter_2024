@@ -12,21 +12,20 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'theme_notifier.dart';
-import 'bloc/parking_bloc.dart';
+import 'bloc/parkings/parking_bloc.dart';
 import 'views/parking_space_view.dart';
 import 'views/parking_view.dart';
 import 'views/start_view.dart';
 import 'views/statistics_view.dart';
 import 'views/user_view.dart';
 import 'views/vehicles_view.dart';
-import 'package:client_repositories/async_http_repos.dart'; // For repositories
+import 'package:client_repositories/async_http_repos.dart'; // ssssssssssssssssssssssssssss
 
 void main() {
   final authService = AuthService();
   final parkingRepository = ParkingRepository();
   final parkingSpaceRepository = ParkingSpaceRepository();
-  final vehicleRepository = VehicleRepository(); // Initialize VehicleRepository
-
+  final vehicleRepository = VehicleRepository();
   runApp(
     MultiProvider(
       providers: [
@@ -41,7 +40,7 @@ void main() {
             create: (_) => ParkingBloc(
               parkingRepository: parkingRepository,
               parkingSpaceRepository: parkingSpaceRepository,
-              vehicleRepository: vehicleRepository, // Pass the missing argument
+              vehicleRepository: vehicleRepository,
             ),
           ),
         ],

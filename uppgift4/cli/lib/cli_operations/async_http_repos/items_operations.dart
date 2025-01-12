@@ -2,8 +2,9 @@ import 'dart:io';
 
 import 'package:cli/utils/validator.dart';
 import 'package:client_repositories/async_http_repos.dart';
+
 import 'package:shared/shared.dart';
- 
+
 ItemRepository repository = ItemRepository();
 
 class ItemsOperations {
@@ -45,8 +46,11 @@ class ItemsOperations {
       var description = stdin.readLineSync();
 
       if (Validator.isString(description)) {
-        item.description = description!;
-        await repository.update(allItems[index].id, item);
+        // Create a new instance with the updated description
+        final updatedItem = Item(description!, item.id);
+
+        // Use the updated item for the repository update
+        await repository.update(item.id, updatedItem);
         print('Item updated');
       } else {
         print('Invalid input');

@@ -51,16 +51,14 @@ class _ParkingSpacesViewState extends State<ParkingSpacesView> {
                 TextFormField(
                   controller: addressController,
                   decoration: const InputDecoration(labelText: 'Address'),
-                  validator:
-                      Validators.validateAddress, // Use the address validator
+                  validator: Validators.validateAddress,
                 ),
                 TextFormField(
                   controller: priceController,
                   decoration:
                       const InputDecoration(labelText: 'Price (SEK/hr)'),
                   keyboardType: TextInputType.number,
-                  validator:
-                      Validators.validatePrice, // Use the price validator
+                  validator: Validators.validatePrice,
                 ),
               ],
             ),
@@ -128,16 +126,14 @@ class _ParkingSpacesViewState extends State<ParkingSpacesView> {
                 TextFormField(
                   controller: addressController,
                   decoration: const InputDecoration(labelText: 'Address'),
-                  validator:
-                      Validators.validateAddress, // Use the address validator
+                  validator: Validators.validateAddress,
                 ),
                 TextFormField(
                   controller: priceController,
                   decoration:
                       const InputDecoration(labelText: 'Price (SEK/hr)'),
                   keyboardType: TextInputType.number,
-                  validator:
-                      Validators.validatePrice, // Use the price validator
+                  validator: Validators.validatePrice,
                 ),
               ],
             ),
