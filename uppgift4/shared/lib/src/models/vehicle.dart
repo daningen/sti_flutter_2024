@@ -1,9 +1,10 @@
-import 'package:shared/objectbox.g.dart';
-import 'package:shared/shared.dart';
+import 'package:equatable/equatable.dart';
 import 'package:objectbox/objectbox.dart';
+import 'package:shared/shared.dart';
 
 @Entity()
-class Vehicle {
+// ignore: must_be_immutable
+class Vehicle extends Equatable {
   @Id()
   int id;
 
@@ -49,4 +50,7 @@ class Vehicle {
   String toString() {
     return 'Vehicle{id: $id, licensePlate: $licensePlate, vehicleType: $vehicleType, owner: ${owner.target?.name ?? 'No Owner'}}';
   }
+
+  @override
+  List<Object?> get props => [id, licensePlate, vehicleType];
 }
