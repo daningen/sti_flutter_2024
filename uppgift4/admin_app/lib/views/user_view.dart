@@ -8,7 +8,7 @@ import 'package:shared/bloc/auth/auth_bloc.dart';
 import 'package:shared/bloc/auth/auth_event.dart';
 import 'package:shared/shared.dart';
 import '../theme_notifier.dart';
-import '../widgets/bottom_action_buttons.dart.dart';
+import '../widgets/bottom_action_buttons.dart';
 
 class UserView extends StatefulWidget {
   const UserView({super.key});

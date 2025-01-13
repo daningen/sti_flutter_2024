@@ -13,19 +13,22 @@ import 'package:provider/provider.dart';
 
 import 'theme_notifier.dart';
 import 'bloc/parkings/parking_bloc.dart';
+import 'bloc/vehicles/vehicles_bloc.dart'; 
+import 'bloc/vehicles/vehicles_event.dart'; 
 import 'views/parking_space_view.dart';
 import 'views/parking_view.dart';
 import 'views/start_view.dart';
 import 'views/statistics_view.dart';
 import 'views/user_view.dart';
 import 'views/vehicles_view.dart';
-import 'package:client_repositories/async_http_repos.dart'; // ssssssssssssssssssssssssssss
+import 'package:client_repositories/async_http_repos.dart';
 
 void main() {
   final authService = AuthService();
   final parkingRepository = ParkingRepository();
   final parkingSpaceRepository = ParkingSpaceRepository();
   final vehicleRepository = VehicleRepository();
+
   runApp(
     MultiProvider(
       providers: [
@@ -42,6 +45,14 @@ void main() {
               parkingSpaceRepository: parkingSpaceRepository,
               vehicleRepository: vehicleRepository,
             ),
+          ),
+          BlocProvider<VehiclesBloc>(
+            create: (context) {
+              final bloc = VehiclesBloc(vehicleRepository: vehicleRepository);
+              bloc.add(
+                  LoadVehicles()); // Ensure the bloc loads vehicles initially
+              return bloc;
+            },
           ),
         ],
         child: MyApp(),

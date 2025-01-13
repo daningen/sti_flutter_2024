@@ -8,7 +8,7 @@ import 'package:shared/shared.dart';
 // ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
 import '../theme_notifier.dart';
-import '../widgets/bottom_action_buttons.dart.dart';
+import '../widgets/bottom_action_buttons.dart';
 
 class ParkingView extends StatefulWidget {
   const ParkingView({super.key});

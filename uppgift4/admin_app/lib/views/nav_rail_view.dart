@@ -12,12 +12,11 @@ import 'package:shared/shared.dart';
 class NavRailView extends StatefulWidget {
   final GoRouter router;
   final int initialIndex;
-  final Parking? selectedParking; // Add this property
-
+  final Parking? selectedParking;
   const NavRailView({
     required this.router,
     required this.initialIndex,
-    this.selectedParking, // Accept the selectedParking
+    this.selectedParking,
     super.key,
   });
 

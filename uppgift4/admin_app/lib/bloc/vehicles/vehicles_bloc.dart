@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'vehicle_event.dart';
-import 'vehicle_state.dart';
+import 'vehicles_event.dart';
+import 'vehicles_state.dart';
 import 'package:client_repositories/async_http_repos.dart';
 import 'package:shared/shared.dart';
 
-class VehicleBloc extends Bloc<VehicleEvent, VehicleState> {
+class VehiclesBloc extends Bloc<VehicleEvent, VehicleState> {
   final VehicleRepository vehicleRepository;
 
-  VehicleBloc({required this.vehicleRepository}) : super(VehicleInitial()) {
+  VehiclesBloc({required this.vehicleRepository}) : super(VehicleInitial()) {
     on<LoadVehicles>(_onLoadVehicles);
+    on<ReloadVehicles>(_onReloadVehicles);
     on<CreateVehicle>(_onCreateVehicle);
     on<UpdateVehicle>(_onUpdateVehicle);
     on<DeleteVehicle>(_onDeleteVehicle);
+    on<SelectVehicle>(_onSelectVehicle);
   }
 
   Future<void> _onLoadVehicles(
@@ -29,10 +31,15 @@ class VehicleBloc extends Bloc<VehicleEvent, VehicleState> {
     }
   }
 
+  Future<void> _onReloadVehicles(
+      ReloadVehicles event, Emitter<VehicleState> emit) async {
+    debugPrint('Reloading vehicles...');
+    add(LoadVehicles());
+  }
+
   Future<void> _onCreateVehicle(
       CreateVehicle event, Emitter<VehicleState> emit) async {
-    debugPrint(
-        'Creating vehicle: LicensePlate: ${event.licensePlate}, Type: ${event.vehicleType}');
+    debugPrint('Creating vehicle: LicensePlate: ${event.licensePlate}, Type: ${event.vehicleType}');
     try {
       final newVehicle = Vehicle(
         licensePlate: event.licensePlate,
@@ -49,8 +56,7 @@ class VehicleBloc extends Bloc<VehicleEvent, VehicleState> {
 
   Future<void> _onUpdateVehicle(
       UpdateVehicle event, Emitter<VehicleState> emit) async {
-    debugPrint(
-        'Updating vehicle: ID: ${event.vehicleId}, LicensePlate: ${event.updatedVehicle.licensePlate}, Type: ${event.updatedVehicle.vehicleType}');
+    debugPrint('Updating vehicle: ID: ${event.vehicleId}, LicensePlate: ${event.updatedVehicle.licensePlate}, Type: ${event.updatedVehicle.vehicleType}');
     try {
       final updatedVehicle = Vehicle(
         id: event.vehicleId,
@@ -76,6 +82,17 @@ class VehicleBloc extends Bloc<VehicleEvent, VehicleState> {
     } catch (e) {
       debugPrint('Error deleting vehicle: $e');
       emit(VehicleError('Failed to delete vehicle: $e'));
+    }
+  }
+
+  Future<void> _onSelectVehicle(
+      SelectVehicle event, Emitter<VehicleState> emit) async {
+    final currentState = state;
+    if (currentState is VehicleLoaded) {
+      emit(VehicleLoaded(
+        currentState.vehicles,
+        selectedVehicle: event.vehicle,
+      ));
     }
   }
 }

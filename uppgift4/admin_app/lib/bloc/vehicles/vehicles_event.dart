@@ -1,4 +1,3 @@
-// vehicle_event.dart
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -7,12 +6,15 @@ sealed class VehicleEvent {}
 
 class LoadVehicles extends VehicleEvent {}
 
+class ReloadVehicles extends VehicleEvent {}
+
 class CreateVehicle extends VehicleEvent {
   final String licensePlate;
-  final String vehicleType; // Add this field
+  final String vehicleType;
 
-  CreateVehicle({required this.licensePlate, required this.vehicleType});
+  CreateVehicle({required this.licensePlate, required this.vehicleType, required Vehicle vehicle});
 }
+
 
 class UpdateVehicle extends VehicleEvent {
   final int vehicleId;
@@ -26,3 +28,9 @@ class DeleteVehicle extends VehicleEvent {
 
   DeleteVehicle({required this.vehicleId});
 }
+class SelectVehicle extends VehicleEvent {
+  final Vehicle vehicle;
+
+  SelectVehicle({required this.vehicle});
+}
+
