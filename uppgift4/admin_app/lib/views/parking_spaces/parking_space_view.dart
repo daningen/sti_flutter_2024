@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 
 import 'package:client_repositories/async_http_repos.dart';
 import 'package:shared/shared.dart';
-import '../widgets/app_bar_actions.dart';
-import '../widgets/bottom_action_buttons.dart';
+import '../../widgets/app_bar_actions.dart';
+import '../../widgets/bottom_action_buttons.dart';
 
 class ParkingSpacesView extends StatefulWidget {
   const ParkingSpacesView({super.key});

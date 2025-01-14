@@ -12,17 +12,19 @@ class PersonLoading extends PersonState {}
 
 class PersonLoaded extends PersonState {
   final List<Person> persons;
+  final Person? selectedPerson; // Optional parameter for the selected person
 
-  PersonLoaded(this.persons);
+  PersonLoaded({required this.persons, this.selectedPerson});
 
   @override
-  List<Object?> get props => [persons];
+  List<Object?> get props => [persons, selectedPerson];
 }
+
 
 class PersonError extends PersonState {
   final String message;
 
-  PersonError(this.message); // Fixed constructor by removing duplicate parameter
+  PersonError(this.message);
 
   @override
   List<Object?> get props => [message];

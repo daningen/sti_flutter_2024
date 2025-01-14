@@ -13,6 +13,7 @@ Future<Response> postVehicleHandler(Request request) async {
     final data = await request.readAsString();
     print("data is  $data");
     final json = jsonDecode(data);
+    print('Payload received in backend[vehicle_handlers]');
     print("json is  $json");
     var vehicle = Vehicle.fromJson(json);
     print("vehicle is  $vehicle");

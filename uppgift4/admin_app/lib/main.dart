@@ -1,6 +1,10 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'package:admin_app/bloc/person/person_bloc.dart';
+import 'package:admin_app/bloc/person/person_event.dart';
 import 'package:admin_app/services/auth_service.dart';
+import 'package:admin_app/views/person/person_view.dart';
+
 import 'package:shared/bloc/auth/auth_bloc.dart';
 import 'package:shared/bloc/auth/auth_state.dart';
 
@@ -13,13 +17,13 @@ import 'package:provider/provider.dart';
 
 import 'theme_notifier.dart';
 import 'bloc/parkings/parking_bloc.dart';
-import 'bloc/vehicles/vehicles_bloc.dart'; 
-import 'bloc/vehicles/vehicles_event.dart'; 
-import 'views/parking_space_view.dart';
+import 'bloc/vehicles/vehicles_bloc.dart';
+import 'bloc/vehicles/vehicles_event.dart';
+import 'views/parking_spaces/parking_space_view.dart';
 import 'views/parking_view.dart';
 import 'views/start_view.dart';
 import 'views/statistics_view.dart';
-import 'views/user_view.dart';
+
 import 'views/vehicles/vehicles_view.dart';
 import 'package:client_repositories/async_http_repos.dart';
 
@@ -51,6 +55,14 @@ void main() {
               final bloc = VehiclesBloc(vehicleRepository: vehicleRepository);
               bloc.add(
                   LoadVehicles()); // Ensure the bloc loads vehicles initially
+              return bloc;
+            },
+          ),
+          BlocProvider<PersonBloc>(
+            create: (context) {
+              final bloc = PersonBloc(personRepository: PersonRepository());
+              bloc.add(
+                  LoadPersons());  
               return bloc;
             },
           ),
@@ -88,8 +100,8 @@ class MyApp extends StatelessWidget {
         builder: (context, state) => const VehiclesView(),
       ),
       GoRoute(
-        path: '/users',
-        builder: (context, state) => const UserView(),
+        path: '/persons',
+        builder: (context, state) => const PersonView(),
       ),
     ],
   );

@@ -78,7 +78,7 @@ void main() {
       act: (bloc) => bloc.add(LoadPersons()),
       expect: () => [
         PersonLoading(),
-        PersonLoaded(const []), // Empty list
+        PersonLoaded(persons: const []), // Use named parameter 'persons'
       ],
       verify: (_) {
         verify(() => personRepository.getAll()).called(1);

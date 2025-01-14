@@ -23,7 +23,7 @@ class VehiclesBloc extends Bloc<VehicleEvent, VehicleState> {
     emit(VehicleLoading());
     try {
       final vehicles = await vehicleRepository.getAll();
-      debugPrint('Fetched vehicles: $vehicles');
+      debugPrint('Fetched vehicles from [vehiclesbloc]: $vehicles');
       emit(VehicleLoaded(vehicles));
     } catch (e) {
       debugPrint('Error loading vehicles: $e');

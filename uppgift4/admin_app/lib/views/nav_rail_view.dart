@@ -3,9 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'start_view.dart';
 import 'statistics_view.dart';
 import 'parking_view.dart';
-import 'parking_space_view.dart';
+import 'parking_spaces/parking_space_view.dart';
 import 'vehicles/vehicles_view.dart';
-import 'user_view.dart';
+import 'person/person_view.dart'; // Update to import PersonView
 
 import 'package:shared/shared.dart';
 
@@ -13,6 +13,7 @@ class NavRailView extends StatefulWidget {
   final GoRouter router;
   final int initialIndex;
   final Parking? selectedParking;
+
   const NavRailView({
     required this.router,
     required this.initialIndex,
@@ -69,7 +70,7 @@ class _NavRailViewState extends State<NavRailView> {
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.people),
-                label: Text('Users'),
+                label: Text('Persons'), // Update label
               ),
             ],
           ),
@@ -83,7 +84,7 @@ class _NavRailViewState extends State<NavRailView> {
                 ParkingView(),
                 ParkingSpacesView(),
                 VehiclesView(),
-                UserView(),
+                PersonView(), // Update to use PersonView
               ],
             ),
           ),
@@ -105,7 +106,7 @@ class _NavRailViewState extends State<NavRailView> {
       case 4:
         return '/vehicles';
       case 5:
-        return '/users';
+        return '/persons';
       default:
         return '/start';
     }

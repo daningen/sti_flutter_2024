@@ -10,9 +10,11 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
 
   PersonBloc({required this.personRepository}) : super(PersonInitial()) {
     on<LoadPersons>(_onLoadPersons);
+    on<ReloadPersons>(_onReloadPersons);
     on<CreatePerson>(_onCreatePerson);
     on<UpdatePerson>(_onUpdatePerson);
     on<DeletePerson>(_onDeletePerson);
+    on<SelectPerson>(_onSelectPerson);
   }
 
   Future<void> _onLoadPersons(
@@ -22,37 +24,33 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
     try {
       final persons = await personRepository.getAll();
       debugPrint('Fetched persons: $persons');
-      emit(PersonLoaded(persons));
+      emit(PersonLoaded(persons: persons)); // Use named parameter
     } catch (e) {
       debugPrint('Error loading persons: $e');
       emit(PersonError('Failed to load persons: $e'));
     }
   }
 
+  Future<void> _onReloadPersons(
+      ReloadPersons event, Emitter<PersonState> emit) async {
+    debugPrint('Reloading persons...');
+    add(LoadPersons());
+  }
+
   Future<void> _onCreatePerson(
       CreatePerson event, Emitter<PersonState> emit) async {
     debugPrint('Creating person: Name: ${event.name}, SSN: ${event.ssn}');
-
-    if (event.name.isEmpty) {
-      debugPrint('Error: Name is required');
-      emit(PersonError('Failed to create person: Name is required'));
-      return;
-    }
-
-    if (event.ssn.isEmpty) {
-      debugPrint('Error: SSN is required');
-      emit(PersonError('Failed to create person: SSN is required'));
-      return;
-    }
-
     try {
-      final newPerson = Person(name: event.name, ssn: event.ssn);
+      final newPerson = Person(
+        name: event.name,
+        ssn: event.ssn,
+      ); // No items field here
       await personRepository.create(newPerson);
       debugPrint('Person created successfully: $newPerson');
       add(LoadPersons());
     } catch (e) {
       debugPrint('Error creating person: $e');
-      emit(PersonError('Failed to create person: $e'));
+      emit(PersonError('Failed to create person: ${e.toString()}'));
     }
   }
 
@@ -61,8 +59,11 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
     debugPrint(
         'Updating person: ID: ${event.id}, Name: ${event.name}, SSN: ${event.ssn}');
     try {
-      final updatedPerson =
-          Person(id: event.id, name: event.name, ssn: event.ssn);
+      final updatedPerson = Person(
+        id: event.id,
+        name: event.name,
+        ssn: event.ssn,
+      );
       await personRepository.update(event.id, updatedPerson);
       debugPrint('Person updated successfully: $updatedPerson');
       add(LoadPersons());
@@ -82,6 +83,17 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
     } catch (e) {
       debugPrint('Error deleting person: $e');
       emit(PersonError('Failed to delete person: $e'));
+    }
+  }
+
+  Future<void> _onSelectPerson(
+      SelectPerson event, Emitter<PersonState> emit) async {
+    final currentState = state;
+    if (currentState is PersonLoaded) {
+      emit(PersonLoaded(
+        persons: currentState.persons,
+        selectedPerson: event.person,
+      ));
     }
   }
 }

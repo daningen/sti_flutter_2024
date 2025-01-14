@@ -28,19 +28,28 @@ class Person {
 
   factory Person.fromJson(Map<String, dynamic> json) {
     return Person(
-      name: json['name'] ?? '', // Default to an empty string if null
+      name: json['name'] ?? '',
       ssn: json['ssn'] ?? '',
-      id: json['id'] ?? 0, // Default to 0 if id is not provided
+      id: json['id'] ?? 0,
+      items: (json['items'] as List?)
+              ?.map((item) => Item.fromJson(item))
+              .toList() ??
+          [],
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
+    final json = {
       "id": id,
       "name": name,
       "ssn": ssn,
-      'items': items.map((item) => item.toJson()).toList(),
     };
+
+    if (items.isNotEmpty) {
+      json['items'] = items.map((item) => item.toJson()).toList();
+    }
+
+    return json;
   }
 
   @override

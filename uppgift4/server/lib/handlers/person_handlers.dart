@@ -12,15 +12,31 @@ Future<Response> postPersonHandler(Request request) async {
   try {
     final data = await request.readAsString();
     final json = jsonDecode(data);
+
+    print('Payload received in backend[person_handlers]: $json');
+
+    // Ensure items field is present and valid, even if empty
+    if (json['items'] == null) {
+      json['items'] = [];
+    }
+
     var person = Person.fromJson(json);
 
     person = await repo.create(person);
 
-    return Response.ok(
-      jsonEncode(person.toJson()),
+    // Return 201 Created with the person data in the body
+    return Response(
+      201, // Status code for resource creation
+      body: jsonEncode(person.toJson()),
       headers: {'Content-Type': 'application/json'},
     );
+
+    // return Response.ok(
+    //   jsonEncode(person.toJson()),
+    //   headers: {'Content-Type': 'application/json'},
+    // );
   } catch (e) {
+    print('Error in postPersonHandler: $e');
     return Response.internalServerError(
       body: jsonEncode({'error': 'Failed to create person'}),
       headers: {'Content-Type': 'application/json'},
