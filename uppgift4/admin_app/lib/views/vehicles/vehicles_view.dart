@@ -155,9 +155,36 @@ class VehiclesView extends StatelessWidget {
           final selectedVehicle =
               context.read<VehiclesBloc>().state.selectedVehicle;
           if (selectedVehicle != null) {
-            context
-                .read<VehiclesBloc>()
-                .add(DeleteVehicle(vehicleId: selectedVehicle.id));
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: const Text('Confirm Deletion'),
+                  content: Text(
+                      'Do you want to delete the vehicle with license plate "${selectedVehicle.licensePlate}"?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Cancel'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        context
+                            .read<VehiclesBloc>()
+                            .add(DeleteVehicle(vehicleId: selectedVehicle.id));
+                        Navigator.of(context).pop();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text(
+                                  'Vehicle with license plate "${selectedVehicle.licensePlate}" deleted.')),
+                        );
+                      },
+                      child: const Text('Delete'),
+                    ),
+                  ],
+                );
+              },
+            );
           }
         },
         onReload: () {
