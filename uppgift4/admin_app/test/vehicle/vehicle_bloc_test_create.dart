@@ -34,11 +34,18 @@ void main() {
       setUp: () {
         // Mock the creation and fetching of vehicles
         when(() => vehicleRepository.create(any())).thenAnswer(
-          (_) async =>
-              Vehicle(id: 1, licensePlate: 'ABC123', vehicleType: 'Car'),
+          (_) async => Vehicle(
+            id: 1,
+            licensePlate: 'ABC123',
+            vehicleType: 'Car',
+          )..setOwner(Person(name: 'John Doe', ssn: '123456')),
         );
         when(() => vehicleRepository.getAll()).thenAnswer((_) async => [
-              Vehicle(id: 1, licensePlate: 'ABC123', vehicleType: 'Car'),
+              Vehicle(
+                id: 1,
+                licensePlate: 'ABC123',
+                vehicleType: 'Car',
+              )..setOwner(Person(name: 'John Doe', ssn: '123456')),
             ]);
       },
       build: () => vehicleBloc,
@@ -46,17 +53,17 @@ void main() {
         CreateVehicle(
           licensePlate: 'ABC123',
           vehicleType: 'Car',
-          vehicle: Vehicle(
-            id: 1,
-            licensePlate: 'ABC123',
-            vehicleType: 'Car',
-          ),
+          owner: Person(name: 'John Doe', ssn: '123456'),
         ),
       ),
       expect: () => [
         VehicleLoading(),
         VehicleLoaded([
-          Vehicle(id: 1, licensePlate: 'ABC123', vehicleType: 'Car'),
+          Vehicle(
+            id: 1,
+            licensePlate: 'ABC123',
+            vehicleType: 'Car',
+          )..setOwner(Person(name: 'John Doe', ssn: '123456')),
         ]),
       ],
       verify: (_) {

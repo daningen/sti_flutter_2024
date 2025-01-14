@@ -39,12 +39,14 @@ class VehiclesBloc extends Bloc<VehicleEvent, VehicleState> {
 
   Future<void> _onCreateVehicle(
       CreateVehicle event, Emitter<VehicleState> emit) async {
-    debugPrint('Creating vehicle: LicensePlate: ${event.licensePlate}, Type: ${event.vehicleType}');
+    debugPrint(
+        'Creating vehicle: LicensePlate: ${event.licensePlate}, Type: ${event.vehicleType}, Owner: ${event.owner.name}');
     try {
       final newVehicle = Vehicle(
         licensePlate: event.licensePlate,
         vehicleType: event.vehicleType,
       );
+      newVehicle.setOwner(event.owner); // Set owner using event data
       await vehicleRepository.create(newVehicle);
       debugPrint('Vehicle created successfully: $newVehicle');
       add(LoadVehicles());
@@ -56,13 +58,16 @@ class VehiclesBloc extends Bloc<VehicleEvent, VehicleState> {
 
   Future<void> _onUpdateVehicle(
       UpdateVehicle event, Emitter<VehicleState> emit) async {
-    debugPrint('Updating vehicle: ID: ${event.vehicleId}, LicensePlate: ${event.updatedVehicle.licensePlate}, Type: ${event.updatedVehicle.vehicleType}');
+    debugPrint(
+        'Updating vehicle: ID: ${event.vehicleId}, LicensePlate: ${event.updatedVehicle.licensePlate}, Type: ${event.updatedVehicle.vehicleType}');
     try {
       final updatedVehicle = Vehicle(
         id: event.vehicleId,
         licensePlate: event.updatedVehicle.licensePlate,
         vehicleType: event.updatedVehicle.vehicleType,
       );
+      updatedVehicle.setOwner(
+          event.updatedVehicle.owner.target!); // Ensure owner is updated
       await vehicleRepository.update(event.vehicleId, updatedVehicle);
       debugPrint('Vehicle updated successfully: $updatedVehicle');
       add(LoadVehicles());

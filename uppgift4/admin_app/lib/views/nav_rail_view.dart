@@ -4,7 +4,7 @@ import 'start_view.dart';
 import 'statistics_view.dart';
 import 'parking_view.dart';
 import 'parking_space_view.dart';
-import 'vehicles_view.dart';
+import 'vehicles/vehicles_view.dart';
 import 'user_view.dart';
 
 import 'package:shared/shared.dart';

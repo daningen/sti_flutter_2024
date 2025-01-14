@@ -20,7 +20,7 @@ import 'views/parking_view.dart';
 import 'views/start_view.dart';
 import 'views/statistics_view.dart';
 import 'views/user_view.dart';
-import 'views/vehicles_view.dart';
+import 'views/vehicles/vehicles_view.dart';
 import 'package:client_repositories/async_http_repos.dart';
 
 void main() {

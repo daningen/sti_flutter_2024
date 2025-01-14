@@ -11,10 +11,14 @@ class ReloadVehicles extends VehicleEvent {}
 class CreateVehicle extends VehicleEvent {
   final String licensePlate;
   final String vehicleType;
+  final Person owner;
 
-  CreateVehicle({required this.licensePlate, required this.vehicleType, required Vehicle vehicle});
+  CreateVehicle({
+    required this.licensePlate,
+    required this.vehicleType,
+    required this.owner,
+  });
 }
-
 
 class UpdateVehicle extends VehicleEvent {
   final int vehicleId;
@@ -28,9 +32,9 @@ class DeleteVehicle extends VehicleEvent {
 
   DeleteVehicle({required this.vehicleId});
 }
+
 class SelectVehicle extends VehicleEvent {
   final Vehicle vehicle;
 
   SelectVehicle({required this.vehicle});
 }
-
