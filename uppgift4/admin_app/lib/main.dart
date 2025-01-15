@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'package:admin_app/bloc/parkings/parking_event.dart';
 import 'package:admin_app/bloc/person/person_bloc.dart';
 import 'package:admin_app/bloc/person/person_event.dart';
 import 'package:admin_app/services/auth_service.dart';
@@ -19,8 +20,10 @@ import 'theme_notifier.dart';
 import 'bloc/parkings/parking_bloc.dart';
 import 'bloc/vehicles/vehicles_bloc.dart';
 import 'bloc/vehicles/vehicles_event.dart';
+import 'bloc/parking_spaces/parking_space_bloc.dart';
+import 'bloc/parking_spaces/parking_space_event.dart';
 import 'views/parking_spaces/parking_space_view.dart';
-import 'views/parking_view.dart';
+import 'views/parking/parking_view.dart';
 import 'views/start_view.dart';
 import 'views/statistics_view.dart';
 
@@ -61,11 +64,31 @@ void main() {
           BlocProvider<PersonBloc>(
             create: (context) {
               final bloc = PersonBloc(personRepository: PersonRepository());
-              bloc.add(
-                  LoadPersons());  
+              bloc.add(LoadPersons());
               return bloc;
             },
           ),
+          BlocProvider<ParkingSpaceBloc>(
+            create: (context) {
+              final bloc = ParkingSpaceBloc(
+                  parkingSpaceRepository: parkingSpaceRepository);
+              bloc.add(
+                  LoadParkingSpaces()); // Ensure the bloc loads parking spaces initially
+              return bloc;
+            },
+          ),
+          BlocProvider<ParkingBloc>(
+  create: (context) {
+    final bloc = ParkingBloc(
+      parkingRepository: parkingRepository,
+      vehicleRepository: vehicleRepository,
+      parkingSpaceRepository: parkingSpaceRepository,
+    );
+    bloc.add(LoadParkings()); // Ensure the bloc loads parkings initially
+    return bloc;
+  },
+),
+
         ],
         child: MyApp(),
       ),

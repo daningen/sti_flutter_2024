@@ -14,6 +14,7 @@ class ParkingSpaceBloc extends Bloc<ParkingSpaceEvent, ParkingSpaceState> {
     on<CreateParkingSpace>(_onCreateParkingSpace);
     on<EditParkingSpace>(_onEditParkingSpace);
     on<DeleteParkingSpace>(_onDeleteParkingSpace);
+    on<SelectParkingSpace>(_onSelectParkingSpace);
   }
 
   Future<void> _onLoadParkingSpaces(
@@ -29,6 +30,25 @@ class ParkingSpaceBloc extends Bloc<ParkingSpaceEvent, ParkingSpaceState> {
     } catch (e) {
       debugPrint('Error loading parking spaces: $e');
       emit(ParkingSpaceError(message: 'Failed to load parking spaces: $e'));
+    }
+  }
+
+  Future<void> _onSelectParkingSpace(
+    SelectParkingSpace event,
+    Emitter<ParkingSpaceState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is ParkingSpaceLoaded) {
+      emit(ParkingSpaceLoaded(
+        parkingSpaces: currentState.parkingSpaces,
+        selectedParkingSpace: event.parkingSpace, // May be null
+      ));
+      if (event.parkingSpace != null) {
+        debugPrint(
+            'Selected parking space: ${event.parkingSpace!.address}, Price: ${event.parkingSpace!.pricePerHour}');
+      } else {
+        debugPrint('No parking space selected.');
+      }
     }
   }
 

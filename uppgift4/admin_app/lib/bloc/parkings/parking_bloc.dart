@@ -23,7 +23,9 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
   }
 
   Future<void> _onLoadParkings(
-      LoadParkings event, Emitter<ParkingState> emit) async {
+    LoadParkings event,
+    Emitter<ParkingState> emit,
+  ) async {
     debugPrint('Loading parkings...');
     emit(ParkingLoading());
     try {
@@ -38,11 +40,27 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
           ? parkings.where((p) => p.endTime == null).toList()
           : parkings;
 
+      Parking? selectedParking;
+      if (state is ParkingLoaded) {
+        selectedParking = (state as ParkingLoaded).selectedParking;
+      }
+
+      final availableParkingSpaces = parkingSpaces.where((space) {
+        final isOccupied = parkings.any((p) =>
+            p.endTime == null && p.parkingSpace.target?.id == space.id);
+        final isSelected = selectedParking?.parkingSpace.target?.id == space.id;
+
+        debugPrint('Space ${space.address} is ${isOccupied ? "occupied" : "available"}. Selected: $isSelected');
+
+        return !isOccupied || isSelected;
+      }).toList();
+
       emit(ParkingLoaded(
         parkings: filteredParkings,
         vehicles: vehicles,
         parkingSpaces: parkingSpaces,
-        selectedParking: null,
+        availableParkingSpaces: availableParkingSpaces,
+        selectedParking: selectedParking,
       ));
       debugPrint('Parkings loaded: $filteredParkings');
     } catch (e) {

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'start_view.dart';
 import 'statistics_view.dart';
-import 'parking_view.dart';
+import 'parking/parking_view.dart';
 import 'parking_spaces/parking_space_view.dart';
 import 'vehicles/vehicles_view.dart';
 import 'person/person_view.dart'; // Update to import PersonView
@@ -61,7 +61,7 @@ class _NavRailViewState extends State<NavRailView> {
                 label: Text('Parkings'),
               ),
               NavigationRailDestination(
-                icon: Icon(Icons.local_parking),
+                icon: Icon(Icons.location_on),
                 label: Text('Parking Spaces'),
               ),
               NavigationRailDestination(

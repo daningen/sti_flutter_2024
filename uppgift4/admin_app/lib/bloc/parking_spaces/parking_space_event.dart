@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:shared/shared.dart';
 
 abstract class ParkingSpaceEvent extends Equatable {
   @override
@@ -40,3 +41,12 @@ class DeleteParkingSpace extends ParkingSpaceEvent {
   @override
   List<Object?> get props => [id];
 }
+class SelectParkingSpace extends ParkingSpaceEvent {
+  final ParkingSpace? parkingSpace; // Nullable
+
+  SelectParkingSpace({required this.parkingSpace});
+
+  @override
+  List<Object?> get props => [parkingSpace];
+}
+

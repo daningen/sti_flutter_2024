@@ -12,12 +12,17 @@ class ParkingSpaceLoading extends ParkingSpaceState {}
 
 class ParkingSpaceLoaded extends ParkingSpaceState {
   final List<ParkingSpace> parkingSpaces;
+  final ParkingSpace? selectedParkingSpace;
 
-  ParkingSpaceLoaded({required this.parkingSpaces});
+  ParkingSpaceLoaded({
+    required this.parkingSpaces,
+    this.selectedParkingSpace,
+  });
 
   @override
-  List<Object?> get props => [parkingSpaces];
+  List<Object?> get props => [parkingSpaces, selectedParkingSpace];
 }
+
 
 class ParkingSpaceError extends ParkingSpaceState {
   final String message;

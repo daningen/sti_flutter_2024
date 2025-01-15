@@ -14,12 +14,14 @@ class ParkingLoaded extends ParkingState {
   final List<Parking> parkings;
   final List<Vehicle> vehicles;
   final List<ParkingSpace> parkingSpaces;
+  final List<ParkingSpace> availableParkingSpaces;
   final Parking? selectedParking;
 
   ParkingLoaded({
     required this.parkings,
     required this.vehicles,
     required this.parkingSpaces,
+    required this.availableParkingSpaces,
     this.selectedParking,
   });
 
@@ -27,19 +29,30 @@ class ParkingLoaded extends ParkingState {
     List<Parking>? parkings,
     List<Vehicle>? vehicles,
     List<ParkingSpace>? parkingSpaces,
+    List<ParkingSpace>? availableParkingSpaces,
     Parking? selectedParking,
+    bool clearSelectedParking = false, // Add an optional flag
   }) {
     return ParkingLoaded(
       parkings: parkings ?? this.parkings,
       vehicles: vehicles ?? this.vehicles,
       parkingSpaces: parkingSpaces ?? this.parkingSpaces,
-      selectedParking: selectedParking,
+      availableParkingSpaces:
+          availableParkingSpaces ?? this.availableParkingSpaces,
+      selectedParking: clearSelectedParking
+          ? null
+          : (selectedParking ?? this.selectedParking),
     );
   }
 
   @override
-  List<Object?> get props =>
-      [parkings, vehicles, parkingSpaces, selectedParking];
+  List<Object?> get props => [
+        parkings,
+        vehicles,
+        parkingSpaces,
+        availableParkingSpaces,
+        selectedParking
+      ];
 }
 
 class ParkingError extends ParkingState {

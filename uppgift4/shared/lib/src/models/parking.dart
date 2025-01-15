@@ -43,6 +43,23 @@ class Parking {
     };
   }
 
+  Parking copyWith({
+  int? id,
+  ToOne<Vehicle>? vehicle,
+  ToOne<ParkingSpace>? parkingSpace,
+  DateTime? startTime,
+  DateTime? endTime,
+}) {
+  return Parking(
+    id: id ?? this.id,
+    startTime: startTime ?? this.startTime,
+    endTime: endTime ?? this.endTime,
+  )
+    ..vehicle.target = vehicle?.target ?? this.vehicle.target
+    ..parkingSpace.target = parkingSpace?.target ?? this.parkingSpace.target;
+}
+
+
   // Create a Parking object from JSON data
   factory Parking.fromJson(Map<String, dynamic> json) {
     final parking = Parking(
