@@ -61,6 +61,7 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
         parkingSpaces: parkingSpaces,
         availableParkingSpaces: availableParkingSpaces,
         selectedParking: selectedParking,
+        isFilteringActive: event.showActiveOnly, 
       ));
       debugPrint('Parkings loaded: $filteredParkings');
     } catch (e) {

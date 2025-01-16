@@ -16,6 +16,7 @@ class ParkingLoaded extends ParkingState {
   final List<ParkingSpace> parkingSpaces;
   final List<ParkingSpace> availableParkingSpaces;
   final Parking? selectedParking;
+  final bool isFilteringActive;
 
   ParkingLoaded({
     required this.parkings,
@@ -23,6 +24,7 @@ class ParkingLoaded extends ParkingState {
     required this.parkingSpaces,
     required this.availableParkingSpaces,
     this.selectedParking,
+    this.isFilteringActive = false,
   });
 
   ParkingLoaded copyWith({
@@ -42,6 +44,7 @@ class ParkingLoaded extends ParkingState {
       selectedParking: clearSelectedParking
           ? null
           : (selectedParking ?? this.selectedParking),
+          isFilteringActive: isFilteringActive,
     );
   }
 
@@ -51,7 +54,8 @@ class ParkingLoaded extends ParkingState {
         vehicles,
         parkingSpaces,
         availableParkingSpaces,
-        selectedParking
+        selectedParking,
+        isFilteringActive,
       ];
 }
 

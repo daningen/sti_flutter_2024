@@ -1,18 +1,17 @@
-// home_page.dart
 import 'package:flutter/material.dart';
-import 'package:parking_app/services/auth_service.dart';
-import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared/bloc/auth/auth_event.dart';
 
-
-import '../providers/theme_notifier.dart'; // Ensure the path is correct for your project
+import '../providers/theme_notifier.dart';
+import 'package:shared/bloc/auth/auth_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared/bloc/auth/auth_state.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final authService = context.watch<AuthService>();
     final themeNotifier = context.watch<ThemeNotifier>();
 
     return Scaffold(
@@ -29,25 +28,34 @@ class HomePage extends StatelessWidget {
               themeNotifier.toggleTheme();
             },
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Text(
-                  'Hello, ${authService.username}',
-                  style: const TextStyle(fontSize: 16),
-                ),
-                const SizedBox(width: 10),
-                IconButton(
-                  icon: const Icon(Icons.logout),
-                  onPressed: () {
-                    authService.logout();
-                    debugPrint('Navigating to StartView from homePage...');
-                    context.go('/start');
-                  },
-                ),
-              ],
-            ),
+          BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, state) {
+              if (state is AuthAuthenticated) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Hello, ${state.username}', // Access username from AuthAuthenticated state
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      const SizedBox(width: 10),
+                      IconButton(
+                        icon: const Icon(Icons.logout),
+                        onPressed: () {
+                          context.read<AuthBloc>().add(LogoutRequested());
+                          debugPrint('Navigating to StartView from HomePage...');
+                          context.go('/start');
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                // Handle unauthenticated state (e.g., display a message or redirect)
+                return const SizedBox.shrink(); 
+              }
+            },
           ),
         ],
       ),

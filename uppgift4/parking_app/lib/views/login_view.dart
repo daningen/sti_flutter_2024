@@ -1,7 +1,6 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared/bloc/auth/auth_bloc.dart';
 import 'package:shared/bloc/auth/auth_event.dart';
 import 'package:shared/bloc/auth/auth_state.dart';
@@ -18,12 +17,12 @@ class LoginView extends StatelessWidget {
     final usernameFocus = FocusNode();
     final passwordFocus = FocusNode();
 
-    save(BuildContext context) {
+    void save(BuildContext context) {
       if (formKey.currentState!.validate()) {
         final username = usernameController.text.trim();
         final password = passwordController.text.trim();
 
-        // Dispatch login event to AuthBloc
+        debugPrint('LoginView: Attempting login for username: $username');
         context.read<AuthBloc>().add(LoginRequested(
               username: username,
               password: password,
@@ -40,11 +39,12 @@ class LoginView extends StatelessWidget {
         child: Center(
           child: BlocConsumer<AuthBloc, AuthState>(
             listener: (context, state) {
+              debugPrint('Auth State changed: $state');
               if (state is AuthAuthenticated) {
-                // Navigate to the homepage upon successful login
-                Navigator.of(context).pushReplacementNamed('/');
+                debugPrint('Login successful. Navigating to /start.');
+                context.go('/start'); // Use GoRouter for navigation
               } else if (state is AuthUnauthenticated) {
-                // Show error message
+                debugPrint('Login failed. Showing error.');
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(state.errorMessage ?? 'Login failed'),
@@ -91,7 +91,10 @@ class LoginView extends StatelessWidget {
                         const CircularProgressIndicator()
                       else
                         ElevatedButton(
-                          onPressed: () => save(context),
+                          onPressed: () {
+                            debugPrint('LoginView: Login button pressed');
+                            save(context);
+                          },
                           child: const Text('Login'),
                         ),
                     ],

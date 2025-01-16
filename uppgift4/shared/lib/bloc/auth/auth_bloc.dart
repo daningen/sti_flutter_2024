@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared/bloc/auth/auth_event.dart';
 import 'package:shared/bloc/auth/auth_state.dart';
@@ -17,11 +18,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading()); // Transition to loading state
     try {
       await authService.login(event.username, event.password);
-      emit(AuthAuthenticated()); // Transition to authenticated state
+      debugPrint('Login successful. '); //User: ${user.username}');
+      emit(AuthAuthenticated(username: event.username));
     } catch (e) {
       final errorMessage =
           e is Exception ? e.toString() : 'Unexpected error occurred.';
       emit(AuthUnauthenticated(errorMessage: errorMessage));
+      debugPrint('Login NOT successful. ');
     }
   }
 
