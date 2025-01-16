@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared/shared.dart';
-import 'package:admin_app/bloc/vehicles/vehicles_bloc.dart';
-import 'package:admin_app/bloc/vehicles/vehicles_event.dart';
-import 'package:admin_app/bloc/vehicles/vehicles_state.dart';
+import 'package:shared/bloc/vehicles/vehicles_bloc.dart';
+import 'package:shared/bloc/vehicles/vehicles_event.dart';
+import 'package:shared/bloc/vehicles/vehicles_state.dart';
 
 class MockVehicleRepository extends Mock implements VehicleRepository {}
 

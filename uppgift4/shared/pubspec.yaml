@@ -10,20 +10,20 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
-  objectbox: ^4.0.3
   flutter:
     sdk: flutter
+  objectbox: ^4.0.3
   provider: ^6.1.2
   bloc: ^8.1.4
   flutter_bloc: ^8.1.6
-  
   bloc_test: ^9.1.7
   equatable: ^2.0.7
   hydrated_bloc: ^9.1.5
   path_provider: ^2.1.5
   replay_bloc: ^0.2.7
-  
-   
+  client_repositories:
+    path: ../client_repositories
+
     
   # path: ^1.8.0
 

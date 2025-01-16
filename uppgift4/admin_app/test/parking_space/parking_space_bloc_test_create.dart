@@ -1,6 +1,6 @@
-import 'package:admin_app/bloc/parking_spaces/parking_space_bloc.dart';
-import 'package:admin_app/bloc/parking_spaces/parking_space_event.dart';
-import 'package:admin_app/bloc/parking_spaces/parking_space_state.dart';
+import 'package:shared/bloc/parking_spaces/parking_space_bloc.dart';
+import 'package:shared/bloc/parking_spaces/parking_space_event.dart';
+import 'package:shared/bloc/parking_spaces/parking_space_state.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:bloc_test/bloc_test.dart';

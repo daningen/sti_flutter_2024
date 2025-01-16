@@ -1,8 +1,11 @@
 // ignore_for_file: prefer_const_constructors
 
-import 'package:admin_app/bloc/parkings/parking_event.dart';
-import 'package:admin_app/bloc/person/person_bloc.dart';
-import 'package:admin_app/bloc/person/person_event.dart';
+import 'package:shared/bloc/parking_spaces/parking_space_bloc.dart';
+import 'package:shared/bloc/parking_spaces/parking_space_event.dart';
+import 'package:shared/bloc/parkings/parking_bloc.dart';
+import 'package:shared/bloc/parkings/parking_event.dart';
+import 'package:shared/bloc/person/person_bloc.dart';
+import 'package:shared/bloc/person/person_event.dart';
 import 'package:admin_app/services/auth_service.dart';
 import 'package:admin_app/views/person/person_view.dart';
 
@@ -15,13 +18,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:shared/bloc/vehicles/vehicles_bloc.dart';
+import 'package:shared/bloc/vehicles/vehicles_event.dart';
 
 import 'theme_notifier.dart';
-import 'bloc/parkings/parking_bloc.dart';
-import 'bloc/vehicles/vehicles_bloc.dart';
-import 'bloc/vehicles/vehicles_event.dart';
-import 'bloc/parking_spaces/parking_space_bloc.dart';
-import 'bloc/parking_spaces/parking_space_event.dart';
+
+
 import 'views/parking_spaces/parking_space_view.dart';
 import 'views/parking/parking_view.dart';
 import 'views/start_view.dart';

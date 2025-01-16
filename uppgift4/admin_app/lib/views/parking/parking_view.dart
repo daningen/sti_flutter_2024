@@ -4,10 +4,11 @@ import 'package:admin_app/views/parking/dialog/edit_parking_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:shared/bloc/parkings/parking_bloc.dart';
+import 'package:shared/bloc/parkings/parking_event.dart';
+import 'package:shared/bloc/parkings/parking_state.dart';
 
-import '../../bloc/parkings/parking_bloc.dart';
-import '../../bloc/parkings/parking_event.dart';
-import '../../bloc/parkings/parking_state.dart';
+
 import '../../widgets/app_bar_actions.dart';
 import '../../widgets/bottom_action_buttons.dart';
 import 'dialog/create_parking_dialog.dart';
@@ -41,9 +42,10 @@ class ParkingView extends StatelessWidget {
                     constraints: const BoxConstraints(maxWidth: 800),
                     child: DataTable(
                       headingRowColor: WidgetStateProperty.resolveWith(
-                        (states) => Theme.of(context).brightness == Brightness.dark
-                            ? Colors.grey[800]
-                            : Colors.grey[200],
+                        (states) =>
+                            Theme.of(context).brightness == Brightness.dark
+                                ? Colors.grey[800]
+                                : Colors.grey[200],
                       ),
                       showCheckboxColumn: false,
                       columns: const [
@@ -58,17 +60,22 @@ class ParkingView extends StatelessWidget {
                         return DataRow(
                           selected: isSelected,
                           onSelectChanged: (selected) {
-                            context
-                                .read<ParkingBloc>()
-                                .add(SelectParking(selectedParking: selected == true ? parking : null));
+                            context.read<ParkingBloc>().add(SelectParking(
+                                selectedParking:
+                                    selected == true ? parking : null));
                           },
                           color: MaterialStateProperty.resolveWith(
-                            (states) => isSelected ? Colors.blue[100] : Colors.transparent,
+                            (states) => isSelected
+                                ? Colors.blue[100]
+                                : Colors.transparent,
                           ),
                           cells: [
-                            DataCell(Text(parking.vehicle.target?.licensePlate ?? 'N/A')),
-                            DataCell(Text(parking.parkingSpace.target?.address ?? 'N/A')),
-                            DataCell(Text(timeFormat.format(parking.startTime))),
+                            DataCell(Text(
+                                parking.vehicle.target?.licensePlate ?? 'N/A')),
+                            DataCell(Text(
+                                parking.parkingSpace.target?.address ?? 'N/A')),
+                            DataCell(
+                                Text(timeFormat.format(parking.startTime))),
                             DataCell(
                               parking.endTime != null
                                   ? Text(timeFormat.format(parking.endTime!))
@@ -81,15 +88,21 @@ class ParkingView extends StatelessWidget {
                                         final confirm = await showDialog<bool>(
                                           context: context,
                                           builder: (context) => AlertDialog(
-                                            title: const Text('Confirm Stop Parking'),
-                                            content: const Text('Are you sure you want to stop this parking session?'),
+                                            title: const Text(
+                                                'Confirm Stop Parking'),
+                                            content: const Text(
+                                                'Are you sure you want to stop this parking session?'),
                                             actions: [
                                               TextButton(
-                                                onPressed: () => Navigator.of(context).pop(false),
+                                                onPressed: () =>
+                                                    Navigator.of(context)
+                                                        .pop(false),
                                                 child: const Text('Cancel'),
                                               ),
                                               ElevatedButton(
-                                                onPressed: () => Navigator.of(context).pop(true),
+                                                onPressed: () =>
+                                                    Navigator.of(context)
+                                                        .pop(true),
                                                 child: const Text('Stop'),
                                               ),
                                             ],
@@ -97,9 +110,9 @@ class ParkingView extends StatelessWidget {
                                         );
 
                                         if (confirm == true) {
-                                          context
-                                              .read<ParkingBloc>()
-                                              .add(StopParking(parkingId: parking.id));
+                                          context.read<ParkingBloc>().add(
+                                              StopParking(
+                                                  parkingId: parking.id));
                                         }
                                       },
                                       child: const Text('Stop'),
@@ -124,13 +137,17 @@ class ParkingView extends StatelessWidget {
         onNew: () async {
           final currentState = context.read<ParkingBloc>().state;
           if (currentState is ParkingLoaded) {
-            final ongoingSessions = currentState.parkings.where((p) => p.endTime == null).toList();
+            final ongoingSessions =
+                currentState.parkings.where((p) => p.endTime == null).toList();
             final availableVehicles = currentState.vehicles.where((vehicle) {
-              return !ongoingSessions.any((session) => session.vehicle.target?.id == vehicle.id);
+              return !ongoingSessions
+                  .any((session) => session.vehicle.target?.id == vehicle.id);
             }).toList();
 
-            final availableParkingSpaces = currentState.parkingSpaces.where((space) {
-              return !ongoingSessions.any((session) => session.parkingSpace.target?.id == space.id);
+            final availableParkingSpaces =
+                currentState.parkingSpaces.where((space) {
+              return !ongoingSessions.any(
+                  (session) => session.parkingSpace.target?.id == space.id);
             }).toList();
 
             await showDialog(
@@ -141,7 +158,8 @@ class ParkingView extends StatelessWidget {
                 onCreate: (newParking) {
                   context.read<ParkingBloc>().add(CreateParking(
                         vehicleId: newParking.vehicle.target!.id.toString(),
-                        parkingSpaceId: newParking.parkingSpace.target!.id.toString(),
+                        parkingSpaceId:
+                            newParking.parkingSpace.target!.id.toString(),
                       ));
                 },
               ),
@@ -150,16 +168,17 @@ class ParkingView extends StatelessWidget {
         },
         onEdit: () async {
           final currentState = context.read<ParkingBloc>().state;
-          if (currentState is ParkingLoaded && currentState.selectedParking != null) {
+          if (currentState is ParkingLoaded &&
+              currentState.selectedParking != null) {
             final selectedParking = currentState.selectedParking!;
             if (selectedParking.endTime != null) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Cannot edit completed parking sessions.')),
+                const SnackBar(
+                    content: Text('Cannot edit completed parking sessions.')),
               );
               return;
             }
 
-          
             final availableParkingSpaces = currentState.availableParkingSpaces;
 
             await showDialog(
@@ -168,7 +187,9 @@ class ParkingView extends StatelessWidget {
                 parking: selectedParking,
                 availableParkingSpaces: availableParkingSpaces,
                 onEdit: (updatedParking) {
-                  context.read<ParkingBloc>().add(UpdateParking(parking: updatedParking));
+                  context
+                      .read<ParkingBloc>()
+                      .add(UpdateParking(parking: updatedParking));
                 },
               ),
             );
@@ -176,7 +197,8 @@ class ParkingView extends StatelessWidget {
         },
         onDelete: () {
           final currentState = context.read<ParkingBloc>().state;
-          if (currentState is ParkingLoaded && currentState.selectedParking != null) {
+          if (currentState is ParkingLoaded &&
+              currentState.selectedParking != null) {
             final selectedParking = currentState.selectedParking!;
 
             showDialog(
@@ -192,9 +214,9 @@ class ParkingView extends StatelessWidget {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      context
-                          .read<ParkingBloc>()
-                          .add(UpdateParking(parking: selectedParking.copyWith(endTime: DateTime.now())));
+                      context.read<ParkingBloc>().add(UpdateParking(
+                          parking: selectedParking.copyWith(
+                              endTime: DateTime.now())));
                       Navigator.of(context).pop();
                     },
                     child: const Text('Delete'),

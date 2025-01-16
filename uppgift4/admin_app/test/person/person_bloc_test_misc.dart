@@ -3,9 +3,9 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:client_repositories/async_http_repos.dart';
 import 'package:shared/shared.dart';
-import 'package:admin_app/bloc/person/person_bloc.dart';
-import 'package:admin_app/bloc/person/person_event.dart';
-import 'package:admin_app/bloc/person/person_state.dart';
+import 'package:shared/bloc/person/person_bloc.dart';
+import 'package:shared/bloc/person/person_event.dart';
+import 'package:shared/bloc/person/person_state.dart';
 
 class MockPersonRepository extends Mock implements PersonRepository {}
 

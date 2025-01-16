@@ -1,6 +1,6 @@
-import 'package:admin_app/bloc/person/person_bloc.dart';
-import 'package:admin_app/bloc/person/person_event.dart';
-import 'package:admin_app/bloc/person/person_state.dart';
+import 'package:shared/bloc/person/person_bloc.dart';
+import 'package:shared/bloc/person/person_event.dart';
+import 'package:shared/bloc/person/person_state.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:mocktail/mocktail.dart';

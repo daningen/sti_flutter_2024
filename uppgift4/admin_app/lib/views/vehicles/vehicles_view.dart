@@ -4,9 +4,10 @@ import 'package:admin_app/app_theme.dart';
 // import 'package:client_repositories/async_http_repos.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../bloc/vehicles/vehicles_bloc.dart';
-import '../../bloc/vehicles/vehicles_event.dart';
-import '../../bloc/vehicles/vehicles_state.dart';
+import 'package:shared/bloc/vehicles/vehicles_bloc.dart';
+import 'package:shared/bloc/vehicles/vehicles_event.dart';
+import 'package:shared/bloc/vehicles/vehicles_state.dart';
+
 import 'package:shared/shared.dart';
 
 import '../../widgets/app_bar_actions.dart';

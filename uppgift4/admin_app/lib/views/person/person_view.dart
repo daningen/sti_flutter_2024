@@ -2,9 +2,10 @@ import 'package:admin_app/views/person/dialogs/create_person_dialog.dart';
 import 'package:admin_app/views/person/dialogs/edit_person_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../bloc/person/person_bloc.dart';
-import '../../bloc/person/person_event.dart';
-import '../../bloc/person/person_state.dart';
+import 'package:shared/bloc/person/person_bloc.dart';
+import 'package:shared/bloc/person/person_event.dart';
+import 'package:shared/bloc/person/person_state.dart';
+
 import '../../widgets/bottom_action_buttons.dart';
 import '../../app_theme.dart';
 

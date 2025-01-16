@@ -1,4 +1,4 @@
-import 'package:admin_app/bloc/items/items_bloc.dart';
+import 'package:shared/bloc/items/items_bloc.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:client_repositories/async_http_repos.dart';
 import 'package:flutter/foundation.dart'; // Import for debugPrint

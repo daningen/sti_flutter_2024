@@ -1,6 +1,6 @@
-import 'package:admin_app/bloc/parkings/parking_bloc.dart';
-import 'package:admin_app/bloc/parkings/parking_event.dart';
-import 'package:admin_app/bloc/parkings/parking_state.dart';
+import 'package:shared/bloc/parkings/parking_bloc.dart';
+import 'package:shared/bloc/parkings/parking_event.dart';
+import 'package:shared/bloc/parkings/parking_state.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:client_repositories/async_http_repos.dart';
 import 'package:flutter_test/flutter_test.dart';
