@@ -1,6 +1,17 @@
 // utils/validators.dart
 
 class Validators {
+
+   static String? validateLicensePlate(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'License plate is required';
+    }
+    if (!RegExp(r'^[A-Za-z]{3}[0-9]{3}$').hasMatch(value)) {
+      return 'Format: ABC123';
+    }
+    return null;
+  }
+  
   static String? validateUsername(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter a username';

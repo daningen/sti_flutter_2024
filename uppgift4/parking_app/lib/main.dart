@@ -3,7 +3,7 @@ import 'package:parking_app/services/auth_service.dart';
 import 'package:parking_app/views/register_view.dart';
 import 'package:parking_app/views/start_view.dart';
 import 'package:parking_app/views/user_view.dart';
-import 'package:parking_app/views/vehicles_view.dart';
+import 'package:parking_app/views/vehicle/vehicles_view.dart';
 import 'package:provider/provider.dart';
 
 import 'package:parking_app/views/login_view.dart';
