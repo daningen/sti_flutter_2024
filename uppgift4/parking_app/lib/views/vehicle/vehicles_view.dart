@@ -136,28 +136,34 @@ class _VehiclesViewState extends State<VehiclesView> {
         ),
       ),
       bottomNavigationBar: VehicleNavigationBar(
-        onHomePressed: () {
-          context.go('/');
-        },
-        onReloadPressed: () {
-          refreshVehicles();
-        },
-        onAddVehiclePressed: () async {
-          // Open CreateVehicleDialog
-          await showDialog<void>(
-            context: context,
-            builder: (context) => CreateVehicleDialog(
-              onCreate: (newVehicle) => _vehicleBloc.add(CreateVehicle(
-                licensePlate: newVehicle.licensePlate,
-                vehicleType: newVehicle.vehicleType,
-                owner: newVehicle.owner.target ??
-                    Person(name: 'Unknown', ssn: '000000'),
-              )),
-              ownersFuture: PersonRepository().getAll(),
-            ),
-          );
-        },
+  onHomePressed: () {
+    context.go('/'); // Navigate to home
+  },
+  onReloadPressed: () {
+    refreshVehicles(); // Reload vehicles
+  },
+  onAddVehiclePressed: () async {
+    // Open CreateVehicleDialog
+    await showDialog<void>(
+      context: context,
+      builder: (context) => CreateVehicleDialog(
+        onCreate: (newVehicle) => _vehicleBloc.add(CreateVehicle(
+          licensePlate: newVehicle.licensePlate,
+          vehicleType: newVehicle.vehicleType,
+          owner: newVehicle.owner.target ??
+              Person(name: 'Unknown', ssn: '000000'),
+        )),
+        ownersFuture: PersonRepository().getAll(),
       ),
+    );
+  },
+  onLogoutPressed: () {
+    // Implement logout functionality
+    debugPrint('Logout pressed');
+    context.go('/login'); // Example: Navigate to the login page
+  },
+),
+
     );
   }
 }

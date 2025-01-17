@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:parking_app/app_theme.dart'; // Import AppTheme once
 import 'package:parking_app/services/auth_service.dart';
 import 'package:parking_app/views/register_view.dart';
 import 'package:parking_app/views/start_view.dart';
@@ -76,20 +77,8 @@ class ParkingApp extends StatelessWidget {
         return MaterialApp.router(
           routerConfig: _router,
           debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            primarySwatch: Colors.lightBlue,
-            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-              selectedItemColor: Colors.green,
-              unselectedItemColor: Colors.lightGreen,
-              backgroundColor: Colors.white,
-            ),
-          ),
-          darkTheme: ThemeData.dark().copyWith(
-            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-              selectedItemColor: Colors.amber,
-              unselectedItemColor: Color.fromARGB(255, 245, 210, 210),
-            ),
-          ),
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
           themeMode: themeNotifier.themeMode,
         );
       },
