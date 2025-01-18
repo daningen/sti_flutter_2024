@@ -1,32 +1,94 @@
 import 'package:flutter/material.dart';
-import 'package:parking_app/app_theme.dart'; // Import AppTheme once
-import 'package:parking_app/services/auth_service.dart';
-import 'package:parking_app/views/register_view.dart';
-import 'package:parking_app/views/start_view.dart';
-import 'package:parking_app/views/user_view.dart';
-import 'package:parking_app/views/vehicle/vehicles_view.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
-
-import 'package:parking_app/views/login_view.dart';
-import 'package:parking_app/providers/theme_notifier.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared/bloc/auth/auth_bloc.dart';
+import 'package:client_repositories/async_http_repos.dart';
+import 'package:shared/bloc/parking_spaces/parking_space_event.dart';
+import 'package:shared/bloc/parkings/parking_event.dart';
+import 'package:shared/bloc/vehicles/vehicles_event.dart';
+
+import 'app_theme.dart';
+import 'services/auth_service.dart';
+import 'providers/theme_notifier.dart';
+import 'views/register_view.dart';
+import 'views/start_view.dart';
+import 'views/user_view.dart';
+import 'views/vehicle/vehicles_view.dart';
+import 'views/login_view.dart';
 import 'views/home_page.dart';
-import 'views/parking_view.dart';
+import 'views/parking/parking_view.dart';
 import 'views/parking_spaces_page.dart';
+import 'package:shared/bloc/auth/auth_bloc.dart';
+import 'package:shared/bloc/parkings/parking_bloc.dart';
+import 'package:shared/bloc/vehicles/vehicles_bloc.dart';
+import 'package:shared/bloc/parking_spaces/parking_space_bloc.dart';
 
 void main() {
+  // Instantiate required services and repositories
+  final authService = AuthService();
+  final parkingRepository = ParkingRepository();
+  final vehicleRepository = VehicleRepository();
+  final parkingSpaceRepository = ParkingSpaceRepository();
+
   runApp(
     MultiProvider(
       providers: [
-        Provider<AuthBloc>(
-          create: (_) => AuthBloc(authService: AuthService()),
-        ),
         ChangeNotifierProvider(create: (_) => ThemeNotifier()),
       ],
-      child: ParkingApp(),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (_) => AuthBloc(authService: authService),
+          ),
+          BlocProvider(
+            create: (_) => _initializeParkingBloc(
+              parkingRepository,
+              parkingSpaceRepository,
+              vehicleRepository,
+            ),
+          ),
+          BlocProvider(
+            create: (_) => _initializeVehiclesBloc(vehicleRepository),
+          ),
+          BlocProvider(
+            create: (_) => _initializeParkingSpaceBloc(parkingSpaceRepository),
+          ),
+        ],
+        child: ParkingApp(),
+      ),
     ),
   );
+}
+
+/// Initialize and return the [ParkingBloc] with its initial event
+ParkingBloc _initializeParkingBloc(
+  ParkingRepository parkingRepository,
+  ParkingSpaceRepository parkingSpaceRepository,
+  VehicleRepository vehicleRepository,
+) {
+  final bloc = ParkingBloc(
+    parkingRepository: parkingRepository,
+    parkingSpaceRepository: parkingSpaceRepository,
+    vehicleRepository: vehicleRepository,
+  );
+  bloc.add(LoadParkings()); // Load initial parkings
+  return bloc;
+}
+
+/// Initialize and return the [VehiclesBloc] with its initial event
+VehiclesBloc _initializeVehiclesBloc(VehicleRepository vehicleRepository) {
+  final bloc = VehiclesBloc(vehicleRepository: vehicleRepository);
+  bloc.add(LoadVehicles()); // Load initial vehicles
+  return bloc;
+}
+
+/// Initialize and return the [ParkingSpaceBloc] with its initial event
+ParkingSpaceBloc _initializeParkingSpaceBloc(
+  ParkingSpaceRepository parkingSpaceRepository,
+) {
+  final bloc = ParkingSpaceBloc(parkingSpaceRepository: parkingSpaceRepository);
+  bloc.add(LoadParkingSpaces()); // Load initial parking spaces
+  return bloc;
 }
 
 class ParkingApp extends StatelessWidget {
@@ -72,16 +134,13 @@ class ParkingApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ThemeNotifier>(
-      builder: (context, themeNotifier, _) {
-        return MaterialApp.router(
-          routerConfig: _router,
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: themeNotifier.themeMode,
-        );
-      },
+    return MaterialApp.router(
+      title: 'Parking App',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: context.watch<ThemeNotifier>().themeMode,
+      routerConfig: _router,
     );
   }
 }
