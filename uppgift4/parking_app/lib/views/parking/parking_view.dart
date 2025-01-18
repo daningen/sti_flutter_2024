@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:parking_app/views/parking/dialog/create_parking_dialog.dart';
 import 'package:shared/bloc/parkings/parking_bloc.dart';
 import 'package:shared/bloc/parkings/parking_event.dart';
 import 'package:shared/bloc/parkings/parking_state.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:parking_app/providers/theme_notifier.dart';
+import 'package:parking_app/views/parking/parking_navigation_bar.dart';
 
 class ParkingView extends StatelessWidget {
   const ParkingView({super.key});
@@ -26,15 +29,23 @@ class ParkingView extends StatelessWidget {
                   children: [
                     IconButton(
                       icon: Icon(
-                        state.isFilteringActive ? Icons.filter_list : Icons.filter_alt_off,
+                        state.isFilteringActive
+                            ? Icons.filter_list_alt
+                            : Icons.filter_list,
                       ),
                       tooltip: state.isFilteringActive
-                          ? 'Show All Parkings'
-                          : 'Show Active Parkings',
+                          ? 'Show Active Parkings'
+                          : 'Show All Parkings',
                       onPressed: () {
-                        context.read<ParkingBloc>().add(
-                          LoadParkings(showActiveOnly: !state.isFilteringActive),
-                        );
+                        if (state.isFilteringActive) {
+                          context
+                              .read<ParkingBloc>()
+                              .add(LoadParkings(showActiveOnly: false));
+                        } else {
+                          context
+                              .read<ParkingBloc>()
+                              .add(LoadParkings(showActiveOnly: true));
+                        }
                       },
                     ),
                     IconButton(
@@ -83,17 +94,25 @@ class ParkingView extends StatelessWidget {
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4.0),
-                      Text('Vehicle: ${parking.vehicle.target?.licensePlate ?? 'N/A'}'),
+                      Text(
+                          'Vehicle: ${parking.vehicle.target?.licensePlate ?? 'N/A'}'),
                       const SizedBox(height: 4.0),
-                      Text('Start Time: ${timeFormat.format(parking.startTime)}'),
+                      Text(
+                          'Start Time: ${timeFormat.format(parking.startTime)}'),
                       const SizedBox(height: 4.0),
                       parking.endTime != null
-                          ? Text('End Time: ${timeFormat.format(parking.endTime!)}')
+                          ? Text(
+                              'End Time: ${timeFormat.format(parking.endTime!)}')
                           : ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    const Color.fromARGB(255, 243, 112, 102),
+                                foregroundColor: Colors.white,
+                              ),
                               onPressed: () {
                                 context.read<ParkingBloc>().add(
-                                  StopParking(parkingId: parking.id),
-                                );
+                                      StopParking(parkingId: parking.id),
+                                    );
                               },
                               child: const Text('Stop Parking'),
                             ),
@@ -109,12 +128,57 @@ class ParkingView extends StatelessWidget {
           }
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).pushNamed('/create-parking'); // Assuming a create parking route
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     Navigator.of(context).pushNamed('/create-parking'); // Assuming a create parking route
+      //   },
+      //   tooltip: 'Add Parking',
+      //   child: const Icon(Icons.add),
+      // ),
+      bottomNavigationBar: ParkingNavigationBar(
+        onHomePressed: () {
+          context.go('/'); // Navigate to home
         },
-        tooltip: 'Add Parking',
-        child: const Icon(Icons.add),
+        onShowAllParkings: () {
+          context.read<ParkingBloc>().add(LoadParkings(showActiveOnly: false));
+        },
+        onShowActiveParkings: () {
+          context.read<ParkingBloc>().add(LoadParkings(showActiveOnly: true));
+        },
+        onAddParkingPressed: () async {
+          final currentState = context.read<ParkingBloc>().state;
+          if (currentState is ParkingLoaded) {
+            final ongoingSessions =
+                currentState.parkings.where((p) => p.endTime == null).toList();
+            final availableVehicles = currentState.vehicles
+                .where((vehicle) => !ongoingSessions
+                    .any((session) => session.vehicle.target?.id == vehicle.id))
+                .toList();
+            final availableParkingSpaces = currentState.parkingSpaces
+                .where((space) => !ongoingSessions.any(
+                    (session) => session.parkingSpace.target?.id == space.id))
+                .toList();
+
+            await showDialog(
+              context: context,
+              builder: (context) => CreateParkingDialog(
+                availableVehicles: availableVehicles,
+                availableParkingSpaces: availableParkingSpaces,
+                onCreate: (newParking) =>
+                    context.read<ParkingBloc>().add(CreateParking(
+                          vehicleId: newParking.vehicle.target!.id.toString(),
+                          parkingSpaceId:
+                              newParking.parkingSpace.target!.id.toString(),
+                        )),
+              ),
+            );
+          }
+        },
+        onLogoutPressed: () {
+          // Implement logout functionality
+          debugPrint('Logout pressed');
+          context.go('/login'); // Example: Navigate to the login page
+        },
       ),
     );
   }

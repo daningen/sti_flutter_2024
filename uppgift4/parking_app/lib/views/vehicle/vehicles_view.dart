@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:client_repositories/async_http_repos.dart';
 import 'package:go_router/go_router.dart';
 import 'package:parking_app/providers/theme_notifier.dart';
-import 'package:parking_app/views/vehicle/dialogs/create_vehicle_dialog.dart';
+import 'package:parking_app/views/vehicle/dialog/create_vehicle_dialog.dart';
 import 'package:parking_app/views/vehicle/vehicle_navigation_bar.dart'; // Import the custom navigation bar
 
 // Import VehicleBloc and related events/states
