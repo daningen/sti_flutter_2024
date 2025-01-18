@@ -146,34 +146,46 @@ class ParkingView extends StatelessWidget {
           context.read<ParkingBloc>().add(LoadParkings(showActiveOnly: true));
         },
         onAddParkingPressed: () async {
-          final currentState = context.read<ParkingBloc>().state;
-          if (currentState is ParkingLoaded) {
-            final ongoingSessions =
-                currentState.parkings.where((p) => p.endTime == null).toList();
-            final availableVehicles = currentState.vehicles
-                .where((vehicle) => !ongoingSessions
-                    .any((session) => session.vehicle.target?.id == vehicle.id))
-                .toList();
-            final availableParkingSpaces = currentState.parkingSpaces
-                .where((space) => !ongoingSessions.any(
-                    (session) => session.parkingSpace.target?.id == space.id))
-                .toList();
+  final currentState = context.read<ParkingBloc>().state;
+  if (currentState is ParkingLoaded) {
+    final ongoingSessions =
+        currentState.parkings.where((p) => p.endTime == null).toList();
+    final availableVehicles = currentState.vehicles
+        .where((vehicle) => !ongoingSessions
+            .any((session) => session.vehicle.target?.id == vehicle.id))
+        .toList();
+    final availableParkingSpaces = currentState.availableParkingSpaces;
 
-            await showDialog(
-              context: context,
-              builder: (context) => CreateParkingDialog(
-                availableVehicles: availableVehicles,
-                availableParkingSpaces: availableParkingSpaces,
-                onCreate: (newParking) =>
-                    context.read<ParkingBloc>().add(CreateParking(
-                          vehicleId: newParking.vehicle.target!.id.toString(),
-                          parkingSpaceId:
-                              newParking.parkingSpace.target!.id.toString(),
-                        )),
-              ),
-            );
-          }
+    debugPrint('Passing to CreateParkingDialog:');
+    debugPrint('Available Vehicles: ${availableVehicles.length}');
+    for (final vehicle in availableVehicles) {
+      debugPrint('- ID: ${vehicle.id}, License Plate: ${vehicle.licensePlate}');
+    }
+
+    debugPrint('Available Parking Spaces: ${availableParkingSpaces.length}');
+    for (final space in availableParkingSpaces) {
+      debugPrint('- ID: ${space.id}, Address: ${space.address}');
+    }
+
+    await showDialog(
+      context: context,
+      builder: (context) => CreateParkingDialog(
+        availableVehicles: availableVehicles,
+        availableParkingSpaces: availableParkingSpaces,
+        onCreate: (newParking) {
+          context.read<ParkingBloc>().add(
+                CreateParking(
+                  vehicleId: newParking.vehicle.target!.id.toString(),
+                  parkingSpaceId:
+                      newParking.parkingSpace.target!.id.toString(),
+                ),
+              );
         },
+      ),
+    );
+  }
+},
+
         onLogoutPressed: () {
           // Implement logout functionality
           debugPrint('Logout pressed');

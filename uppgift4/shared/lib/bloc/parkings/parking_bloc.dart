@@ -45,15 +45,43 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
         selectedParking = (state as ParkingLoaded).selectedParking;
       }
 
+      // final availableParkingSpaces = parkingSpaces.where((space) {
+      //   final isOccupied = parkings.any((p) =>
+      //       p.endTime == null && p.parkingSpace.target?.id == space.id);
+      //   final isSelected = selectedParking?.parkingSpace.target?.id == space.id;
+
+      //   debugPrint('Space ${space.address} is ${isOccupied ? "occupied" : "available"}. Selected: $isSelected');
+
+      //   return !isOccupied || isSelected;
+
+      // }).toList();
+
+      // Add a check for availableParkingSpaces before emitting (Optional)
+      // if (availableParkingSpaces.isEmpty) {
+      //   debugPrint('No available parking spaces found.');
+      // }
+
       final availableParkingSpaces = parkingSpaces.where((space) {
-        final isOccupied = parkings.any((p) =>
-            p.endTime == null && p.parkingSpace.target?.id == space.id);
+        final isOccupied = parkings.any(
+            (p) => p.endTime == null && p.parkingSpace.target?.id == space.id);
         final isSelected = selectedParking?.parkingSpace.target?.id == space.id;
 
-        debugPrint('Space ${space.address} is ${isOccupied ? "occupied" : "available"}. Selected: $isSelected');
+        debugPrint('Checking Parking Space:');
+        debugPrint('- ID: ${space.id}');
+        debugPrint('- Address: ${space.address}');
+        debugPrint('- Is Occupied: $isOccupied');
+        debugPrint('- Is Selected: $isSelected');
 
-        return !isOccupied || isSelected;
+        final isAvailable = !isOccupied || isSelected;
+        debugPrint('- Is Available: $isAvailable');
+
+        return isAvailable;
       }).toList();
+
+      debugPrint('Filtered Available Parking Spaces:');
+      for (final space in availableParkingSpaces) {
+        debugPrint('- ID: ${space.id}, Address: ${space.address}');
+      }
 
       emit(ParkingLoaded(
         parkings: filteredParkings,
@@ -61,7 +89,7 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
         parkingSpaces: parkingSpaces,
         availableParkingSpaces: availableParkingSpaces,
         selectedParking: selectedParking,
-        isFilteringActive: event.showActiveOnly, 
+        isFilteringActive: event.showActiveOnly,
       ));
       debugPrint('Parkings loaded: $filteredParkings');
     } catch (e) {
