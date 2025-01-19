@@ -49,7 +49,7 @@ class ParkingSpacesView extends StatelessWidget {
                   trailing: IconButton(
                     icon: const Icon(Icons.info),
                     onPressed: () {
-                      // Add action for more details if needed
+                      // Add action ??
                     },
                   ),
                 );
@@ -68,7 +68,7 @@ class ParkingSpacesView extends StatelessWidget {
           context.read<ParkingSpaceBloc>().add(LoadParkingSpaces());
         },
         onLogoutPressed: () {
-          context.go('/login'); // Navigate to login
+          context.go('/login');  
         },
       ),
     );

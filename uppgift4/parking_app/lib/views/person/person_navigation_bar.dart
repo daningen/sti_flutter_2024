@@ -17,7 +17,7 @@ class PersonNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
-      currentIndex: 0, // Set to the appropriate active index
+      currentIndex: 0, // Set to the appropriate active index, thought for select to set color. Not completed
       onTap: (index) {
         switch (index) {
           case 0:
@@ -40,7 +40,7 @@ class PersonNavigationBar extends StatelessWidget {
         BottomNavigationBarItem(icon: Icon(Icons.add), label: 'Add Person'),
         BottomNavigationBarItem(icon: Icon(Icons.logout), label: 'Logout'),
       ],
-      type: BottomNavigationBarType.fixed, // Ensures all items are shown
+      type: BottomNavigationBarType.fixed,  
     );
   }
 }

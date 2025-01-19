@@ -15,7 +15,7 @@ class ParkingSpacesNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
-      currentIndex: 0, // Set to the appropriate active index
+      currentIndex: 0,
       onTap: (index) {
         switch (index) {
           case 0:
@@ -34,7 +34,7 @@ class ParkingSpacesNavigationBar extends StatelessWidget {
         BottomNavigationBarItem(icon: Icon(Icons.refresh), label: 'Reload'),
         BottomNavigationBarItem(icon: Icon(Icons.logout), label: 'Logout'),
       ],
-      type: BottomNavigationBarType.fixed, // Ensures all items are shown
+      type: BottomNavigationBarType.fixed,
     );
   }
 }

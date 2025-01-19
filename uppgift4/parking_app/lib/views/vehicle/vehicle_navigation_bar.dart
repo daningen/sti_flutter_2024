@@ -17,7 +17,7 @@ class VehicleNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
-      currentIndex: 0, // Set to the appropriate active index
+      currentIndex: 0, 
       onTap: (index) {
         switch (index) {
           case 0:

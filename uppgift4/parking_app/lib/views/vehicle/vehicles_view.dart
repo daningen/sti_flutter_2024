@@ -140,7 +140,7 @@ class _VehiclesViewState extends State<VehiclesView> {
     context.go('/'); // Navigate to home
   },
   onReloadPressed: () {
-    refreshVehicles(); // Reload vehicles
+    refreshVehicles(); 
   },
   onAddVehiclePressed: () async {
     // Open CreateVehicleDialog
@@ -158,9 +158,9 @@ class _VehiclesViewState extends State<VehiclesView> {
     );
   },
   onLogoutPressed: () {
-    // Implement logout functionality
+    // Implement logout functionality !!!!!!
     debugPrint('Logout pressed');
-    context.go('/login'); // Example: Navigate to the login page
+    context.go('/login'); 
   },
 ),
 

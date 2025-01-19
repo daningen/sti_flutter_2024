@@ -42,7 +42,7 @@ class LoginView extends StatelessWidget {
               debugPrint('Auth State changed: $state');
               if (state is AuthAuthenticated) {
                 debugPrint('Login successful. Navigating to /start.');
-                context.go('/start'); // Use GoRouter for navigation
+                context.go('/start');  
               } else if (state is AuthUnauthenticated) {
                 debugPrint('Login failed. Showing error.');
                 ScaffoldMessenger.of(context).showSnackBar(
