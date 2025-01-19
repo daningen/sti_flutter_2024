@@ -33,7 +33,8 @@ void main() {
       'creates a person and reloads persons',
       setUp: () {
         when(() => personRepository.create(any())).thenAnswer(
-            (_) async => Person(name: 'Dan Erlandsson', ssn: '920202', id: 1));
+          (_) async => Person(name: 'Dan Erlandsson', ssn: '920202', id: 1),
+        );
         when(() => personRepository.getAll()).thenAnswer((_) async => [
               Person(name: 'Dan Erlandsson', ssn: '920202', id: 1),
             ]);
@@ -54,15 +55,26 @@ void main() {
 
     blocTest<PersonBloc, PersonState>(
       'fails to create a person with missing name',
-      setUp: () {
-        // Ensure no repository call is mocked here
-      },
       build: () => personBloc,
       act: (bloc) => bloc.add(
         CreatePerson(name: '', ssn: '920202'), // Missing name
       ),
       expect: () => [
         PersonError('Failed to create person: Name is required'),
+      ],
+      verify: (_) {
+        verifyNever(() => personRepository.create(any()));
+      },
+    );
+
+    blocTest<PersonBloc, PersonState>(
+      'fails to create a person with missing SSN',
+      build: () => personBloc,
+      act: (bloc) => bloc.add(
+        CreatePerson(name: 'Dan Erlandsson', ssn: ''), // Missing SSN
+      ),
+      expect: () => [
+        PersonError('Failed to create person: SSN is required'),
       ],
       verify: (_) {
         verifyNever(() => personRepository.create(any()));
@@ -78,7 +90,7 @@ void main() {
       act: (bloc) => bloc.add(LoadPersons()),
       expect: () => [
         PersonLoading(),
-        PersonLoaded(persons: const []), // Use named parameter 'persons'
+        PersonLoaded(persons: const []),
       ],
       verify: (_) {
         verify(() => personRepository.getAll()).called(1);

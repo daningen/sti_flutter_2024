@@ -40,13 +40,31 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
   Future<void> _onCreatePerson(
       CreatePerson event, Emitter<PersonState> emit) async {
     debugPrint('Creating person: Name: ${event.name}, SSN: ${event.ssn}');
+
+    // Input validation
+    if (event.name.trim().isEmpty) {
+      final errorMessage = 'Name is required';
+      debugPrint('Error creating person: $errorMessage');
+      emit(PersonError('Failed to create person: $errorMessage'));
+      return; // Stop further execution
+    }
+
+    if (event.ssn.trim().isEmpty) {
+      final errorMessage = 'SSN is required';
+      debugPrint('Error creating person: $errorMessage');
+      emit(PersonError('Failed to create person: $errorMessage'));
+      return; // Stop further execution
+    }
+
     try {
       final newPerson = Person(
         name: event.name,
         ssn: event.ssn,
-      ); // No items field here
+      );
       await personRepository.create(newPerson);
       debugPrint('Person created successfully: $newPerson');
+
+      // Reload persons after creating a new one
       add(LoadPersons());
     } catch (e) {
       debugPrint('Error creating person: $e');
