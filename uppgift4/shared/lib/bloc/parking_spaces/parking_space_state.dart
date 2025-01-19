@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:shared/shared.dart'; // Assuming ParkingSpace is defined here
+import 'package:shared/shared.dart';  
 
 abstract class ParkingSpaceState extends Equatable {
   @override

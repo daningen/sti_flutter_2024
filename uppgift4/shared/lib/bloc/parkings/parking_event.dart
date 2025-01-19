@@ -21,7 +21,7 @@ class StopParking extends ParkingEvent {
 }
 
 class SelectParking extends ParkingEvent {
-  final Parking? selectedParking; // Add selectedParking property
+  final Parking? selectedParking;  
   SelectParking({required this.selectedParking});
 }
 

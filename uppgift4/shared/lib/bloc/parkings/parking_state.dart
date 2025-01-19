@@ -23,7 +23,7 @@ class ParkingLoaded extends ParkingState {
     required this.parkings,
     required this.vehicles,
     required this.parkingSpaces,
-    required this.availableVehicles, // Initialize added field
+    required this.availableVehicles,  
     required this.availableParkingSpaces,
     this.selectedParking,
     this.isFilteringActive = false,
@@ -33,7 +33,7 @@ class ParkingLoaded extends ParkingState {
     List<Parking>? parkings,
     List<Vehicle>? vehicles,
     List<ParkingSpace>? parkingSpaces,
-    List<Vehicle>? availableVehicles, // Add to copyWith
+    List<Vehicle>? availableVehicles,  
     List<ParkingSpace>? availableParkingSpaces,
     Parking? selectedParking,
     bool? isFilteringActive,
@@ -43,7 +43,7 @@ class ParkingLoaded extends ParkingState {
       vehicles: vehicles ?? this.vehicles,
       parkingSpaces: parkingSpaces ?? this.parkingSpaces,
       availableVehicles:
-          availableVehicles ?? this.availableVehicles, // Add to copyWith logic
+          availableVehicles ?? this.availableVehicles,  
       availableParkingSpaces:
           availableParkingSpaces ?? this.availableParkingSpaces,
       selectedParking: selectedParking ?? this.selectedParking,
@@ -56,7 +56,7 @@ class ParkingLoaded extends ParkingState {
         parkings,
         vehicles,
         parkingSpaces,
-        availableVehicles, // Include in props
+        availableVehicles, 
         availableParkingSpaces,
         selectedParking,
         isFilteringActive,

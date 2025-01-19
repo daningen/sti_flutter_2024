@@ -5,7 +5,7 @@ class StartInitial extends StartState {}
 class StartLoading extends StartState {}
 
 class StartLoaded extends StartState {
-  final String data; // Replace with actual data type
+  final String data;  
   StartLoaded({required this.data});
 }
 
