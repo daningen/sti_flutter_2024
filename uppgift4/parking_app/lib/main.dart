@@ -19,7 +19,7 @@ import 'views/vehicle/vehicles_view.dart';
 import 'views/login_view.dart';
 import 'views/home_page.dart';
 import 'views/parking/parking_view.dart';
-import 'views/parking_spaces_page.dart';
+import 'views/parking_space/parking_space_view.dart';
 import 'package:shared/bloc/auth/auth_bloc.dart';
 import 'package:shared/bloc/parkings/parking_bloc.dart';
 import 'package:shared/bloc/vehicles/vehicles_bloc.dart';
@@ -62,6 +62,11 @@ void main() {
               personBloc.add(LoadPersons()); // Dispatch initial event
               return personBloc;
             },
+          ),
+          BlocProvider(
+            create: (_) => ParkingSpaceBloc(
+              parkingSpaceRepository: ParkingSpaceRepository(),
+            )..add(LoadParkingSpaces()),
           ),
         ],
         child: ParkingApp(),

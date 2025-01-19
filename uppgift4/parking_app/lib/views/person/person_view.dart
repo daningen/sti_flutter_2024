@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:parking_app/views/person/dialog/create_person_dialog.dart';
-import 'package:parking_app/views/person/person_navigation_bar.dart';
+
 import 'package:parking_app/providers/theme_notifier.dart';
+import 'package:parking_app/views/person/person_navigation_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:shared/shared.dart';
 import 'package:shared/bloc/person/person_bloc.dart';

@@ -13,8 +13,8 @@ class AppTheme {
   // Navigation bar colors
   static BottomNavigationBarThemeData get bottomNavBarThemeLight =>
       const BottomNavigationBarThemeData(
-        selectedItemColor: Colors.green,
-        unselectedItemColor: Colors.lightGreen,
+        selectedItemColor: Colors.blueAccent,
+        unselectedItemColor: Colors.lightBlue,
         backgroundColor: Colors.white,
         showSelectedLabels: true,
         showUnselectedLabels: true,
