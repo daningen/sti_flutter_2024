@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:parking_app/views/person/dialog/create_person_dialog.dart';
 import 'package:parking_app/views/person/person_navigation_bar.dart';
 import 'package:parking_app/providers/theme_notifier.dart';
 import 'package:provider/provider.dart';
 import 'package:shared/shared.dart';
-import 'package:parking_app/utils/validators.dart';
 import 'package:shared/bloc/person/person_bloc.dart';
 import 'package:shared/bloc/person/person_event.dart';
 import 'package:shared/bloc/person/person_state.dart';
@@ -87,13 +87,22 @@ class PersonView extends StatelessWidget {
           context.go('/'); // Navigate to home
         },
         onReloadPressed: () {
-          context.read<PersonBloc>().add(ReloadPersons()); // Reload persons
+          context.read<PersonBloc>().add(ReloadPersons());
         },
-        onAddPersonPressed: () {
-          _createPerson(context); // Open dialog to create a new person
+        onAddPersonPressed: () async {
+          await showDialog(
+            context: context,
+            builder: (context) => CreatePersonDialog(
+              onCreate: (name, ssn) {
+                context
+                    .read<PersonBloc>()
+                    .add(CreatePerson(name: name, ssn: ssn));
+              },
+            ),
+          );
         },
         onLogoutPressed: () {
-          context.go('/login'); // Navigate to login
+          context.go('/login');
         },
       ),
     );
@@ -119,12 +128,16 @@ class PersonView extends StatelessWidget {
                 TextFormField(
                   controller: nameController,
                   decoration: const InputDecoration(labelText: 'Name'),
-                  validator: Validators.validateName,
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Name cannot be empty'
+                      : null,
                 ),
                 TextFormField(
                   controller: ssnController,
                   decoration: const InputDecoration(labelText: 'SSN'),
-                  validator: Validators.validateSSN,
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'SSN cannot be empty'
+                      : null,
                 ),
               ],
             ),
@@ -154,65 +167,6 @@ class PersonView extends StatelessWidget {
                 }
               },
               child: const Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _createPerson(BuildContext context) {
-    final formKey = GlobalKey<FormState>();
-    final TextEditingController nameController = TextEditingController();
-    final TextEditingController ssnController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Create Person'),
-          content: Form(
-            key: formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: nameController,
-                  decoration: const InputDecoration(labelText: 'Name'),
-                  validator: Validators.validateName,
-                ),
-                TextFormField(
-                  controller: ssnController,
-                  decoration: const InputDecoration(labelText: 'SSN'),
-                  validator: Validators.validateSSN,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (formKey.currentState!.validate()) {
-                  context.read<PersonBloc>().add(
-                        CreatePerson(
-                          name: nameController.text,
-                          ssn: ssnController.text,
-                        ),
-                      );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Person created successfully')),
-                  );
-                  Navigator.of(context).pop();
-                }
-              },
-              child: const Text('Create'),
             ),
           ],
         );
