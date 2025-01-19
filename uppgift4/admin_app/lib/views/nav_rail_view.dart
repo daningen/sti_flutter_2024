@@ -5,7 +5,7 @@ import 'statistics_view.dart';
 import 'parking/parking_view.dart';
 import 'parking_spaces/parking_space_view.dart';
 import 'vehicles/vehicles_view.dart';
-import 'person/person_view.dart'; // Update to import PersonView
+import 'person/person_view.dart'; 
 
 import 'package:shared/shared.dart';
 

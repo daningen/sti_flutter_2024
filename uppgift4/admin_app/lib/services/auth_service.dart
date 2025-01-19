@@ -32,7 +32,7 @@ class AuthService implements AuthServiceInterface {
       debugPrint("[AuthService] Authentication successful for user $username.");
     } catch (e) {
       debugPrint("[AuthService] Authentication failed: ${e.toString()}");
-      rethrow; // Propagate the error for further handling
+      rethrow; // error for further handling
     }
   }
 

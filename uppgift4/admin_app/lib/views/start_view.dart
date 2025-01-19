@@ -10,7 +10,7 @@ class StartView extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Start'),
         actions: const [
-          AppBarActions(), // Use the shared AppBarActions widget
+          AppBarActions(),  
         ],
       ),
       body: const Center(

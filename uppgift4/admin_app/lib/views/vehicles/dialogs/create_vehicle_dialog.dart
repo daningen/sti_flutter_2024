@@ -84,7 +84,7 @@ class _CreateVehicleDialogState extends State<CreateVehicleDialog> {
                     licensePlate: licensePlateController.text,
                     vehicleType: selectedVehicleType!,
                   );
-                  newVehicle.setOwner(selectedOwner!); // Ensure owner is set
+                  newVehicle.setOwner(selectedOwner!); 
                   Navigator.of(context).pop(newVehicle);
                   widget.onCreate(newVehicle);
                 }
