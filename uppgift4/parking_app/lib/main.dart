@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:parking_app/views/person/person_view.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:client_repositories/async_http_repos.dart';
 import 'package:shared/bloc/parking_spaces/parking_space_event.dart';
 import 'package:shared/bloc/parkings/parking_event.dart';
+import 'package:shared/bloc/person/person_bloc.dart';
+import 'package:shared/bloc/person/person_event.dart';
 import 'package:shared/bloc/vehicles/vehicles_event.dart';
 
 import 'app_theme.dart';
@@ -12,7 +15,6 @@ import 'services/auth_service.dart';
 import 'providers/theme_notifier.dart';
 import 'views/register_view.dart';
 import 'views/start_view.dart';
-import 'views/user_view.dart';
 import 'views/vehicle/vehicles_view.dart';
 import 'views/login_view.dart';
 import 'views/home_page.dart';
@@ -52,6 +54,14 @@ void main() {
           ),
           BlocProvider(
             create: (_) => _initializeParkingSpaceBloc(parkingSpaceRepository),
+          ),
+          BlocProvider(
+            create: (_) {
+              final personBloc =
+                  PersonBloc(personRepository: PersonRepository());
+              personBloc.add(LoadPersons()); // Dispatch initial event
+              return personBloc;
+            },
           ),
         ],
         child: ParkingApp(),
@@ -127,7 +137,7 @@ class ParkingApp extends StatelessWidget {
       ),
       GoRoute(
         path: '/user-page',
-        builder: (context, state) => const UserView(),
+        builder: (context, state) => const PersonView(),
       ),
     ],
   );
