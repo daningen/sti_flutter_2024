@@ -1,6 +1,6 @@
 import 'package:client_repositories/async_http_repos.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/material.dart';
 import 'parking_event.dart';
 import 'parking_state.dart';
 import 'package:shared/shared.dart';
@@ -29,6 +29,7 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
     debugPrint('Loading parkings...');
     emit(ParkingLoading());
     try {
+      // Fetch data from repositories
       final parkings = await parkingRepository.getAll();
       final vehicles = await vehicleRepository.getAll();
       final parkingSpaces = await parkingSpaceRepository.getAll();
@@ -36,6 +37,7 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
       debugPrint('Fetched vehicles: $vehicles');
       debugPrint('Fetched parking spaces: $parkingSpaces');
 
+      // Filter active or all parkings based on the event
       final filteredParkings = event.showActiveOnly
           ? parkings.where((p) => p.endTime == null).toList()
           : parkings;
@@ -45,48 +47,37 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
         selectedParking = (state as ParkingLoaded).selectedParking;
       }
 
-      // final availableParkingSpaces = parkingSpaces.where((space) {
-      //   final isOccupied = parkings.any((p) =>
-      //       p.endTime == null && p.parkingSpace.target?.id == space.id);
-      //   final isSelected = selectedParking?.parkingSpace.target?.id == space.id;
+      // Filter available vehicles
+      final availableVehicles = vehicles.where((vehicle) {
+        final isOccupied = parkings.any(
+            (p) => p.endTime == null && p.vehicle.target?.id == vehicle.id);
+        return !isOccupied;
+      }).toList();
 
-      //   debugPrint('Space ${space.address} is ${isOccupied ? "occupied" : "available"}. Selected: $isSelected');
-
-      //   return !isOccupied || isSelected;
-
-      // }).toList();
-
-      // Add a check for availableParkingSpaces before emitting (Optional)
-      // if (availableParkingSpaces.isEmpty) {
-      //   debugPrint('No available parking spaces found.');
-      // }
-
+      // Filter available parking spaces
       final availableParkingSpaces = parkingSpaces.where((space) {
         final isOccupied = parkings.any(
             (p) => p.endTime == null && p.parkingSpace.target?.id == space.id);
         final isSelected = selectedParking?.parkingSpace.target?.id == space.id;
-
-        debugPrint('Checking Parking Space:');
-        debugPrint('- ID: ${space.id}');
-        debugPrint('- Address: ${space.address}');
-        debugPrint('- Is Occupied: $isOccupied');
-        debugPrint('- Is Selected: $isSelected');
-
-        final isAvailable = !isOccupied || isSelected;
-        debugPrint('- Is Available: $isAvailable');
-
-        return isAvailable;
+        return !isOccupied || isSelected;
       }).toList();
+
+      debugPrint('Filtered Available Vehicles:');
+      for (final vehicle in availableVehicles) {
+        debugPrint('- ID: ${vehicle.id}, License Plate: ${vehicle.licensePlate}');
+      }
 
       debugPrint('Filtered Available Parking Spaces:');
       for (final space in availableParkingSpaces) {
         debugPrint('- ID: ${space.id}, Address: ${space.address}');
       }
 
+      // Emit the ParkingLoaded state with all necessary data
       emit(ParkingLoaded(
         parkings: filteredParkings,
         vehicles: vehicles,
         parkingSpaces: parkingSpaces,
+        availableVehicles: availableVehicles,
         availableParkingSpaces: availableParkingSpaces,
         selectedParking: selectedParking,
         isFilteringActive: event.showActiveOnly,
@@ -115,7 +106,8 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
       }
 
       final parking = Parking(startTime: DateTime.now());
-      parking.setDetails(vehicle, parkingSpace);
+      parking.vehicle.target = vehicle;
+      parking.parkingSpace.target = parkingSpace;
 
       await parkingRepository.create(parking);
       debugPrint('Parking created: $parking');

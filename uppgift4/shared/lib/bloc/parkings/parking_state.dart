@@ -3,7 +3,7 @@ import 'package:shared/shared.dart';
 import 'package:equatable/equatable.dart';
 
 @immutable
-sealed class ParkingState extends Equatable {}
+abstract class ParkingState extends Equatable {}
 
 class ParkingLoading extends ParkingState {
   @override
@@ -14,6 +14,7 @@ class ParkingLoaded extends ParkingState {
   final List<Parking> parkings;
   final List<Vehicle> vehicles;
   final List<ParkingSpace> parkingSpaces;
+  final List<Vehicle> availableVehicles;
   final List<ParkingSpace> availableParkingSpaces;
   final Parking? selectedParking;
   final bool isFilteringActive;
@@ -22,6 +23,7 @@ class ParkingLoaded extends ParkingState {
     required this.parkings,
     required this.vehicles,
     required this.parkingSpaces,
+    required this.availableVehicles, // Initialize added field
     required this.availableParkingSpaces,
     this.selectedParking,
     this.isFilteringActive = false,
@@ -31,20 +33,21 @@ class ParkingLoaded extends ParkingState {
     List<Parking>? parkings,
     List<Vehicle>? vehicles,
     List<ParkingSpace>? parkingSpaces,
+    List<Vehicle>? availableVehicles, // Add to copyWith
     List<ParkingSpace>? availableParkingSpaces,
     Parking? selectedParking,
-    bool clearSelectedParking = false, // Add an optional flag
+    bool? isFilteringActive,
   }) {
     return ParkingLoaded(
       parkings: parkings ?? this.parkings,
       vehicles: vehicles ?? this.vehicles,
       parkingSpaces: parkingSpaces ?? this.parkingSpaces,
+      availableVehicles:
+          availableVehicles ?? this.availableVehicles, // Add to copyWith logic
       availableParkingSpaces:
           availableParkingSpaces ?? this.availableParkingSpaces,
-      selectedParking: clearSelectedParking
-          ? null
-          : (selectedParking ?? this.selectedParking),
-          isFilteringActive: isFilteringActive,
+      selectedParking: selectedParking ?? this.selectedParking,
+      isFilteringActive: isFilteringActive ?? this.isFilteringActive,
     );
   }
 
@@ -53,6 +56,7 @@ class ParkingLoaded extends ParkingState {
         parkings,
         vehicles,
         parkingSpaces,
+        availableVehicles, // Include in props
         availableParkingSpaces,
         selectedParking,
         isFilteringActive,
