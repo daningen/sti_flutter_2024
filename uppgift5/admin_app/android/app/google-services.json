@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "512318365826",
+    "project_id": "uppgift5-6429d",
+    "storage_bucket": "uppgift5-6429d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:512318365826:android:e12363ca3ee5d3a046d49b",
+        "android_client_info": {
+          "package_name": "com.example.admin_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAIF_JUJMSk107oeO8vi-KuzsgdsLHX6gs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
