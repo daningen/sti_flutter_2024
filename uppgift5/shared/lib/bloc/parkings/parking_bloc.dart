@@ -24,57 +24,53 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
   }
 
   Future<void> _onLoadParkings(
-    LoadParkings event,
-    Emitter<ParkingState> emit,
-  ) async {
-    debugPrint('Loading parkings...');
-    emit(ParkingLoading());
-    try {
-      final parkings = await parkingRepository.getAll();
-      final vehicles = await vehicleRepository.getAll();
-      final parkingSpaces = await parkingSpaceRepository.getAll();
+  LoadParkings event,
+  Emitter<ParkingState> emit,
+) async {
+  debugPrint('Loading parkings...');
+  emit(ParkingLoading());
+  try {
+    final parkings = await parkingRepository.getAll();
+    final vehicles = await vehicleRepository.getAll();
+    final parkingSpaces = await parkingSpaceRepository.getAll();
 
-      debugPrint('Fetched parkings: $parkings');
-      debugPrint('Fetched vehicles: $vehicles');
-      debugPrint('Fetched parking spaces: $parkingSpaces');
+    debugPrint('Fetched parkings: $parkings');
+    debugPrint('Fetched vehicles: $vehicles');
+    debugPrint('Fetched parking spaces: $parkingSpaces');
 
-      final filteredParkings = event.showActiveOnly
-          ? parkings.where((p) => p.endTime == null).toList()
-          : parkings;
+    final filteredParkings = event.showActiveOnly
+        ? parkings.where((p) => p.endTime == null).toList()
+        : parkings;
 
-      Parking? selectedParking = (state is ParkingLoaded)
-          ? (state as ParkingLoaded).selectedParking
-          : null;
+    Parking? selectedParking = (state is ParkingLoaded)
+        ? (state as ParkingLoaded).selectedParking
+        : null;
 
-      final availableVehicles = vehicles.where((vehicle) {
-        final isOccupied = parkings.any(
-          (p) => p.endTime == null && p.vehicle?.id == vehicle.id,
-        );
-        return !isOccupied;
-      }).toList();
+    // Simplified filtering for debugging
+    final availableParkingSpaces = parkingSpaces.where((space) {
+      final isOccupied = parkings.any(
+        (p) => p.endTime == null && p.parkingSpace?.id == space.id,
+      );
+      return !isOccupied; // Only exclude occupied spaces for now
+    }).toList();
 
-      final availableParkingSpaces = parkingSpaces.where((space) {
-        final isOccupied = parkings.any(
-          (p) => p.endTime == null && p.parkingSpace?.id == space.id,
-        );
-        final isSelected = selectedParking?.parkingSpace?.id == space.id;
-        return !isOccupied || isSelected;
-      }).toList();
+    debugPrint('Available Parking Spaces: $availableParkingSpaces');
 
-      emit(ParkingLoaded(
-        parkings: filteredParkings,
-        vehicles: vehicles,
-        parkingSpaces: parkingSpaces,
-        availableVehicles: availableVehicles,
-        availableParkingSpaces: availableParkingSpaces,
-        selectedParking: selectedParking,
-        isFilteringActive: event.showActiveOnly,
-      ));
-    } catch (e) {
-      debugPrint('Error loading parkings: $e');
-      emit(ParkingError('Failed to load parkings: $e'));
-    }
+    emit(ParkingLoaded(
+      parkings: filteredParkings,
+      vehicles: vehicles,
+      parkingSpaces: parkingSpaces,
+      availableVehicles: vehicles, // Simplify for now
+      availableParkingSpaces: availableParkingSpaces,
+      selectedParking: selectedParking,
+      isFilteringActive: event.showActiveOnly,
+    ));
+  } catch (e) {
+    debugPrint('Error loading parkings: $e');
+    emit(ParkingError('Failed to load parkings: $e'));
   }
+}
+
 
   Future<void> _onCreateParking(
     CreateParking event,
