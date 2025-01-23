@@ -23,12 +23,15 @@ class VehicleLoading extends VehicleState {
 
 /// State indicating vehicles have been successfully loaded
 class VehicleLoaded extends VehicleState {
-  final UnmodifiableListView<Vehicle> vehicles;
+  final List<Vehicle> _vehicles;
+
+  /// Accessor for an immutable view of the vehicles list
+  UnmodifiableListView<Vehicle> get vehicles => UnmodifiableListView(_vehicles);
 
   VehicleLoaded(
     List<Vehicle> vehicles, {
     super.selectedVehicle,
-  }) : vehicles = UnmodifiableListView(vehicles);
+  }) : _vehicles = vehicles;
 
   /// Adds a `copyWith` method for creating a new state with updated values.
   VehicleLoaded copyWith({
@@ -36,13 +39,13 @@ class VehicleLoaded extends VehicleState {
     Vehicle? selectedVehicle,
   }) {
     return VehicleLoaded(
-      vehicles ?? this.vehicles.toList(), // Preserve immutability
+      vehicles ?? _vehicles, // Preserve immutability
       selectedVehicle: selectedVehicle ?? this.selectedVehicle,
     );
   }
 
   @override
-  List<Object?> get props => [vehicles, selectedVehicle];
+  List<Object?> get props => [_vehicles, selectedVehicle];
 }
 
 /// State indicating an error occurred

@@ -18,6 +18,17 @@ class PersonLoaded extends PersonState {
 
   @override
   List<Object?> get props => [persons, selectedPerson];
+
+  // Adding the copyWith method
+  PersonLoaded copyWith({
+    List<Person>? persons,
+    Person? selectedPerson,
+  }) {
+    return PersonLoaded(
+      persons: persons ?? this.persons,
+      selectedPerson: selectedPerson ?? this.selectedPerson,
+    );
+  }
 }
 
 class PersonError extends PersonState {

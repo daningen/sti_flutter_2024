@@ -1,10 +1,9 @@
 import 'package:firebase_repositories/firebase_repositories.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import 'package:shared/shared.dart';
 import 'person_event.dart';
 import 'person_state.dart';
+import 'package:shared/shared.dart';
 
 class PersonBloc extends Bloc<PersonEvent, PersonState> {
   final PersonRepository personRepository;
@@ -21,13 +20,27 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
   Future<void> _onLoadPersons(
       LoadPersons event, Emitter<PersonState> emit) async {
     debugPrint('Loading persons...');
-    emit(PersonLoading());
+    emit(PersonLoading()); // Indicate that loading has started
+
     try {
+      // Fetch persons from the repository
       final persons = await personRepository.getAll();
-      debugPrint('Fetched persons: $persons');
+
+      // Debug log the fetched persons for verification
+      debugPrint(
+          'Fetched persons from repository: ${persons.map((p) => p.toJson()).toList()}');
+
+      // Emit the loaded state with the fetched persons
       emit(PersonLoaded(persons: persons));
-    } catch (e) {
+
+      // Log the state after emitting to verify it's correct
+      debugPrint('Emitted PersonLoaded state: $persons');
+    } catch (e, stackTrace) {
+      // Log error with stack trace for better debugging
       debugPrint('Error loading persons: $e');
+      debugPrint('Stack trace: $stackTrace');
+
+      // Emit an error state with the failure message
       emit(PersonError('Failed to load persons: $e'));
     }
   }
@@ -60,7 +73,15 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
       );
       await personRepository.create(newPerson);
       debugPrint('Person created successfully: $newPerson');
-      add(LoadPersons());
+
+      // Update state directly if already loaded
+      if (state is PersonLoaded) {
+        final currentState = state as PersonLoaded;
+        final updatedList = List.of(currentState.persons)..add(newPerson);
+        emit(currentState.copyWith(persons: updatedList));
+      } else {
+        add(LoadPersons()); // Fallback to reload if state isn't PersonLoaded
+      }
     } catch (e) {
       debugPrint('Error creating person: $e');
       emit(PersonError('Failed to create person: ${e.toString()}'));
@@ -69,28 +90,35 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
 
   Future<void> _onUpdatePerson(
       UpdatePerson event, Emitter<PersonState> emit) async {
-    emit(PersonLoading());
     try {
       // Validate inputs
-      if (event.name.isEmpty) {
+      if (event.name.trim().isEmpty) {
         throw Exception('Name is required');
       }
-      if (event.ssn.isEmpty) {
+      if (event.ssn.trim().isEmpty) {
         throw Exception('SSN is required');
       }
 
-      // Call repository to update the person
-      final updatedPerson = await personRepository.update(
-        event.id,
-        Person(id: event.id, name: event.name, ssn: event.ssn),
+      // Update person in repository
+      final updatedPerson = Person(
+        id: event.id,
+        name: event.name,
+        ssn: event.ssn,
       );
+      await personRepository.update(event.id, updatedPerson);
       debugPrint('Person updated successfully: $updatedPerson');
 
-      // Reload the list of persons
-      final persons = await personRepository.getAll();
-      emit(PersonLoaded(persons: persons));
+      // Update state directly
+      if (state is PersonLoaded) {
+        final currentState = state as PersonLoaded;
+        final updatedList = currentState.persons.map((person) {
+          return person.id == event.id ? updatedPerson : person;
+        }).toList();
+        emit(currentState.copyWith(persons: updatedList));
+      } else {
+        add(LoadPersons()); // Reload if state isn't PersonLoaded
+      }
     } catch (e) {
-      // Standardize error message formatting
       final message = e.toString().replaceFirst(RegExp(r'^Exception: '), '');
       debugPrint('Error updating person: $message');
       emit(PersonError('Failed to update person: $message'));
@@ -103,7 +131,17 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
     try {
       await personRepository.delete(event.id);
       debugPrint('Person deleted successfully: ID: ${event.id}');
-      add(LoadPersons());
+
+      // Update state directly
+      if (state is PersonLoaded) {
+        final currentState = state as PersonLoaded;
+        final updatedList = currentState.persons
+            .where((person) => person.id != event.id)
+            .toList();
+        emit(currentState.copyWith(persons: updatedList));
+      } else {
+        add(LoadPersons()); // Reload if state isn't PersonLoaded
+      }
     } catch (e) {
       debugPrint('Error deleting person: $e');
       emit(PersonError('Failed to delete person: $e'));
@@ -114,10 +152,7 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
       SelectPerson event, Emitter<PersonState> emit) async {
     final currentState = state;
     if (currentState is PersonLoaded) {
-      emit(PersonLoaded(
-        persons: currentState.persons,
-        selectedPerson: event.person,
-      ));
+      emit(currentState.copyWith(selectedPerson: event.person));
     }
   }
 }

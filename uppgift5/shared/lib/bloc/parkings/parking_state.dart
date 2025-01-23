@@ -70,3 +70,24 @@ class ParkingError extends ParkingState {
   @override
   List<Object?> get props => [message];
 }
+
+/// Utility extension for better debug logging
+extension ParkingStateDebug on ParkingState {
+  void debugLog() {
+    if (this is ParkingLoaded) {
+      final state = this as ParkingLoaded;
+      debugPrint('[ParkingLoaded] Parkings: ${state.parkings}');
+      debugPrint('[ParkingLoaded] Vehicles: ${state.vehicles}');
+      debugPrint('[ParkingLoaded] ParkingSpaces: ${state.parkingSpaces}');
+      debugPrint('[ParkingLoaded] AvailableVehicles: ${state.availableVehicles}');
+      debugPrint(
+          '[ParkingLoaded] AvailableParkingSpaces: ${state.availableParkingSpaces}');
+      debugPrint('[ParkingLoaded] SelectedParking: ${state.selectedParking}');
+    } else if (this is ParkingError) {
+      final state = this as ParkingError;
+      debugPrint('[ParkingError] Message: ${state.message}');
+    } else {
+      debugPrint('[ParkingState] Unknown state: $this');
+    }
+  }
+}

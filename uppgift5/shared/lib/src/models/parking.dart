@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 import 'package:uuid/uuid.dart';
 
@@ -5,8 +6,9 @@ class Parking {
   final String id;
   final DateTime startTime;
   DateTime? endTime;
-  final Vehicle? vehicle; // Define the vehicle property
-  final ParkingSpace? parkingSpace; // Define the parkingSpace property
+  final Vehicle? vehicle; // Nullable because it might be missing in the JSON
+  final ParkingSpace?
+      parkingSpace; // Nullable because it might be missing in the JSON
 
   Parking({
     String? id,
@@ -29,17 +31,27 @@ class Parking {
   }
 
   factory Parking.fromJson(Map<String, dynamic> json) {
-    return Parking(
-      id: json['id'] ??
-          const Uuid().v4(), // Automatically generate an ID if missing
-      startTime: DateTime.parse(json['startTime']),
-      endTime: json['endTime'] != null ? DateTime.parse(json['endTime']) : null,
-      vehicle:
-          json['vehicle'] != null ? Vehicle.fromJson(json['vehicle']) : null,
-      parkingSpace: json['parkingSpace'] != null
-          ? ParkingSpace.fromJson(json['parkingSpace'])
-          : null,
-    );
+    // Log the incoming JSON for debugging
+    debugPrint('Parsing Parking from JSON: $json');
+
+    try {
+      return Parking(
+        id: json['id'] ?? const Uuid().v4(),
+        startTime: json['startTime'] != null
+            ? DateTime.parse(json['startTime'])
+            : DateTime.now(), // Provide a default value if missing
+        endTime:
+            json['endTime'] != null ? DateTime.parse(json['endTime']) : null,
+        vehicle:
+            json['vehicle'] != null ? Vehicle.fromJson(json['vehicle']) : null,
+        parkingSpace: json['parkingSpace'] != null
+            ? ParkingSpace.fromJson(json['parkingSpace'])
+            : null,
+      );
+    } catch (e) {
+      debugPrint('Error parsing Parking JSON: $e');
+      rethrow; // Rethrow to let the caller handle it
+    }
   }
 
   Parking copyWith({

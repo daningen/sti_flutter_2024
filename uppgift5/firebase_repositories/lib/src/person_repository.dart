@@ -43,35 +43,56 @@ class PersonRepository implements RepositoryInterface<Person> {
   }
 
   @override
+  @override
   Future<List<Person>> getAll() async {
     debugPrint("[PersonRepository] Fetching all persons.");
 
-    final snapshots = await db.collection("persons").get();
+    try {
+      final snapshots = await db
+          .collection("persons")
+          .get(const GetOptions(source: Source.server)); // Ensure fresh fetch
 
-    final persons = snapshots.docs.map((doc) {
-      final json = doc.data();
-      json["id"] = doc.id;
-      return Person.fromJson(json);
-    }).toList();
+      final persons = snapshots.docs.map((doc) {
+        final json = doc.data();
+        json["id"] = doc.id; // Assign the Firestore doc ID
+        return Person.fromJson(json);
+      }).toList();
 
-    debugPrint("[PersonRepository] Fetched persons: $persons");
-    return persons;
+      debugPrint("[PersonRepository] Fetched persons: $persons");
+      return persons;
+    } catch (e, stackTrace) {
+      debugPrint("[PersonRepository] Error fetching persons: $e");
+      debugPrint("StackTrace: $stackTrace");
+      return [];
+    }
   }
 
+  @override
   @override
   Future<Person?> delete(String id) async {
     debugPrint("[PersonRepository] Deleting person with ID: $id");
 
-    final person = await getById(id);
+    try {
+      final person = await getById(id);
 
-    if (person != null) {
-      await db.collection("persons").doc(id).delete();
-      debugPrint("[PersonRepository] Person deleted: $person");
-    } else {
-      debugPrint("[PersonRepository] Person not found for deletion.");
+      if (person != null) {
+        await db.collection("persons").doc(id).delete();
+        debugPrint("[PersonRepository] Person deleted: $person");
+      } else {
+        debugPrint("[PersonRepository] Person not found for deletion.");
+      }
+
+      // Force a refresh of all persons to ensure data consistency
+      final remainingPersons = await getAll();
+      debugPrint(
+          "[PersonRepository] Remaining persons after deletion: $remainingPersons");
+
+      return person;
+    } catch (e, stackTrace) {
+      debugPrint("[PersonRepository] Error deleting person: $e");
+      debugPrint("StackTrace: $stackTrace");
+      return null;
     }
-
-    return person;
   }
 
   @override

@@ -19,12 +19,16 @@ class VehiclesBloc extends Bloc<VehicleEvent, VehicleState> {
   }
 
   Future<void> _onLoadVehicles(
-      LoadVehicles event, Emitter<VehicleState> emit) async {
+    LoadVehicles event,
+    Emitter<VehicleState> emit,
+  ) async {
     debugPrint('Loading vehicles...');
     emit(VehicleLoading());
     try {
       final vehicles = await vehicleRepository.getAll();
-      debugPrint('Fetched vehicles: $vehicles');
+      for (final vehicle in vehicles) {
+        debugPrint('Vehicle: ${vehicle.toJson()}');
+      }
       emit(VehicleLoaded(vehicles));
     } catch (e) {
       debugPrint('Error loading vehicles: $e');
@@ -46,12 +50,20 @@ class VehiclesBloc extends Bloc<VehicleEvent, VehicleState> {
       final newVehicle = Vehicle(
         licensePlate: event.licensePlate,
         vehicleType: event.vehicleType,
-        owner: event.owner, // Set the owner directly
+        owner: event.owner,
       );
 
       await vehicleRepository.create(newVehicle);
       debugPrint('Vehicle created successfully: $newVehicle');
-      add(LoadVehicles());
+
+      // Directly update the state without reloading all vehicles
+      if (state is VehicleLoaded) {
+        final currentState = state as VehicleLoaded;
+        final updatedVehicles = currentState.vehicles.toList()..add(newVehicle);
+        emit(currentState.copyWith(vehicles: updatedVehicles));
+      } else {
+        add(LoadVehicles());
+      }
     } catch (e) {
       debugPrint('Error creating vehicle: $e');
       emit(VehicleError('Failed to create vehicle: $e'));
@@ -60,42 +72,42 @@ class VehiclesBloc extends Bloc<VehicleEvent, VehicleState> {
 
   Future<void> _onUpdateVehicle(
       UpdateVehicle event, Emitter<VehicleState> emit) async {
-    debugPrint(
-        'Updating vehicle: ID: ${event.vehicleId}, LicensePlate: ${event.updatedVehicle.licensePlate}, Type: ${event.updatedVehicle.vehicleType}');
-
     try {
-      // Ensure the owner is not null
-      final owner = event.updatedVehicle.owner;
-      if (owner == null) {
-        throw Exception("Vehicle owner cannot be null.");
-      }
-
-      // Safely update the vehicle
       final updatedVehicle = event.updatedVehicle.copyWith(
         id: event.vehicleId,
-        licensePlate: event.updatedVehicle.licensePlate,
-        vehicleType: event.updatedVehicle.vehicleType,
-        owner: owner, // Update the owner
       );
 
       await vehicleRepository.update(event.vehicleId, updatedVehicle);
-      debugPrint('Vehicle updated successfully: $updatedVehicle');
 
-      add(LoadVehicles());
-    } catch (e, stackTrace) {
+      if (state is VehicleLoaded) {
+        final currentState = state as VehicleLoaded;
+        final updatedVehicles = currentState.vehicles
+            .map((v) => v.id == event.vehicleId ? updatedVehicle : v)
+            .toList();
+        emit(currentState.copyWith(vehicles: updatedVehicles));
+      } else {
+        add(LoadVehicles());
+      }
+    } catch (e) {
       debugPrint('Error updating vehicle: $e');
-      debugPrint('Stack trace: $stackTrace');
       emit(VehicleError('Failed to update vehicle: $e'));
     }
   }
 
   Future<void> _onDeleteVehicle(
       DeleteVehicle event, Emitter<VehicleState> emit) async {
-    debugPrint('Deleting vehicle with ID: ${event.vehicleId}');
     try {
       await vehicleRepository.delete(event.vehicleId);
-      debugPrint('Vehicle deleted successfully: ID: ${event.vehicleId}');
-      add(LoadVehicles());
+
+      if (state is VehicleLoaded) {
+        final currentState = state as VehicleLoaded;
+        final updatedVehicles = currentState.vehicles
+            .where((v) => v.id != event.vehicleId)
+            .toList();
+        emit(currentState.copyWith(vehicles: updatedVehicles));
+      } else {
+        add(LoadVehicles());
+      }
     } catch (e) {
       debugPrint('Error deleting vehicle: $e');
       emit(VehicleError('Failed to delete vehicle: $e'));
