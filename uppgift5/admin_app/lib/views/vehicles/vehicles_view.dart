@@ -1,4 +1,5 @@
 import 'package:admin_app/app_theme.dart';
+import 'package:firebase_repositories/firebase_repositories.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared/bloc/vehicles/vehicles_bloc.dart';
@@ -94,20 +95,35 @@ class VehiclesView extends StatelessWidget {
       ),
       bottomNavigationBar: BottomActionButtons(
         onNew: () async {
+          debugPrint("onNew: Opening CreateVehicleDialog...");
+
+          // Fetch ownersFuture based on the state
+          final state = context.read<VehiclesBloc>().state;
+          final ownersFuture =
+              (state is VehicleLoaded && state.vehicles.isNotEmpty)
+                  ? Future.value(
+                      state.vehicles
+                          .map((v) => v.owner)
+                          .whereType<Person>()
+                          .toList(),
+                    )
+                  : context.read<PersonRepository>().getAll();
+
+          // Log the ownersFuture being passed to the dialog
+          ownersFuture.then((owners) {
+            debugPrint("onNew: Owners fetched for dialog: $owners");
+          }).catchError((error) {
+            debugPrint("onNew: Error fetching owners for dialog: $error");
+          });
+
           await showDialog(
             context: context,
             builder: (context) {
               return CreateVehicleDialog(
-                ownersFuture: context.read<VehiclesBloc>().state
-                        is VehicleLoaded
-                    ? Future.value(
-                        (context.read<VehiclesBloc>().state as VehicleLoaded)
-                            .vehicles
-                            .map((v) => v.owner)
-                            .whereType<Person>()
-                            .toList())
-                    : Future.value([]),
+                ownersFuture: ownersFuture,
                 onCreate: (newVehicle) {
+                  debugPrint(
+                      "onNew: Creating new vehicle: ${newVehicle.toJson()}");
                   context.read<VehiclesBloc>().add(CreateVehicle(
                         licensePlate: newVehicle.licensePlate,
                         vehicleType: newVehicle.vehicleType,
@@ -118,6 +134,8 @@ class VehiclesView extends StatelessWidget {
               );
             },
           );
+
+          debugPrint("onNew: CreateVehicleDialog closed.");
         },
         onEdit: () async {
           final selectedVehicle =

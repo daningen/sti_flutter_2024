@@ -28,10 +28,49 @@ class _CreateVehicleDialogState extends State<CreateVehicleDialog> {
     return FutureBuilder<List<Person>>(
       future: widget.ownersFuture,
       builder: (context, snapshot) {
+        // Log the state of the FutureBuilder
+        debugPrint("FutureBuilder snapshot state: ${snapshot.connectionState}");
+
         if (snapshot.connectionState == ConnectionState.waiting) {
+          // Log when waiting for the future
+          debugPrint("Fetching owners: Waiting for data...");
           return const Center(child: CircularProgressIndicator());
         }
+
+        if (snapshot.hasError) {
+          // Log the error if any
+          debugPrint("Error fetching owners: ${snapshot.error}");
+          return AlertDialog(
+            title: const Text('Error'),
+            content: Text('Failed to fetch owners: ${snapshot.error}'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Close'),
+              ),
+            ],
+          );
+        }
+
+        // Extract persons from snapshot data
         final persons = snapshot.data ?? [];
+        debugPrint("Fetched owners: $persons");
+
+        // If no persons are fetched, show an appropriate message
+        if (persons.isEmpty) {
+          debugPrint("No owners found in the fetched data.");
+          return AlertDialog(
+            title: const Text('No Owners Available'),
+            content:
+                const Text('No owners found. Please create a person first.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Close'),
+              ),
+            ],
+          );
+        }
 
         return AlertDialog(
           title: const Text('Create New Vehicle'),
@@ -57,7 +96,11 @@ class _CreateVehicleDialogState extends State<CreateVehicleDialog> {
                             child: Text(type),
                           ))
                       .toList(),
-                  onChanged: (value) => setState(() => selectedVehicleType = value),
+                  onChanged: (value) {
+                    setState(() => selectedVehicleType = value);
+                    // Log selected vehicle type
+                    debugPrint("Selected vehicle type: $selectedVehicleType");
+                  },
                   validator: (value) =>
                       value == null ? 'Please select a vehicle type' : null,
                 ),
@@ -72,7 +115,11 @@ class _CreateVehicleDialogState extends State<CreateVehicleDialog> {
                       child: Text(person.name),
                     );
                   }).toList(),
-                  onChanged: (person) => setState(() => selectedOwner = person),
+                  onChanged: (person) {
+                    setState(() => selectedOwner = person);
+                    // Log selected owner
+                    debugPrint("Selected owner: ${selectedOwner?.name}");
+                  },
                   validator: (value) =>
                       value == null ? 'Please select an owner' : null,
                 ),
@@ -82,7 +129,10 @@ class _CreateVehicleDialogState extends State<CreateVehicleDialog> {
           actions: [
             // Cancel button
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () {
+                debugPrint("CreateVehicleDialog canceled.");
+                Navigator.of(context).pop();
+              },
               child: const Text('Cancel'),
             ),
 
@@ -90,12 +140,17 @@ class _CreateVehicleDialogState extends State<CreateVehicleDialog> {
             ElevatedButton(
               onPressed: () {
                 if (formKey.currentState!.validate()) {
+                  // Create a new vehicle with the provided data
                   final newVehicle = Vehicle(
                     licensePlate: licensePlateController.text.trim(),
                     vehicleType: selectedVehicleType!,
                     owner: selectedOwner, // Assign the owner directly
                   );
 
+                  // Log the created vehicle
+                  debugPrint("Creating vehicle: ${newVehicle.toJson()}");
+
+                  // Close the dialog and invoke the onCreate callback
                   Navigator.of(context).pop();
                   widget.onCreate(newVehicle);
                 }

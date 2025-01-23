@@ -101,6 +101,8 @@ class PersonView extends StatelessWidget {
                         ssn: newPerson.ssn,
                       ),
                     );
+                // Automatically reload the list after creating a person
+                context.read<PersonBloc>().add(ReloadPersons());
               },
             ),
           );
