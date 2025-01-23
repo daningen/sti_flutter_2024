@@ -6,6 +6,7 @@ import 'package:shared/bloc/person/person_bloc.dart';
 import 'package:shared/bloc/person/person_event.dart';
 import 'package:shared/bloc/person/person_state.dart';
 
+import '../../widgets/app_bar_actions.dart';
 import '../../widgets/bottom_action_buttons.dart';
 import '../../app_theme.dart';
 
@@ -17,18 +18,8 @@ class PersonView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Person Management'),
-        actions: [
-          IconButton(
-            icon: Icon(
-              Theme.of(context).brightness == Brightness.light
-                  ? Icons.dark_mode
-                  : Icons.light_mode,
-            ),
-            onPressed: () {
-              // Add theme toggling logic if necessary
-            },
-            tooltip: 'Toggle Theme',
-          ),
+        actions: const [
+          AppBarActions(),
         ],
       ),
       body: BlocBuilder<PersonBloc, PersonState>(
@@ -101,7 +92,6 @@ class PersonView extends StatelessWidget {
                         ssn: newPerson.ssn,
                       ),
                     );
-                // Automatically reload the list after creating a person
                 context.read<PersonBloc>().add(ReloadPersons());
               },
             ),
@@ -141,7 +131,6 @@ class PersonView extends StatelessWidget {
               currentState.selectedPerson != null) {
             final selectedPerson = currentState.selectedPerson!;
 
-            // Show confirmation dialog
             showDialog(
               context: context,
               builder: (context) => AlertDialog(
@@ -173,7 +162,6 @@ class PersonView extends StatelessWidget {
               ),
             );
           } else {
-            // No person selected
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('No person selected to delete')),
             );
