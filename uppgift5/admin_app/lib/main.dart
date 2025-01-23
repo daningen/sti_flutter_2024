@@ -12,10 +12,13 @@ import 'package:shared/bloc/parking_spaces/parking_space_event.dart';
 import 'package:shared/bloc/parkings/parking_event.dart';
 import 'package:shared/bloc/person/person_bloc.dart';
 import 'package:shared/bloc/person/person_event.dart';
+import 'package:shared/bloc/statistics/statistics_bloc.dart';
+import 'package:shared/bloc/statistics/statistics_event.dart';
 import 'package:shared/bloc/vehicles/vehicles_bloc.dart';
 import 'package:shared/bloc/parking_spaces/parking_space_bloc.dart';
 import 'package:shared/bloc/parkings/parking_bloc.dart';
 import 'package:shared/bloc/vehicles/vehicles_event.dart';
+
 import 'theme_notifier.dart';
 import 'views/nav_rail_view.dart';
 import 'views/login_view.dart';
@@ -82,6 +85,12 @@ class AppInitializer extends StatelessWidget {
               create: (context) => ParkingSpaceBloc(
                 parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
               )..add(LoadParkingSpaces()),
+            ),
+            BlocProvider(
+              create: (context) => StatisticsBloc(
+                parkingRepository: context.read<ParkingRepository>(),
+                parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
+              )..add(LoadStatistics()),
             ),
           ],
           child: MyApp(),

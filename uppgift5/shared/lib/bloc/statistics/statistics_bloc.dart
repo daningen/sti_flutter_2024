@@ -1,5 +1,5 @@
-import 'package:firebase_repositories/firebase_repositories.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_repositories/firebase_repositories.dart';
 import 'statistics_event.dart';
 import 'statistics_state.dart';
 
@@ -12,6 +12,8 @@ class StatisticsBloc extends Bloc<StatisticsEvent, StatisticsState> {
     required this.parkingSpaceRepository,
   }) : super(StatisticsInitial()) {
     on<LoadStatistics>(_onLoadStatistics);
+    on<LoadMostUsedParkingSpaces>(_onLoadMostUsedParkingSpaces);
+    on<LoadLeastUsedParkingSpaces>(_onLoadLeastUsedParkingSpaces);
   }
 
   Future<void> _onLoadStatistics(
@@ -41,6 +43,60 @@ class StatisticsBloc extends Bloc<StatisticsEvent, StatisticsState> {
       ));
     } catch (e) {
       emit(StatisticsError(message: 'Failed to load statistics: $e'));
+    }
+  }
+
+  Future<void> _onLoadMostUsedParkingSpaces(
+      LoadMostUsedParkingSpaces event, Emitter<StatisticsState> emit) async {
+    try {
+      final parkings = await parkingRepository.getAll();
+
+      final parkingCounts = <String, int>{};
+
+      for (var parking in parkings) {
+        final parkingSpace = parking.parkingSpace?.address;
+        if (parkingSpace != null) {
+          parkingCounts.update(
+            parkingSpace,
+            (value) => value + 1,
+            ifAbsent: () => 1,
+          );
+        }
+      }
+
+      final sortedParkings = parkingCounts.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value));
+
+      emit(MostUsedParkingSpacesLoaded(sortedParkings));
+    } catch (e) {
+      emit(StatisticsError(message: 'Failed to load most used parking spaces: $e'));
+    }
+  }
+
+  Future<void> _onLoadLeastUsedParkingSpaces(
+      LoadLeastUsedParkingSpaces event, Emitter<StatisticsState> emit) async {
+    try {
+      final parkings = await parkingRepository.getAll();
+
+      final parkingCounts = <String, int>{};
+
+      for (var parking in parkings) {
+        final parkingSpace = parking.parkingSpace?.address;
+        if (parkingSpace != null) {
+          parkingCounts.update(
+            parkingSpace,
+            (value) => value + 1,
+            ifAbsent: () => 1,
+          );
+        }
+      }
+
+      final sortedParkings = parkingCounts.entries.toList()
+        ..sort((a, b) => a.value.compareTo(b.value));
+
+      emit(LeastUsedParkingSpacesLoaded(sortedParkings));
+    } catch (e) {
+      emit(StatisticsError(message: 'Failed to load least used parking spaces: $e'));
     }
   }
 }

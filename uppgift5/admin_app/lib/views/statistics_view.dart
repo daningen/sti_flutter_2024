@@ -1,101 +1,12 @@
-import 'package:firebase_repositories/firebase_repositories.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared/bloc/statistics/statistics_bloc.dart';
+import 'package:shared/bloc/statistics/statistics_event.dart';
+import 'package:shared/bloc/statistics/statistics_state.dart';
 import '../widgets/app_bar_actions.dart';
-import '../app_theme.dart';
 
-class StatisticsView extends StatefulWidget {
+class StatisticsView extends StatelessWidget {
   const StatisticsView({super.key});
-
-  @override
-  State<StatisticsView> createState() => _StatisticsViewState();
-}
-
-class _StatisticsViewState extends State<StatisticsView> {
-  late Future<Map<String, dynamic>> _statisticsFuture;
-  final DateFormat timeFormat = DateFormat('yyyy-MM-dd HH:mm');
-
-  @override
-  void initState() {
-    super.initState();
-    _loadStatistics();
-  }
-
-  void _loadStatistics() {
-    setState(() {
-      _statisticsFuture = _fetchStatistics();
-    });
-  }
-
-  Future<Map<String, dynamic>> _fetchStatistics() async {
-    final parkings = await ParkingRepository().getAll();
-    final parkingSpaces = await ParkingSpaceRepository().getAll();
-
-    final activeParkings = parkings.where((p) => p.endTime == null).length;
-
-    final completedParkings = parkings.where((p) => p.endTime != null).toList();
-    final averageParkingDuration = completedParkings.isNotEmpty
-        ? completedParkings
-                .map((p) => p.endTime!.difference(p.startTime).inMinutes)
-                .reduce((a, b) => a + b) ~/
-            completedParkings.length
-        : 0;
-
-    return {
-      'totalParkings': parkings.length,
-      'activeParkings': activeParkings,
-      'totalParkingSpaces': parkingSpaces.length,
-      'averageDuration': averageParkingDuration,
-    };
-  }
-
-  Future<List<MapEntry<String, int>>> _getTop3Parkings() async {
-    final parkings = await ParkingRepository().getAll();
-    final parkingCounts = <String, int>{};
-
-    for (var parking in parkings) {
-      final parkingSpace = parking.parkingSpace?.address;
-      if (parkingSpace != null) {
-        parkingCounts.update(
-          parkingSpace,
-          (value) => value + 1,
-          ifAbsent: () => 1,
-        );
-      }
-    }
-
-    return parkingCounts.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-  }
-
-  Future<List<MapEntry<String, int>>> _getLeastUsedParkings() async {
-    final parkings = await ParkingRepository().getAll();
-    final parkingCounts = <String, int>{};
-
-    for (var parking in parkings) {
-      final parkingSpace = parking.parkingSpace?.address;
-      if (parkingSpace != null) {
-        parkingCounts.update(
-          parkingSpace,
-          (value) => value + 1,
-          ifAbsent: () => 1,
-        );
-      }
-    }
-
-    return parkingCounts.entries.toList()
-      ..sort((a, b) => a.value.compareTo(b.value));
-  }
-
-  String _formatAverageDuration(int averageDurationInMinutes) {
-    if (averageDurationInMinutes <= 60) {
-      return '$averageDurationInMinutes mins';
-    } else {
-      int hours = averageDurationInMinutes ~/ 60;
-      int remainingMinutes = averageDurationInMinutes % 60;
-      return '$hours hr $remainingMinutes mins';
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,37 +17,27 @@ class _StatisticsViewState extends State<StatisticsView> {
           AppBarActions(),
         ],
       ),
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: _statisticsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+      body: BlocBuilder<StatisticsBloc, StatisticsState>(
+        builder: (context, state) {
+          if (state is StatisticsLoading) {
             return const Center(child: CircularProgressIndicator());
+          } else if (state is StatisticsLoaded) {
+            return _buildStatistics(state);
+          } else if (state is MostUsedParkingSpacesLoaded) {
+            return _buildParkingSpacesList(
+              state.parkingSpaces,
+              'Most Used Parking Spaces',
+            );
+          } else if (state is LeastUsedParkingSpacesLoaded) {
+            return _buildParkingSpacesList(
+              state.parkingSpaces,
+              'Least Used Parking Spaces',
+            );
+          } else if (state is StatisticsError) {
+            return Center(child: Text('Error: ${state.message}'));
+          } else {
+            return const Center(child: Text('No Data Available'));
           }
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-
-          final stats = snapshot.data!;
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildStatCard(
-                    'Total Parkings', stats['totalParkings'].toString()),
-                const Divider(),
-                _buildStatCard(
-                    'Active Parkings', stats['activeParkings'].toString()),
-                const Divider(),
-                _buildStatCard('Total Parking Spaces',
-                    stats['totalParkingSpaces'].toString()),
-                const Divider(),
-                _buildStatCard('Average Parking Duration',
-                    _formatAverageDuration(stats['averageDuration'] as int)),
-              ],
-            ),
-          );
         },
       ),
       bottomNavigationBar: Padding(
@@ -145,40 +46,97 @@ class _StatisticsViewState extends State<StatisticsView> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryColor,
-                foregroundColor: AppColors.textColor,
-              ),
-              onPressed: () async {
-                final top3 = await _getTop3Parkings();
-                _showTop3Dialog(top3);
-              },
+              onPressed: () => context
+                  .read<StatisticsBloc>()
+                  .add(LoadMostUsedParkingSpaces()),
               icon: const Icon(Icons.star),
               label: const Text('Most Used'),
             ),
             ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryColor,
-                foregroundColor: AppColors.textColor,
-              ),
-              onPressed: () async {
-                final leastUsed = await _getLeastUsedParkings();
-                _showLeastUsedDialog(leastUsed);
-              },
+              onPressed: () => context
+                  .read<StatisticsBloc>()
+                  .add(LoadLeastUsedParkingSpaces()),
               icon: const Icon(Icons.low_priority),
               label: const Text('Least Used'),
             ),
             ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryColor,
-                foregroundColor: AppColors.textColor,
-              ),
-              onPressed: _loadStatistics,
+              onPressed: () =>
+                  context.read<StatisticsBloc>().add(LoadStatistics()),
               icon: const Icon(Icons.refresh),
               label: const Text('Reload'),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildStatistics(StatisticsLoaded state) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildStatCard('Total Parkings', state.totalParkings.toString()),
+          const Divider(),
+          _buildStatCard('Active Parkings', state.activeParkings.toString()),
+          const Divider(),
+          _buildStatCard(
+              'Total Parking Spaces', state.totalParkingSpaces.toString()),
+          const Divider(),
+          _buildStatCard('Average Parking Duration',
+              _formatAverageDuration(state.averageDuration)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildParkingSpacesList(
+      List<MapEntry<String, int>> parkingSpaces, String title) {
+    if (parkingSpaces.isEmpty) {
+      return const Center(child: Text('No data available'));
+    }
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20.0,
+            ),
+          ),
+          const Divider(),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: parkingSpaces.length,
+            itemBuilder: (context, index) {
+              final entry = parkingSpaces[index];
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      entry.key,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      '${entry.value}', // The parking count
+                      style: const TextStyle(
+                        fontSize: 18.0,
+                        color: Colors.blueAccent,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -202,55 +160,13 @@ class _StatisticsViewState extends State<StatisticsView> {
     );
   }
 
-  void _showTop3Dialog(List<MapEntry<String, int>> top3) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Top 3 Most Used Parking Spaces'),
-        content: _buildParkingList(top3, 'parkings'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showLeastUsedDialog(List<MapEntry<String, int>> leastUsed) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Least Used Parking Spaces'),
-        content: _buildParkingList(leastUsed, 'parkings'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildParkingList(
-      List<MapEntry<String, int>> parkings, String unit) {
-    if (parkings.isEmpty) {
-      return const Center(child: Text('No data available'));
+  String _formatAverageDuration(int averageDurationInMinutes) {
+    if (averageDurationInMinutes <= 60) {
+      return '$averageDurationInMinutes mins';
+    } else {
+      int hours = averageDurationInMinutes ~/ 60;
+      int remainingMinutes = averageDurationInMinutes % 60;
+      return '$hours hr $remainingMinutes mins';
     }
-    return SizedBox(
-      height: 200,
-      child: ListView.builder(
-        itemCount: parkings.length,
-        itemBuilder: (context, index) {
-          final entry = parkings[index];
-          return ListTile(
-            title: Text(entry.key),
-            trailing: Text('${entry.value} $unit'),
-          );
-        },
-      ),
-    );
   }
 }

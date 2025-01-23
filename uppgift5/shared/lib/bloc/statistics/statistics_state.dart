@@ -18,7 +18,20 @@ class StatisticsLoaded extends StatisticsState {
   });
 }
 
+class MostUsedParkingSpacesLoaded extends StatisticsState {
+  final List<MapEntry<String, int>> parkingSpaces;
+
+  MostUsedParkingSpacesLoaded(this.parkingSpaces);
+}
+
+class LeastUsedParkingSpacesLoaded extends StatisticsState {
+  final List<MapEntry<String, int>> parkingSpaces;
+
+  LeastUsedParkingSpacesLoaded(this.parkingSpaces);
+}
+
 class StatisticsError extends StatisticsState {
   final String message;
+
   StatisticsError({required this.message});
 }
