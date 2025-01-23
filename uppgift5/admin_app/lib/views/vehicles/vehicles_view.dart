@@ -2,6 +2,8 @@ import 'package:admin_app/app_theme.dart';
 import 'package:firebase_repositories/firebase_repositories.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared/bloc/person/person_bloc.dart';
+import 'package:shared/bloc/person/person_event.dart';
 import 'package:shared/bloc/vehicles/vehicles_bloc.dart';
 import 'package:shared/bloc/vehicles/vehicles_event.dart';
 import 'package:shared/bloc/vehicles/vehicles_state.dart';
@@ -97,24 +99,8 @@ class VehiclesView extends StatelessWidget {
         onNew: () async {
           debugPrint("onNew: Opening CreateVehicleDialog...");
 
-          // Fetch ownersFuture based on the state
-          final state = context.read<VehiclesBloc>().state;
-          final ownersFuture =
-              (state is VehicleLoaded && state.vehicles.isNotEmpty)
-                  ? Future.value(
-                      state.vehicles
-                          .map((v) => v.owner)
-                          .whereType<Person>()
-                          .toList(),
-                    )
-                  : context.read<PersonRepository>().getAll();
-
-          // Log the ownersFuture being passed to the dialog
-          ownersFuture.then((owners) {
-            debugPrint("onNew: Owners fetched for dialog: $owners");
-          }).catchError((error) {
-            debugPrint("onNew: Error fetching owners for dialog: $error");
-          });
+          // Fetch all owners from the repository
+          final ownersFuture = context.read<PersonRepository>().getAll();
 
           await showDialog(
             context: context,
@@ -124,12 +110,17 @@ class VehiclesView extends StatelessWidget {
                 onCreate: (newVehicle) {
                   debugPrint(
                       "onNew: Creating new vehicle: ${newVehicle.toJson()}");
+
+                  // Dispatch the create event
                   context.read<VehiclesBloc>().add(CreateVehicle(
                         licensePlate: newVehicle.licensePlate,
                         vehicleType: newVehicle.vehicleType,
                         owner: newVehicle.owner ??
                             Person(id: '', name: 'Unknown', ssn: '000000'),
                       ));
+
+                  // Reload persons after a successful create
+                  context.read<PersonBloc>().add(LoadPersons());
                 },
               );
             },
@@ -141,25 +132,25 @@ class VehiclesView extends StatelessWidget {
           final selectedVehicle =
               context.read<VehiclesBloc>().state.selectedVehicle;
           if (selectedVehicle != null) {
+            // Fetch all owners from the repository
+            final ownersFuture = context.read<PersonRepository>().getAll();
+
+            // Show the edit dialog
             await showDialog(
               context: context,
               builder: (context) {
                 return EditVehicleDialog(
-                  ownersFuture: context.read<VehiclesBloc>().state
-                          is VehicleLoaded
-                      ? Future.value(
-                          (context.read<VehiclesBloc>().state as VehicleLoaded)
-                              .vehicles
-                              .map((v) => v.owner)
-                              .whereType<Person>()
-                              .toList())
-                      : Future.value([]),
+                  ownersFuture: ownersFuture,
                   vehicle: selectedVehicle,
                   onEdit: (updatedVehicle) {
+                    // Dispatch the update event
                     context.read<VehiclesBloc>().add(UpdateVehicle(
                           vehicleId: updatedVehicle.id,
                           updatedVehicle: updatedVehicle,
                         ));
+
+                    // Reload persons after a successful update
+                    context.read<PersonBloc>().add(LoadPersons());
                   },
                 );
               },
