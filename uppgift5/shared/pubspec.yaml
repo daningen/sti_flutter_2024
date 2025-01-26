@@ -11,9 +11,9 @@ dependencies:
     sdk: flutter
   firebase_core: ^3.10.1
   firebase_auth: ^5.4.1
-  admin_app:
-    path: ../admin_app
-  objectbox: ^4.0.3
+  # admin_app:
+  #   path: ../admin_app
+  # objectbox: ^4.0.3
   provider: ^6.1.2
   bloc: ^8.1.4
   flutter_bloc: ^8.1.6
@@ -32,5 +32,5 @@ dev_dependencies:
   build_runner: ^2.4.13
   lints: ^4.0.0
   mocktail: ^1.0.4
-  objectbox_generator: any
+  # objectbox_generator: any
   test: ^1.24.0

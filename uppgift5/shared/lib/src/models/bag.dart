@@ -1,16 +1,12 @@
 import 'dart:convert';
 
-import 'package:objectbox/objectbox.dart';
-
 import 'item.dart';
 
-@Entity()
 class Bag {
   String description;
 
   List<Item> items;
 
-  @Id()
   int id;
 
   String get itemsInDb {
