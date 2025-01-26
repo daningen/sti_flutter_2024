@@ -49,7 +49,7 @@ class Validators {
       final day = int.parse(value.substring(4, 6));
 
       if (month < 1 || month > 12) return 'Invalid month';
-       
+
       if (day < 1 || day > 31) {
         return 'Day must be between 01 and 31';
       }
@@ -80,6 +80,17 @@ class Validators {
     }
     if (price < 10 || price > 100) {
       return 'Price must be between 10 and 100';
+    }
+    return null;
+  }
+
+  static String? validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Email is required';
+    }
+    final emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
+    if (!emailRegex.hasMatch(value)) {
+      return 'Invalid email format';
     }
     return null;
   }

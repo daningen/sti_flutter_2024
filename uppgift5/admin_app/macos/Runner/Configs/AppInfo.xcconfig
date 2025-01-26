@@ -1,3 +1,14 @@
+// Include CocoaPods configurations for Debug, Release, and Profile builds
+
+// Debug configuration
+#include "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
+
+// Release configuration
+#include "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"
+
+// Profile configuration
+#include "Pods/Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"
+
 // Application-level settings for the Runner target.
 //
 // This may be replaced with something auto-generated from metadata (e.g., pubspec.yaml) in the
@@ -12,3 +23,4 @@ PRODUCT_BUNDLE_IDENTIFIER = com.example.adminApp
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2024 com.example. All rights reserved.
+

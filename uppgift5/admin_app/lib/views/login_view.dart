@@ -1,9 +1,8 @@
+import 'package:admin_app/bloc/auth/auth_firebase_bloc.dart' as local;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+// ignore: unused_import
 import 'package:go_router/go_router.dart';
-import 'package:shared/bloc/auth/auth_bloc.dart';
-import 'package:shared/bloc/auth/auth_event.dart';
-import 'package:shared/bloc/auth/auth_state.dart';
 
 import '../utils/validators.dart';
 
@@ -12,34 +11,44 @@ class LoginView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final formKey = GlobalKey<FormState>();
-    final usernameController = TextEditingController();
-    final passwordController = TextEditingController();
-    final usernameFocus = FocusNode();
-    final passwordFocus = FocusNode();
+    final authBloc = context.read<local.AuthFirebaseBloc>();
 
-    void save(BuildContext context) {
+    final formKey = GlobalKey<FormState>();
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
+
+    String? statusMessage; // Variable to hold status messages
+
+    void save() {
       if (formKey.currentState!.validate()) {
-        final username = usernameController.text.trim();
+        final email = emailController.text.trim();
         final password = passwordController.text.trim();
 
-        debugPrint("Login attempted with username: $username");
-        context.read<AuthBloc>().add(
-              LoginRequested(username: username, password: password),
-            );
+        // Print the credentials to the console (do not use in production)
+        debugPrint(
+            "Attempting login with email: $email and password: $password");
+
+        authBloc.add(
+          local.AuthFirebaseLogin(
+            email: email,
+            password: password,
+          ),
+        );
       }
     }
 
-    return BlocListener<AuthBloc, AuthState>(
+    return BlocListener<local.AuthFirebaseBloc, local.AuthState>(
       listener: (context, state) {
-        if (state is AuthAuthenticated) {
-          debugPrint("Login successful. Navigating to the home page...");
-          GoRouter.of(context).go('/');
-        } else if (state is AuthUnauthenticated) {
-          debugPrint("Authentication failed: ${state.errorMessage}");
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.errorMessage ?? 'Login failed')),
-          );
+        if (state is local.AuthAuthenticated) {
+          statusMessage = "Login successful! Welcome, ${state.user.email}";
+        } else if (state is local.AuthFail) {
+          statusMessage = "Authentication failed: ${state.message}";
+        } else if (state is local.AuthUnauthenticated) {
+          statusMessage = "Authentication failed: Invalid credentials.";
+        } else if (state is local.AuthPending) {
+          statusMessage = "Authenticating... Please wait.";
+        } else {
+          statusMessage = null;
         }
       },
       child: Scaffold(
@@ -55,40 +64,50 @@ class LoginView extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Welcome Back',
-                        style: Theme.of(context).textTheme.headlineLarge),
+                    Text(
+                      'Welcome Back',
+                      style: Theme.of(context).textTheme.headlineLarge,
+                    ),
                     const SizedBox(height: 32),
                     TextFormField(
-                      controller: usernameController,
-                      focusNode: usernameFocus,
+                      controller: emailController,
                       decoration: const InputDecoration(
-                        labelText: 'Username',
-                        prefixIcon: Icon(Icons.person),
+                        labelText: 'Email',
+                        prefixIcon: Icon(Icons.email),
                       ),
-                      validator: Validators.validateUsername,
-                      onFieldSubmitted: (_) => passwordFocus.requestFocus(),
+                      validator: Validators.validateEmail,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: passwordController,
-                      focusNode: passwordFocus,
                       obscureText: true,
                       decoration: const InputDecoration(
                         labelText: 'Password',
                         prefixIcon: Icon(Icons.lock),
                       ),
                       validator: Validators.validatePassword,
-                      onFieldSubmitted: (_) => save(context),
                     ),
                     const SizedBox(height: 32),
-                    BlocBuilder<AuthBloc, AuthState>(
+                    BlocBuilder<local.AuthFirebaseBloc, local.AuthState>(
                       builder: (context, state) {
-                        if (state is AuthLoading) {
-                          return const CircularProgressIndicator();
-                        }
-                        return ElevatedButton(
-                          onPressed: () => save(context),
-                          child: const Text('Login'),
+                        return Column(
+                          children: [
+                            ElevatedButton(
+                              onPressed: save,
+                              child: const Text('Login'),
+                            ),
+                            if (statusMessage != null) ...[
+                              const SizedBox(height: 16),
+                              Text(
+                                statusMessage!,
+                                style: TextStyle(
+                                  color: state is local.AuthAuthenticated
+                                      ? Colors.green
+                                      : Colors.red,
+                                ),
+                              ),
+                            ],
+                          ],
                         );
                       },
                     ),
