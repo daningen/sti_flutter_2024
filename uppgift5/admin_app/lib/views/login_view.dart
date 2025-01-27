@@ -14,41 +14,32 @@ class LoginView extends StatelessWidget {
     final authBloc = context.read<local.AuthFirebaseBloc>();
 
     final formKey = GlobalKey<FormState>();
-    final emailController = TextEditingController();
-    final passwordController = TextEditingController();
-
-    String? statusMessage; // Variable to hold status messages
-
-    void save() {
-      if (formKey.currentState!.validate()) {
-        final email = emailController.text.trim();
-        final password = passwordController.text.trim();
-
-        // Print the credentials to the console (do not use in production)
-        debugPrint(
-            "Attempting login with email: $email and password: $password");
-
-        authBloc.add(
-          local.AuthFirebaseLogin(
-            email: email,
-            password: password,
-          ),
-        );
-      }
-    }
+    final emailController = TextEditingController(text: 'test@test.com'); // Prefilled email
+    final passwordController = TextEditingController(text: 'password'); // Prefilled password
 
     return BlocListener<local.AuthFirebaseBloc, local.AuthState>(
       listener: (context, state) {
         if (state is local.AuthAuthenticated) {
-          statusMessage = "Login successful! Welcome, ${state.user.email}";
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Login successful! Welcome, ${state.user.email}"),
+              backgroundColor: Colors.green,
+            ),
+          );
         } else if (state is local.AuthFail) {
-          statusMessage = "Authentication failed: ${state.message}";
-        } else if (state is local.AuthUnauthenticated) {
-          statusMessage = "Authentication failed: Invalid credentials.";
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Authentication failed: ${state.message}"),
+              backgroundColor: Colors.red,
+            ),
+          );
         } else if (state is local.AuthPending) {
-          statusMessage = "Authenticating... Please wait.";
-        } else {
-          statusMessage = null;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Authenticating... Please wait."),
+              backgroundColor: Colors.orange,
+            ),
+          );
         }
       },
       child: Scaffold(
@@ -93,17 +84,35 @@ class LoginView extends StatelessWidget {
                         return Column(
                           children: [
                             ElevatedButton(
-                              onPressed: save,
+                              onPressed: () {
+                                if (formKey.currentState!.validate()) {
+                                  final email = emailController.text.trim();
+                                  final password = passwordController.text.trim();
+
+                                  debugPrint(
+                                      "Attempting login with email: $email and password: $password");
+
+                                  authBloc.add(
+                                    local.AuthFirebaseLogin(
+                                      email: email,
+                                      password: password,
+                                    ),
+                                  );
+                                }
+                              },
                               child: const Text('Login'),
                             ),
-                            if (statusMessage != null) ...[
+                            if (state is local.AuthFail ||
+                                state is local.AuthPending) ...[
                               const SizedBox(height: 16),
                               Text(
-                                statusMessage!,
+                                state is local.AuthFail
+                                    ? "Authentication failed: ${state.message}"
+                                    : "Authenticating... Please wait.",
                                 style: TextStyle(
-                                  color: state is local.AuthAuthenticated
-                                      ? Colors.green
-                                      : Colors.red,
+                                  color: state is local.AuthFail
+                                      ? Colors.red
+                                      : Colors.orange,
                                 ),
                               ),
                             ],

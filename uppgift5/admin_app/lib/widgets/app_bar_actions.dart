@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
-import 'package:shared/bloc/auth/auth_bloc.dart';
-import 'package:shared/bloc/auth/auth_event.dart';
 import '../theme_notifier.dart'; // Update the path based on your project structure
 
 class AppBarActions extends StatelessWidget {
@@ -23,13 +21,13 @@ class AppBarActions extends StatelessWidget {
           },
           tooltip: 'Toggle Theme',
         ),
-        IconButton(
-          icon: const Icon(Icons.logout),
-          onPressed: () {
-            context.read<AuthBloc>().add(LogoutRequested());
-          },
-          tooltip: 'Logout',
-        ),
+        // IconButton(
+        //   icon: const Icon(Icons.logout),
+        //   onPressed: () {
+        //     context.read<AuthBloc>().add(LogoutRequested());
+        //   },
+        //   tooltip: 'Logout pleeeaase',
+        // ),
       ],
     );
   }

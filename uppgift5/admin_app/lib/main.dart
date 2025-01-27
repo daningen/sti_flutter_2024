@@ -8,8 +8,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:admin_app/firebase_options.dart';
-import 'package:admin_app/bloc/auth/auth_firebase_bloc.dart'; // Firebase auth BLoC
-import 'package:admin_app/theme_notifier.dart'; // ThemeNotifier for light/dark mode
+import 'package:admin_app/bloc/auth/auth_firebase_bloc.dart';  
+import 'package:admin_app/theme_notifier.dart';  
 import 'package:admin_app/views/login_view.dart';
 import 'package:admin_app/views/nav_rail_view.dart';
 import 'package:shared/bloc/person/person_bloc.dart';
@@ -115,7 +115,7 @@ class MyApp extends StatelessWidget {
     final router = GoRouter(
       initialLocation: '/start',
       routes: [
-        // Define your routes here if needed.
+        //
       ],
     );
 

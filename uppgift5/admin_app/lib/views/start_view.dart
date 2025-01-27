@@ -1,4 +1,3 @@
-import 'package:admin_app/widgets/app_bar_actions.dart';
 import 'package:flutter/material.dart';
 
 class StartView extends StatelessWidget {
@@ -7,12 +6,12 @@ class StartView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Start'),
-        actions: const [
-          AppBarActions(),  
-        ],
-      ),
+      // appBar: AppBar(
+      //   title: const Text('Start'),
+      //   actions: const [
+      //     AppBarActions(),
+      //   ],
+      // ),
       body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

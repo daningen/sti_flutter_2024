@@ -89,10 +89,10 @@ class _NavRailViewState extends State<NavRailView> {
                   label: Text('Persons'),
                 ),
               ],
-              trailing: const Padding(
-                padding: EdgeInsets.only(bottom: 16.0),
-                child: Icon(Icons.logout), // Logout icon at the bottom
-              ),
+              // trailing: const Padding(
+              //   padding: EdgeInsets.only(bottom: 16.0),
+              //   child: Icon(Icons.logout), // Logout icon at the bottom
+              // ),
             ),
           if (isWideScreen) const VerticalDivider(thickness: 1, width: 1),
           Expanded(
