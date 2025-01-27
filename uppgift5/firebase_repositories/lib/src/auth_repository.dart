@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 class AuthRepository {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
@@ -10,10 +11,22 @@ class AuthRepository {
     required String email,
     required String password,
   }) async {
-    return await _firebaseAuth.signInWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
+    try {
+      // Set persistence only for web platforms
+      if (kIsWeb) {
+        await _firebaseAuth.setPersistence(Persistence.LOCAL);
+      }
+
+      // Sign in with email and password
+      return await _firebaseAuth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+    } catch (e) {
+      // Log or handle the error
+      debugPrint("Login error: $e");
+      rethrow;
+    }
   }
 
   Future<UserCredential> register({

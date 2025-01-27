@@ -24,7 +24,6 @@ class AuthFirebaseBloc extends Bloc<AuthFirebaseEvent, AuthState> {
   ) async {
     emit(AuthPending());
     try {
-      // Debug: Print the credentials being processed
       debugPrint(
           "Processing login for email: ${event.email} and password: ${event.password}");
 
@@ -36,7 +35,12 @@ class AuthFirebaseBloc extends Bloc<AuthFirebaseEvent, AuthState> {
         emit(AuthUnauthenticated(errorMessage: 'User not found.'));
       }
     } catch (e) {
-      debugPrint("Login error: $e"); // Debug: Print the error
+      if (e is firebase_auth.FirebaseAuthException &&
+          e.code == 'keychain-error') {
+        debugPrint(
+            "Keychain error detected. Please ensure Keychain access is properly configured.");
+      }
+      debugPrint("Login error: $e"); // Log the detailed error
       emit(AuthUnauthenticated(errorMessage: e.toString()));
     }
   }
