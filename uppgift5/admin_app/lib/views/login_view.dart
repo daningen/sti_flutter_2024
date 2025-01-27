@@ -1,7 +1,6 @@
 import 'package:admin_app/bloc/auth/auth_firebase_bloc.dart' as local;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-// ignore: unused_import
 import 'package:go_router/go_router.dart';
 
 import '../utils/validators.dart';
@@ -89,9 +88,6 @@ class LoginView extends StatelessWidget {
                                   final email = emailController.text.trim();
                                   final password = passwordController.text.trim();
 
-                                  debugPrint(
-                                      "Attempting login with email: $email and password: $password");
-
                                   authBloc.add(
                                     local.AuthFirebaseLogin(
                                       email: email,
@@ -101,6 +97,13 @@ class LoginView extends StatelessWidget {
                                 }
                               },
                               child: const Text('Login'),
+                            ),
+                            const SizedBox(height: 16),
+                            TextButton(
+                              onPressed: () {
+                                GoRouter.of(context).push('/register'); // Navigate to RegisterView
+                              },
+                              child: const Text('Don’t have an account? Register'),
                             ),
                             if (state is local.AuthFail ||
                                 state is local.AuthPending) ...[
