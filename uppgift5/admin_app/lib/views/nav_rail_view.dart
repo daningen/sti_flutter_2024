@@ -2,7 +2,7 @@ import 'package:admin_app/bloc/auth/auth_firebase_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared/shared.dart';
+
 import 'start_view.dart';
 import 'statistics_view.dart';
 import 'parking/parking_view.dart';
@@ -11,16 +11,9 @@ import 'vehicles/vehicles_view.dart';
 import 'person/person_view.dart';
 
 class NavRailView extends StatefulWidget {
-  final GoRouter router; // Router instance passed for navigation.
-  final int initialIndex; // Initial index for NavigationRail.
-  final Parking? selectedParking;
+  final int initialIndex;
 
-  const NavRailView({
-    required this.router,
-    required this.initialIndex,
-    this.selectedParking,
-    super.key,
-  });
+  const NavRailView({required this.initialIndex, super.key});
 
   @override
   State<NavRailView> createState() => _NavRailViewState();
@@ -32,7 +25,7 @@ class _NavRailViewState extends State<NavRailView> {
   @override
   void initState() {
     super.initState();
-    _selectedIndex = widget.initialIndex; // Initialize with the passed index.
+    _selectedIndex = widget.initialIndex;
   }
 
   @override
@@ -47,7 +40,6 @@ class _NavRailViewState extends State<NavRailView> {
             icon: const Icon(Icons.logout),
             onPressed: () {
               context.read<AuthFirebaseBloc>().add(LogoutRequested());
-              widget.router.go('/login');
             },
           ),
         ],
@@ -59,9 +51,18 @@ class _NavRailViewState extends State<NavRailView> {
               selectedIndex: _selectedIndex,
               onDestinationSelected: (index) {
                 setState(() {
-                  _selectedIndex = index; // Update the selected index.
-                  widget.router.go(_getRoute(index)); // Navigate to the route.
+                  _selectedIndex = index;
                 });
+
+                final routes = [
+                  '/start',
+                  '/start/statistics',
+                  '/start/parkings',
+                  '/start/parking-spaces',
+                  '/start/vehicles',
+                  '/start/persons',
+                ];
+                GoRouter.of(context).go(routes[index]);
               },
               destinations: const [
                 NavigationRailDestination(
@@ -89,10 +90,6 @@ class _NavRailViewState extends State<NavRailView> {
                   label: Text('Persons'),
                 ),
               ],
-              // trailing: const Padding(
-              //   padding: EdgeInsets.only(bottom: 16.0),
-              //   child: Icon(Icons.logout), // Logout icon at the bottom
-              // ),
             ),
           if (isWideScreen) const VerticalDivider(thickness: 1, width: 1),
           Expanded(
@@ -110,62 +107,6 @@ class _NavRailViewState extends State<NavRailView> {
           ),
         ],
       ),
-      bottomNavigationBar: !isWideScreen
-          ? NavigationBar(
-              selectedIndex: _selectedIndex,
-              onDestinationSelected: (index) {
-                setState(() {
-                  _selectedIndex = index;
-                  widget.router.go(_getRoute(index));
-                });
-              },
-              destinations: const [
-                NavigationDestination(
-                  icon: Icon(Icons.home),
-                  label: 'Start',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.bar_chart),
-                  label: 'Statistics',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.local_parking),
-                  label: 'Parkings',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.location_on),
-                  label: 'Parking Spaces',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.car_rental),
-                  label: 'Vehicles',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.people),
-                  label: 'Persons',
-                ),
-              ],
-            )
-          : null,
     );
-  }
-
-  String _getRoute(int index) {
-    switch (index) {
-      case 0:
-        return '/start';
-      case 1:
-        return '/statistics';
-      case 2:
-        return '/parkings';
-      case 3:
-        return '/parking-spaces';
-      case 4:
-        return '/vehicles';
-      case 5:
-        return '/persons';
-      default:
-        return '/start';
-    }
   }
 }

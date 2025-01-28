@@ -1,7 +1,13 @@
 // ignore_for_file: duplicate_import
 
 import 'package:admin_app/utils/go_router_refresh_stream.dart';
+import 'package:admin_app/views/parking/parking_view.dart';
+import 'package:admin_app/views/parking_spaces/parking_space_view.dart';
+import 'package:admin_app/views/person/person_view.dart';
 import 'package:admin_app/views/register_view.dart';
+import 'package:admin_app/views/statistics_view.dart';
+import 'package:admin_app/views/vehicles/vehicles_view.dart';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_repositories/firebase_repositories.dart';
 import 'package:flutter/material.dart';
@@ -122,22 +128,21 @@ class MyApp extends StatelessWidget {
       redirect: (context, state) {
         final authState = context.read<AuthFirebaseBloc>().state;
         final isLoggedIn = authState is AuthAuthenticated;
+        final isLoggingIn = state.uri.toString() == '/login';
         final isRegistering = state.uri.toString() == '/register';
 
         debugPrint(
-            'Redirect Logic: state=${state.uri.toString()}, isLoggedIn=$isLoggedIn, isRegistering=$isRegistering');
+            'Redirect Logic: state=${state.uri.toString()}, isLoggedIn=$isLoggedIn, isLoggingIn=$isLoggingIn, isRegistering=$isRegistering');
 
-        if (!isLoggedIn && !isRegistering) {
-          debugPrint('Redirecting to /login');
+        if (!isLoggedIn && !isLoggingIn && !isRegistering) {
           return '/login';
         }
-        if (isLoggedIn && (state.uri.toString() == '/login' || isRegistering)) {
-          debugPrint('Redirecting to /start');
+
+        if (isLoggedIn && (isLoggingIn || isRegistering)) {
           return '/start';
         }
 
-        debugPrint('No redirection needed');
-        return null; // No redirection
+        return null;
       },
       routes: [
         GoRoute(
@@ -150,25 +155,38 @@ class MyApp extends StatelessWidget {
         ),
         GoRoute(
           path: '/start',
-          builder: (context, state) => NavRailView(
-            router: GoRouter.of(context),
-            initialIndex: 0,
-          ),
+          builder: (context, state) => const NavRailView(initialIndex: 0),
+          routes: [
+            GoRoute(
+              path: 'statistics',
+              builder: (context, state) => const StatisticsView(),
+            ),
+            GoRoute(
+              path: 'parkings',
+              builder: (context, state) => const ParkingView(),
+            ),
+            GoRoute(
+              path: 'parking-spaces',
+              builder: (context, state) => const ParkingSpacesView(),
+            ),
+            GoRoute(
+              path: 'vehicles',
+              builder: (context, state) => const VehiclesView(),
+            ),
+            GoRoute(
+              path: 'persons',
+              builder: (context, state) => const PersonView(),
+            ),
+          ],
         ),
       ],
     );
 
     return MaterialApp.router(
-      title: 'Managing App',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.light().copyWith(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 199, 16, 169),
-        ),
-      ),
-      darkTheme: ThemeData.dark(),
-      themeMode: context.watch<ThemeNotifier>().themeMode,
       routerConfig: router,
+      title: 'Admin Dashboard',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.light(),
     );
   }
 }
