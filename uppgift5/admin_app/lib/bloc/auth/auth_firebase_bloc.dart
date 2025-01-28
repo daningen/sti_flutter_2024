@@ -19,6 +19,33 @@ class AuthFirebaseBloc extends Bloc<AuthFirebaseEvent, AuthState> {
     on<LogoutRequested>(_onLogout);
   }
 
+  // Future<void> _onLogin(
+  //   AuthFirebaseLogin event,
+  //   Emitter<AuthState> emit,
+  // ) async {
+  //   emit(AuthPending());
+  //   try {
+  //     debugPrint(
+  //         "Processing login for email: ${event.email} and password: ${event.password}");
+
+  //     await authRepository.login(email: event.email, password: event.password);
+  //     final user = authRepository.getCurrentUser();
+  //     if (user != null) {
+  //       emit(AuthAuthenticated(user: user));
+  //     } else {
+  //       emit(AuthUnauthenticated(errorMessage: 'User not found.'));
+  //     }
+  //   } catch (e) {
+  //     if (e is firebase_auth.FirebaseAuthException &&
+  //         e.code == 'keychain-error') {
+  //       debugPrint(
+  //           "Keychain error detected. Please ensure Keychain access is properly configured.");
+  //     }
+  //     debugPrint("Login error: $e");
+  //     emit(AuthUnauthenticated(errorMessage: e.toString()));
+  //   }
+  // }
+
   Future<void> _onLogin(
     AuthFirebaseLogin event,
     Emitter<AuthState> emit,
@@ -33,7 +60,7 @@ class AuthFirebaseBloc extends Bloc<AuthFirebaseEvent, AuthState> {
       if (user != null) {
         emit(AuthAuthenticated(user: user));
       } else {
-        emit(AuthUnauthenticated(errorMessage: 'User not found.'));
+        emit(AuthFail(message: 'User not found.'));
       }
     } catch (e) {
       if (e is firebase_auth.FirebaseAuthException &&
@@ -41,8 +68,8 @@ class AuthFirebaseBloc extends Bloc<AuthFirebaseEvent, AuthState> {
         debugPrint(
             "Keychain error detected. Please ensure Keychain access is properly configured.");
       }
-      debugPrint("Login error: $e");
-      emit(AuthUnauthenticated(errorMessage: e.toString()));
+      debugPrint("Login error: $e"); // Log the detailed error
+      emit(AuthFail(message: e.toString())); // Emit AuthFail here
     }
   }
 
@@ -55,7 +82,8 @@ class AuthFirebaseBloc extends Bloc<AuthFirebaseEvent, AuthState> {
       debugPrint(
           "Processing registration for email: ${event.email} and password: ${event.password}");
 
-      await authRepository.register(email: event.email, password: event.password);
+      await authRepository.register(
+          email: event.email, password: event.password);
       final user = authRepository.getCurrentUser();
       if (user != null) {
         emit(AuthAuthenticated(user: user));
