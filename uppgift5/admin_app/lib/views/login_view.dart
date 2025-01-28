@@ -13,12 +13,15 @@ class LoginView extends StatelessWidget {
     final authBloc = context.read<local.AuthFirebaseBloc>();
 
     final formKey = GlobalKey<FormState>();
-    final emailController = TextEditingController(text: 'test@test.com'); // Prefilled email
-    final passwordController = TextEditingController(text: 'password'); // Prefilled password
+    final emailController =
+        TextEditingController(text: 'test@test.com'); // Prefilled email
+    final passwordController =
+        TextEditingController(text: 'password'); // Prefilled password
 
     return BlocListener<local.AuthFirebaseBloc, local.AuthState>(
       listener: (context, state) {
         if (state is local.AuthAuthenticated) {
+          debugPrint('Auth successful: ${state.user.email}');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text("Login successful! Welcome, ${state.user.email}"),
@@ -26,6 +29,7 @@ class LoginView extends StatelessWidget {
             ),
           );
         } else if (state is local.AuthFail) {
+          debugPrint('Auth failed: ${state.message}');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text("Authentication failed: ${state.message}"),
@@ -33,12 +37,15 @@ class LoginView extends StatelessWidget {
             ),
           );
         } else if (state is local.AuthPending) {
+          debugPrint('Authenticating...');
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text("Authenticating... Please wait."),
               backgroundColor: Colors.orange,
             ),
           );
+        } else {
+          debugPrint('Unexpected state: $state');
         }
       },
       child: Scaffold(
@@ -86,7 +93,8 @@ class LoginView extends StatelessWidget {
                               onPressed: () {
                                 if (formKey.currentState!.validate()) {
                                   final email = emailController.text.trim();
-                                  final password = passwordController.text.trim();
+                                  final password =
+                                      passwordController.text.trim();
 
                                   authBloc.add(
                                     local.AuthFirebaseLogin(
@@ -101,22 +109,19 @@ class LoginView extends StatelessWidget {
                             const SizedBox(height: 16),
                             TextButton(
                               onPressed: () {
-                                GoRouter.of(context).push('/register'); // Navigate to RegisterView
+                                debugPrint(
+                                    'Navigating to RegisterView...from loginView');
+                                GoRouter.of(context).push(
+                                    '/register'); // Navigate to RegisterView
                               },
-                              child: const Text('Don’t have an account? Register'),
+                              child:
+                                  const Text('Don’t have an account? Register'),
                             ),
-                            if (state is local.AuthFail ||
-                                state is local.AuthPending) ...[
+                            if (state is local.AuthFail) ...[
                               const SizedBox(height: 16),
                               Text(
-                                state is local.AuthFail
-                                    ? "Authentication failed: ${state.message}"
-                                    : "Authenticating... Please wait.",
-                                style: TextStyle(
-                                  color: state is local.AuthFail
-                                      ? Colors.red
-                                      : Colors.orange,
-                                ),
+                                "Authentication failed: ${state.message}",
+                                style: const TextStyle(color: Colors.red),
                               ),
                             ],
                           ],

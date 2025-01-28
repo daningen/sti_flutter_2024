@@ -14,6 +14,7 @@ class AuthFirebaseBloc extends Bloc<AuthFirebaseEvent, AuthState> {
       {required this.authRepository, required UserRepository userRepository})
       : super(AuthInitial()) {
     on<AuthFirebaseLogin>(_onLogin);
+    on<AuthFirebaseRegister>(_onRegister); // Add register handler
     on<AuthFirebaseUserSubscriptionRequested>(_onUserSubscriptionRequested);
     on<LogoutRequested>(_onLogout);
   }
@@ -40,7 +41,29 @@ class AuthFirebaseBloc extends Bloc<AuthFirebaseEvent, AuthState> {
         debugPrint(
             "Keychain error detected. Please ensure Keychain access is properly configured.");
       }
-      debugPrint("Login error: $e"); // Log the detailed error
+      debugPrint("Login error: $e");
+      emit(AuthUnauthenticated(errorMessage: e.toString()));
+    }
+  }
+
+  Future<void> _onRegister(
+    AuthFirebaseRegister event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthPending());
+    try {
+      debugPrint(
+          "Processing registration for email: ${event.email} and password: ${event.password}");
+
+      await authRepository.register(email: event.email, password: event.password);
+      final user = authRepository.getCurrentUser();
+      if (user != null) {
+        emit(AuthAuthenticated(user: user));
+      } else {
+        emit(AuthUnauthenticated(errorMessage: 'Registration failed.'));
+      }
+    } catch (e) {
+      debugPrint("Registration error: $e");
       emit(AuthUnauthenticated(errorMessage: e.toString()));
     }
   }
@@ -58,7 +81,7 @@ class AuthFirebaseBloc extends Bloc<AuthFirebaseEvent, AuthState> {
   ) async {
     try {
       await authRepository.logout();
-      emit(AuthUnauthenticated(errorMessage: 'Your error message'));
+      emit(AuthUnauthenticated(errorMessage: 'Logged out successfully.'));
     } catch (e) {
       emit(AuthFail(message: e.toString()));
     }

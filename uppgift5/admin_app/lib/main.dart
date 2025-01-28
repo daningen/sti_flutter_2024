@@ -1,5 +1,7 @@
 // ignore_for_file: duplicate_import
 
+import 'package:admin_app/utils/go_router_refresh_stream.dart';
+import 'package:admin_app/views/register_view.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_repositories/firebase_repositories.dart';
 import 'package:flutter/material.dart';
@@ -8,8 +10,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:admin_app/firebase_options.dart';
-import 'package:admin_app/bloc/auth/auth_firebase_bloc.dart';  
-import 'package:admin_app/theme_notifier.dart';  
+import 'package:admin_app/bloc/auth/auth_firebase_bloc.dart';
+import 'package:admin_app/theme_notifier.dart';
 import 'package:admin_app/views/login_view.dart';
 import 'package:admin_app/views/nav_rail_view.dart';
 import 'package:shared/bloc/person/person_bloc.dart';
@@ -113,13 +115,50 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final router = GoRouter(
-      initialLocation: '/start',
+      initialLocation: '/login',
+      refreshListenable: GoRouterRefreshStream(
+        context.read<AuthFirebaseBloc>().stream,
+      ),
+      redirect: (context, state) {
+        final authState = context.read<AuthFirebaseBloc>().state;
+        final isLoggedIn = authState is AuthAuthenticated;
+        final isRegistering = state.uri.toString() == '/register';
+
+        debugPrint(
+            'Redirect Logic: state=${state.uri.toString()}, isLoggedIn=$isLoggedIn, isRegistering=$isRegistering');
+
+        if (!isLoggedIn && !isRegistering) {
+          debugPrint('Redirecting to /login');
+          return '/login';
+        }
+        if (isLoggedIn && (state.uri.toString() == '/login' || isRegistering)) {
+          debugPrint('Redirecting to /start');
+          return '/start';
+        }
+
+        debugPrint('No redirection needed');
+        return null; // No redirection
+      },
       routes: [
-        //
+        GoRoute(
+          path: '/login',
+          builder: (context, state) => const LoginView(),
+        ),
+        GoRoute(
+          path: '/register',
+          builder: (context, state) => const RegisterView(),
+        ),
+        GoRoute(
+          path: '/start',
+          builder: (context, state) => NavRailView(
+            router: GoRouter.of(context),
+            initialIndex: 0,
+          ),
+        ),
       ],
     );
 
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Managing App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.light().copyWith(
@@ -129,18 +168,7 @@ class MyApp extends StatelessWidget {
       ),
       darkTheme: ThemeData.dark(),
       themeMode: context.watch<ThemeNotifier>().themeMode,
-      home: BlocBuilder<AuthFirebaseBloc, AuthState>(
-        builder: (context, state) {
-          if (state is AuthAuthenticated) {
-            return NavRailView(
-              router: router,
-              initialIndex: 0,
-            );
-          } else {
-            return const LoginView();
-          }
-        },
-      ),
+      routerConfig: router,
     );
   }
 }

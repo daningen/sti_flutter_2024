@@ -1,37 +1,61 @@
 part of 'auth_firebase_bloc.dart';
 
+/// Base class for all authentication states.
 abstract class AuthState extends Equatable {
   @override
   List<Object?> get props => [];
 }
 
-class AuthInitial extends AuthState {}
+/// The initial state when the authentication process has not started.
+class AuthInitial extends AuthState {
+  @override
+  String toString() => 'AuthInitial';
+}
 
-class AuthPending extends AuthState {}
+/// The state when an authentication operation (login or logout) is in progress.
+class AuthPending extends AuthState {
+  @override
+  String toString() => 'AuthPending';
+}
 
+/// The state when an authentication attempt fails.
 class AuthFail extends AuthState {
   final String message;
 
+  /// Constructor to capture the error message from the failure.
   AuthFail({required this.message});
 
   @override
   List<Object?> get props => [message];
+
+  @override
+  String toString() => 'AuthFail: $message';
 }
 
+/// The state when the user is successfully authenticated.
 class AuthAuthenticated extends AuthState {
   final firebase_auth.User user;
 
+  /// Constructor to store the authenticated user details.
   AuthAuthenticated({required this.user});
 
   @override
   List<Object?> get props => [user];
+
+  @override
+  String toString() => 'AuthAuthenticated: ${user.email}';
 }
 
+/// The state when the user is unauthenticated, optionally including an error message.
 class AuthUnauthenticated extends AuthState {
   final String? errorMessage;
 
+  /// Constructor to capture an optional error message explaining why authentication failed.
   AuthUnauthenticated({this.errorMessage});
 
   @override
   List<Object?> get props => [errorMessage];
+
+  @override
+  String toString() => 'AuthUnauthenticated: ${errorMessage ?? "No error message"}';
 }

@@ -1,22 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../utils/validators.dart';
+import '../bloc/auth/auth_firebase_bloc.dart' as local;
 
 class RegisterView extends StatelessWidget {
   const RegisterView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('RegisterView is being built');
     final formKey = GlobalKey<FormState>();
     final emailController = TextEditingController();
     final passwordController = TextEditingController();
+    final authBloc = context.read<local.AuthFirebaseBloc>();
 
     void register() {
       if (formKey.currentState!.validate()) {
         final email = emailController.text.trim();
         final password = passwordController.text.trim();
 
-        debugPrint('Registering with email: $email and password: $password');
-        // Add registration logic here
+        authBloc
+            .add(local.AuthFirebaseRegister(email: email, password: password));
       }
     }
 
