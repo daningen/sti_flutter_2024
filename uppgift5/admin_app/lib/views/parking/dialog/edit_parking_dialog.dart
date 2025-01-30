@@ -24,8 +24,16 @@ class _EditParkingDialogState extends State<EditParkingDialog> {
   @override
   void initState() {
     super.initState();
-    // Preselect the current parking space
-    selectedParkingSpace = widget.parking.parkingSpace;
+
+    // Check if the current parking space exists in the available spaces
+    if (widget.availableParkingSpaces
+        .any((space) => space.id == widget.parking.parkingSpace?.id)) {
+      selectedParkingSpace = widget.parking.parkingSpace;
+    } else {
+      debugPrint(
+          'Preselected parking space is invalid or not in availableParkingSpaces: ${widget.parking.parkingSpace?.toJson()}');
+      selectedParkingSpace = null; // Reset to avoid invalid dropdown value
+    }
   }
 
   @override
@@ -42,18 +50,32 @@ class _EditParkingDialogState extends State<EditParkingDialog> {
                   const InputDecoration(labelText: 'Select Parking Space'),
               value: selectedParkingSpace,
               items: widget.availableParkingSpaces.map((space) {
+                debugPrint('Dropdown Item: ${space.toJson()}');
                 return DropdownMenuItem<ParkingSpace>(
                   value: space,
-                  child: Text(space.address),
+                  child:
+                      Text('${space.address} (${space.pricePerHour} SEK/hr)'),
                 );
               }).toList(),
               onChanged: (value) {
+                debugPrint('Selected Parking Space: ${value?.toJson()}');
                 setState(() {
                   selectedParkingSpace = value;
                 });
               },
-              validator: (value) =>
-                  value == null ? 'Please select a parking space' : null,
+              validator: (value) {
+                if (value == null) {
+                  debugPrint('Validation failed: No parking space selected.');
+                  return 'Please select a parking space';
+                }
+
+                if (!widget.availableParkingSpaces.contains(value)) {
+                  debugPrint(
+                      'Validation failed: Selected parking space is not in the available list.');
+                  return 'Invalid parking space selected';
+                }
+                return null;
+              },
             ),
           ],
         ),
