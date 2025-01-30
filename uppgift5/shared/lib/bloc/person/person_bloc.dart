@@ -91,7 +91,16 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
   Future<void> _onUpdatePerson(
       UpdatePerson event, Emitter<PersonState> emit) async {
     try {
+      // Debugging inputs
+      debugPrint('Starting update operation...');
+      debugPrint('Input ID: ${event.id}');
+      debugPrint('Input Name: ${event.name}');
+      debugPrint('Input SSN: ${event.ssn}');
+
       // Validate inputs
+      if (event.id.trim().isEmpty) {
+        throw Exception('ID is required for updating a person');
+      }
       if (event.name.trim().isEmpty) {
         throw Exception('Name is required');
       }
@@ -99,24 +108,31 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
         throw Exception('SSN is required');
       }
 
-      // Update person in repository
+      // Create updated person object
       final updatedPerson = Person(
         id: event.id,
         name: event.name,
         ssn: event.ssn,
       );
+
+      debugPrint('Updating person in repository...');
       await personRepository.update(event.id, updatedPerson);
       debugPrint('Person updated successfully: $updatedPerson');
 
-      // Update state directly
+      // Update the local state
       if (state is PersonLoaded) {
         final currentState = state as PersonLoaded;
+
+        debugPrint('Current state before update: ${currentState.persons}');
         final updatedList = currentState.persons.map((person) {
           return person.id == event.id ? updatedPerson : person;
         }).toList();
         emit(currentState.copyWith(persons: updatedList));
+        debugPrint('State updated successfully with updated list.');
       } else {
-        add(LoadPersons()); // Reload if state isn't PersonLoaded
+        debugPrint(
+            'State is not PersonLoaded. Reloading persons from repository...');
+        add(LoadPersons());
       }
     } catch (e) {
       final message = e.toString().replaceFirst(RegExp(r'^Exception: '), '');
