@@ -1,5 +1,3 @@
-// ignore_for_file: duplicate_import
-
 import 'package:admin_app/utils/go_router_refresh_stream.dart';
 import 'package:admin_app/views/parking/parking_view.dart';
 import 'package:admin_app/views/parking_spaces/parking_space_view.dart';
@@ -38,85 +36,80 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(const AppInitializer());
+  runApp(const MyApp());
 }
 
-class AppInitializer extends StatelessWidget {
-  const AppInitializer({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
+    return MultiRepositoryProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ThemeNotifier()),
+        RepositoryProvider<AuthRepository>(
+          create: (_) => AuthRepository(),
+        ),
+        RepositoryProvider<UserRepository>(
+          create: (_) => UserRepository(),
+        ),
+        RepositoryProvider<PersonRepository>(
+          create: (_) => PersonRepository(),
+        ),
+        RepositoryProvider<VehicleRepository>(
+          create: (_) => VehicleRepository(),
+        ),
+        RepositoryProvider<ParkingRepository>(
+          create: (_) => ParkingRepository(),
+        ),
+        RepositoryProvider<ParkingSpaceRepository>(
+          create: (_) => ParkingSpaceRepository(),
+        ),
       ],
-      child: MultiRepositoryProvider(
+      child: MultiBlocProvider(
         providers: [
-          RepositoryProvider<PersonRepository>(
-            create: (_) => PersonRepository(),
+          BlocProvider(
+            create: (context) => AuthFirebaseBloc(
+              authRepository: context.read<AuthRepository>(),
+              userRepository: context.read<UserRepository>(),
+            )..add(AuthFirebaseUserSubscriptionRequested()),
           ),
-          RepositoryProvider<VehicleRepository>(
-            create: (_) => VehicleRepository(),
+          BlocProvider(
+            create: (context) => PersonBloc(
+              personRepository: context.read<PersonRepository>(),
+            )..add(LoadPersons()),
           ),
-          RepositoryProvider<ParkingRepository>(
-            create: (_) => ParkingRepository(),
+          BlocProvider(
+            create: (context) => ParkingBloc(
+              parkingRepository: context.read<ParkingRepository>(),
+              parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
+              vehicleRepository: context.read<VehicleRepository>(),
+            )..add(LoadParkings()),
           ),
-          RepositoryProvider<ParkingSpaceRepository>(
-            create: (_) => ParkingSpaceRepository(),
+          BlocProvider(
+            create: (context) => VehiclesBloc(
+              vehicleRepository: context.read<VehicleRepository>(),
+            )..add(LoadVehicles()),
           ),
-          RepositoryProvider<AuthRepository>(
-            create: (_) => AuthRepository(),
+          BlocProvider(
+            create: (context) => ParkingSpaceBloc(
+              parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
+            )..add(LoadParkingSpaces()),
           ),
-          RepositoryProvider<UserRepository>(
-            create: (_) => UserRepository(),
+          BlocProvider(
+            create: (context) => StatisticsBloc(
+              parkingRepository: context.read<ParkingRepository>(),
+              parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
+            )..add(LoadStatistics()),
           ),
         ],
-        child: MultiBlocProvider(
-          providers: [
-            BlocProvider(
-              create: (context) => AuthFirebaseBloc(
-                authRepository: context.read<AuthRepository>(),
-                userRepository: context.read<UserRepository>(),
-              )..add(AuthFirebaseUserSubscriptionRequested()),
-            ),
-            BlocProvider(
-              create: (context) => ParkingBloc(
-                parkingRepository: context.read<ParkingRepository>(),
-                parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
-                vehicleRepository: context.read<VehicleRepository>(),
-              )..add(LoadParkings()),
-            ),
-            BlocProvider(
-              create: (context) => VehiclesBloc(
-                vehicleRepository: context.read<VehicleRepository>(),
-              )..add(LoadVehicles()),
-            ),
-            BlocProvider(
-              create: (context) => PersonBloc(
-                personRepository: context.read<PersonRepository>(),
-              )..add(LoadPersons()),
-            ),
-            BlocProvider(
-              create: (context) => ParkingSpaceBloc(
-                parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
-              )..add(LoadParkingSpaces()),
-            ),
-            BlocProvider(
-              create: (context) => StatisticsBloc(
-                parkingRepository: context.read<ParkingRepository>(),
-                parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
-              )..add(LoadStatistics()),
-            ),
-          ],
-          child: const MyApp(),
-        ),
+        child: const AppInitializer(),
       ),
     );
   }
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class AppInitializer extends StatelessWidget {
+  const AppInitializer({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -182,25 +175,19 @@ class MyApp extends StatelessWidget {
       ],
     );
 
-    // return MaterialApp.router(
-    //   routerConfig: router,
-    //   title: 'Admin Dashboard',
-    //   debugShowCheckedModeBanner: false,
-    //   theme: ThemeData.light(),
-    // );
     return ChangeNotifierProvider(
       create: (context) => ThemeNotifier(),
       child: Builder(
         builder: (context) {
           final themeNotifier = Provider.of<ThemeNotifier>(context);
+
           return MaterialApp.router(
             routerConfig: router,
             title: 'Admin Dashboard',
             debugShowCheckedModeBanner: false,
             theme: ThemeData.light(),
             darkTheme: ThemeData.dark(),
-            themeMode:
-                themeNotifier.themeMode, // 🔹 Make it react to theme changes
+            themeMode: themeNotifier.themeMode,
           );
         },
       ),

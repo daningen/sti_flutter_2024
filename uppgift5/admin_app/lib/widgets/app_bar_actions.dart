@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-
 import 'package:provider/provider.dart';
+// Ensure you have this import for AuthFirebaseBloc
 import '../theme_notifier.dart'; // Update the path based on your project structure
+import '../bloc/auth/auth_firebase_bloc.dart'; // Update the path to your AuthFirebaseBloc
 
 class AppBarActions extends StatelessWidget {
   const AppBarActions({super.key});
@@ -10,6 +11,7 @@ class AppBarActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
+        // Theme Toggle Button
         IconButton(
           icon: Icon(
             Provider.of<ThemeNotifier>(context).themeMode == ThemeMode.light
@@ -21,13 +23,15 @@ class AppBarActions extends StatelessWidget {
           },
           tooltip: 'Toggle Theme',
         ),
-        // IconButton(
-        //   icon: const Icon(Icons.logout),
-        //   onPressed: () {
-        //     context.read<AuthBloc>().add(LogoutRequested());
-        //   },
-        //   tooltip: 'Logout pleeeaase',
-        // ),
+        // Logout Button
+        IconButton(
+          icon: const Icon(Icons.logout),
+          onPressed: () {
+            // Access AuthFirebaseBloc and trigger LogoutRequested event
+            context.read<AuthFirebaseBloc>().add(LogoutRequested());
+          },
+          tooltip: 'Logout',
+        ),
       ],
     );
   }
