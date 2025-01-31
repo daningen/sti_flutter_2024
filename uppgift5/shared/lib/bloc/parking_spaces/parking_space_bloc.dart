@@ -1,20 +1,31 @@
 import 'package:firebase_repositories/firebase_repositories.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared/shared.dart';  
+import 'package:shared/shared.dart';
 import 'parking_space_event.dart';
 import 'parking_space_state.dart';
 
 class ParkingSpaceBloc extends Bloc<ParkingSpaceEvent, ParkingSpaceState> {
   final ParkingSpaceRepository parkingSpaceRepository;
+  late final Stream<List<ParkingSpace>> _parkingSpaceStream;
 
   ParkingSpaceBloc({required this.parkingSpaceRepository})
       : super(ParkingSpaceInitial()) {
     on<LoadParkingSpaces>(_onLoadParkingSpaces);
     on<CreateParkingSpace>(_onCreateParkingSpace);
-    on<EditParkingSpace>(_onEditParkingSpace);
+    on<UpdateParkingSpace>(_onUpdateParkingSpace);
     on<DeleteParkingSpace>(_onDeleteParkingSpace);
     on<SelectParkingSpace>(_onSelectParkingSpace);
+
+    // **Subscribe to Firestore real-time parking space updates**
+    _parkingSpaceStream = parkingSpaceRepository.parkingSpacesStream();
+    _parkingSpaceStream.listen((updatedParkingSpaces) {
+      debugPrint(
+          'Firestore detected parking space update: $updatedParkingSpaces');
+
+      // INSTEAD, TRIGGER EVENT TO UPDATE STATE
+      add(LoadParkingSpaces()); // This correctly updates state inside Bloc
+    });
   }
 
   Future<void> _onLoadParkingSpaces(
@@ -41,13 +52,13 @@ class ParkingSpaceBloc extends Bloc<ParkingSpaceEvent, ParkingSpaceState> {
     if (currentState is ParkingSpaceLoaded) {
       emit(ParkingSpaceLoaded(
         parkingSpaces: currentState.parkingSpaces,
-        selectedParkingSpace: event.parkingSpace, // May be null
+        selectedParkingSpace: event.parkingSpace,
       ));
       if (event.parkingSpace != null) {
         debugPrint(
             'Selected parking space: ${event.parkingSpace!.address}, Price: ${event.parkingSpace!.pricePerHour}');
       } else {
-        debugPrint('No parking space selected.');
+        debugPrint('⚪ No parking space selected.');
       }
     }
   }
@@ -57,7 +68,7 @@ class ParkingSpaceBloc extends Bloc<ParkingSpaceEvent, ParkingSpaceState> {
     Emitter<ParkingSpaceState> emit,
   ) async {
     debugPrint(
-        'Creating parking space: Address: ${event.address}, Price: ${event.pricePerHour}');
+        '➕ Creating parking space: ${event.address}, Price: ${event.pricePerHour}');
     try {
       final newParkingSpace = ParkingSpace(
         address: event.address,
@@ -65,39 +76,42 @@ class ParkingSpaceBloc extends Bloc<ParkingSpaceEvent, ParkingSpaceState> {
       );
       await parkingSpaceRepository.create(newParkingSpace);
       debugPrint('Parking space created successfully: $newParkingSpace');
-      add(LoadParkingSpaces());
+      // **No need to manually reload, as Firestore updates via stream**
     } catch (e) {
       debugPrint('Error creating parking space: $e');
       emit(ParkingSpaceError(message: 'Failed to create parking space: $e'));
     }
   }
 
-  Future<void> _onEditParkingSpace(
-    EditParkingSpace event,
+  Future<void> _onUpdateParkingSpace(
+    UpdateParkingSpace event,
     Emitter<ParkingSpaceState> emit,
   ) async {
-    debugPrint(
-        'Editing parking space: ID: ${event.id}, Address: ${event.address}, Price: ${event.pricePerHour}');
+    debugPrint('🛠 Received UpdateParkingSpace event for ID: ${event.id}');
     try {
-      // Fetch the existing parking space by ID
       final existingParkingSpace = await parkingSpaceRepository.getById(event.id);
       if (existingParkingSpace == null) {
+        debugPrint('❌ Parking space not found. ID: ${event.id}');
         emit(ParkingSpaceError(message: 'Parking space not found.'));
         return;
       }
 
-      // Use copyWith to create an updated parking space
+      debugPrint('✅ Existing parking space found: $existingParkingSpace');
+
       final updatedParkingSpace = existingParkingSpace.copyWith(
-        address: event.address,
-        pricePerHour: event.pricePerHour,
+        address: event.updatedSpace.address,
+        pricePerHour: event.updatedSpace.pricePerHour,
       );
 
+      debugPrint('⬆️ Updating Firestore with: $updatedParkingSpace');
+
       await parkingSpaceRepository.update(event.id, updatedParkingSpace);
-      debugPrint('Parking space updated successfully: $updatedParkingSpace');
-      add(LoadParkingSpaces());
-    } catch (e) {
-      debugPrint('Error editing parking space: $e');
-      emit(ParkingSpaceError(message: 'Failed to edit parking space: $e'));
+
+      debugPrint('🎉 Parking space updated successfully: $updatedParkingSpace');
+      // No need to manually reload; Firestore stream updates automatically.
+    } catch (e, stackTrace) {
+      debugPrint('❌ Error updating parking space: $e\n$stackTrace');
+      emit(ParkingSpaceError(message: 'Failed to update parking space: $e'));
     }
   }
 
@@ -109,7 +123,7 @@ class ParkingSpaceBloc extends Bloc<ParkingSpaceEvent, ParkingSpaceState> {
     try {
       await parkingSpaceRepository.delete(event.id);
       debugPrint('Parking space deleted successfully: ID: ${event.id}');
-      add(LoadParkingSpaces());
+      // **Firestore stream automatically triggers updates**
     } catch (e) {
       debugPrint('Error deleting parking space: $e');
       emit(ParkingSpaceError(message: 'Failed to delete parking space: $e'));

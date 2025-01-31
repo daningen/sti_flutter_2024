@@ -10,6 +10,7 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
   final ParkingRepository parkingRepository;
   final VehicleRepository vehicleRepository;
   final ParkingSpaceRepository parkingSpaceRepository;
+  late final Stream<List<ParkingSpace>> parkingSpaceStream;
 
   ParkingBloc({
     required this.parkingRepository,
@@ -21,56 +22,62 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
     on<StopParking>(_onStopParking);
     on<SelectParking>(_onSelectParking);
     on<UpdateParking>(_onUpdateParking);
+
+    // **Listen to parking space updates**
+    parkingSpaceStream = parkingSpaceRepository.parkingSpacesStream();
+    parkingSpaceStream.listen((updatedParkingSpaces) {
+      debugPrint('Parking spaces updated: $updatedParkingSpaces');
+      add(LoadParkings()); // Reload parkings when spaces change
+    });
   }
 
   Future<void> _onLoadParkings(
-  LoadParkings event,
-  Emitter<ParkingState> emit,
-) async {
-  debugPrint('Loading parkings...');
-  emit(ParkingLoading());
-  try {
-    final parkings = await parkingRepository.getAll();
-    final vehicles = await vehicleRepository.getAll();
-    final parkingSpaces = await parkingSpaceRepository.getAll();
+    LoadParkings event,
+    Emitter<ParkingState> emit,
+  ) async {
+    debugPrint('Loading parkings...');
+    emit(ParkingLoading());
+    try {
+      final parkings = await parkingRepository.getAll();
+      final vehicles = await vehicleRepository.getAll();
+      final parkingSpaces = await parkingSpaceRepository.getAll();
 
-    debugPrint('Fetched parkings: $parkings');
-    debugPrint('Fetched vehicles: $vehicles');
-    debugPrint('Fetched parking spaces: $parkingSpaces');
+      debugPrint('Fetched parkings: $parkings');
+      debugPrint('Fetched vehicles: $vehicles');
+      debugPrint('Fetched parking spaces: $parkingSpaces');
 
-    final filteredParkings = event.showActiveOnly
-        ? parkings.where((p) => p.endTime == null).toList()
-        : parkings;
+      final filteredParkings = event.showActiveOnly
+          ? parkings.where((p) => p.endTime == null).toList()
+          : parkings;
 
-    Parking? selectedParking = (state is ParkingLoaded)
-        ? (state as ParkingLoaded).selectedParking
-        : null;
+      Parking? selectedParking = (state is ParkingLoaded)
+          ? (state as ParkingLoaded).selectedParking
+          : null;
 
-    // Simplified filtering for debugging
-    final availableParkingSpaces = parkingSpaces.where((space) {
-      final isOccupied = parkings.any(
-        (p) => p.endTime == null && p.parkingSpace?.id == space.id,
-      );
-      return !isOccupied; // Only exclude occupied spaces for now
-    }).toList();
+      // **Filter available parking spaces**
+      final availableParkingSpaces = parkingSpaces.where((space) {
+        final isOccupied = parkings.any(
+          (p) => p.endTime == null && p.parkingSpace?.id == space.id,
+        );
+        return !isOccupied;
+      }).toList();
 
-    debugPrint('Available Parking Spaces: $availableParkingSpaces');
+      debugPrint('Available Parking Spaces: $availableParkingSpaces');
 
-    emit(ParkingLoaded(
-      parkings: filteredParkings,
-      vehicles: vehicles,
-      parkingSpaces: parkingSpaces,
-      availableVehicles: vehicles, // Simplify for now
-      availableParkingSpaces: availableParkingSpaces,
-      selectedParking: selectedParking,
-      isFilteringActive: event.showActiveOnly,
-    ));
-  } catch (e) {
-    debugPrint('Error loading parkings: $e');
-    emit(ParkingError('Failed to load parkings: $e'));
+      emit(ParkingLoaded(
+        parkings: filteredParkings,
+        vehicles: vehicles,
+        parkingSpaces: parkingSpaces,
+        availableVehicles: vehicles,
+        availableParkingSpaces: availableParkingSpaces,
+        selectedParking: selectedParking,
+        isFilteringActive: event.showActiveOnly,
+      ));
+    } catch (e) {
+      debugPrint('Error loading parkings: $e');
+      emit(ParkingError('Failed to load parkings: $e'));
+    }
   }
-}
-
 
   Future<void> _onCreateParking(
     CreateParking event,
@@ -89,7 +96,7 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
       }
 
       final parking = Parking(
-        id: const Uuid().v4(), // Assign a unique ID
+        id: const Uuid().v4(),
         startTime: DateTime.now(),
         vehicle: vehicle,
         parkingSpace: parkingSpace,
@@ -124,7 +131,7 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
   ) async {
     debugPrint('Updating parking: ${event.parking}');
     try {
-      final updatedParking = event.parking.copyWith(); // Create updated parking
+      final updatedParking = event.parking.copyWith();
       await parkingRepository.update(updatedParking.id, updatedParking);
       add(LoadParkings());
     } catch (e) {

@@ -19,7 +19,7 @@ class CreateParkingSpace extends ParkingSpaceEvent {
 }
 
 class EditParkingSpace extends ParkingSpaceEvent {
-  final String id; // Changed from int to String
+  final String id;
   final String address;
   final int pricePerHour;
 
@@ -34,7 +34,7 @@ class EditParkingSpace extends ParkingSpaceEvent {
 }
 
 class DeleteParkingSpace extends ParkingSpaceEvent {
-  final String id; // Changed from int to String
+  final String id;
 
   DeleteParkingSpace({required this.id});
 
@@ -43,10 +43,17 @@ class DeleteParkingSpace extends ParkingSpaceEvent {
 }
 
 class SelectParkingSpace extends ParkingSpaceEvent {
-  final ParkingSpace? parkingSpace; // Nullable
+  final ParkingSpace? parkingSpace;
 
   SelectParkingSpace({required this.parkingSpace});
 
   @override
   List<Object?> get props => [parkingSpace];
+}
+
+class UpdateParkingSpace extends ParkingSpaceEvent {
+  final String id;
+  final ParkingSpace updatedSpace;
+
+  UpdateParkingSpace({required this.id, required this.updatedSpace});
 }

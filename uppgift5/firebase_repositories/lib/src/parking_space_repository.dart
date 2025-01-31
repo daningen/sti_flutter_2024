@@ -110,4 +110,18 @@ class ParkingSpaceRepository implements RepositoryInterface<ParkingSpace> {
     debugPrint("[ParkingSpaceRepository] Parking space occupied: $isOccupied");
     return isOccupied;
   }
+
+  /// **Stream to Listen for Parking Space Updates**
+  Stream<List<ParkingSpace>> parkingSpacesStream() {
+    debugPrint(
+        "[ParkingSpaceRepository] Listening to parking space updates...");
+
+    return db.collection("parkingSpaces").snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) {
+        final json = doc.data();
+        json["id"] = doc.id;
+        return ParkingSpace.fromJson(json);
+      }).toList();
+    });
+  }
 }
