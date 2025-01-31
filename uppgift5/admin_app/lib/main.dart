@@ -182,11 +182,28 @@ class MyApp extends StatelessWidget {
       ],
     );
 
-    return MaterialApp.router(
-      routerConfig: router,
-      title: 'Admin Dashboard',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.light(),
+    // return MaterialApp.router(
+    //   routerConfig: router,
+    //   title: 'Admin Dashboard',
+    //   debugShowCheckedModeBanner: false,
+    //   theme: ThemeData.light(),
+    // );
+    return ChangeNotifierProvider(
+      create: (context) => ThemeNotifier(),
+      child: Builder(
+        builder: (context) {
+          final themeNotifier = Provider.of<ThemeNotifier>(context);
+          return MaterialApp.router(
+            routerConfig: router,
+            title: 'Admin Dashboard',
+            debugShowCheckedModeBanner: false,
+            theme: ThemeData.light(),
+            darkTheme: ThemeData.dark(),
+            themeMode:
+                themeNotifier.themeMode, // 🔹 Make it react to theme changes
+          );
+        },
+      ),
     );
   }
 }
