@@ -10,8 +10,12 @@ class RegisterView extends StatelessWidget {
   Widget build(BuildContext context) {
     debugPrint('RegisterView is being built');
     final formKey = GlobalKey<FormState>();
-    final emailController = TextEditingController();
-    final passwordController = TextEditingController();
+    final emailController =
+        TextEditingController(text: 'reg1@test.com'); // Prefilled email
+    final passwordController =
+        TextEditingController(text: 'password'); // Prefilled password
+    // final emailController = TextEditingController();
+    // final passwordController = TextEditingController();
     final authBloc = context.read<local.AuthFirebaseBloc>();
 
     void register() {
@@ -44,6 +48,7 @@ class RegisterView extends StatelessWidget {
                   const SizedBox(height: 32),
                   TextFormField(
                     controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(
                       labelText: 'Email',
                       prefixIcon: Icon(Icons.email),
