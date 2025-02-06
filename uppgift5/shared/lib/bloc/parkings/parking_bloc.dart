@@ -42,9 +42,12 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
       final vehicles = await vehicleRepository.getAll();
       final parkingSpaces = await parkingSpaceRepository.getAll();
 
-      debugPrint('Fetched parkings: $parkings');
-      debugPrint('Fetched vehicles: $vehicles');
-      debugPrint('Fetched parking spaces: $parkingSpaces');
+      // debugPrint('Fetched parkings: $parkings');
+      debugPrint('Fetched parkings');
+      // debugPrint('Fetched vehicles: $vehicles');
+      debugPrint('Fetched vehicles');
+      // debugPrint('Fetched parking spaces: $parkingSpaces');
+      debugPrint('Fetched parking spaces');
 
       final filteredParkings = event.showActiveOnly
           ? parkings.where((p) => p.endTime == null).toList()

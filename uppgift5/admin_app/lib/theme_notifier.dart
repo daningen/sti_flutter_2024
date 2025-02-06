@@ -5,17 +5,14 @@ class ThemeNotifier extends ChangeNotifier {
 
   ThemeMode get themeMode => _themeMode;
 
-
   void toggleTheme() {
-  _themeMode =
-      _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
-  debugPrint("🎨 Theme changed to: $_themeMode");
-  notifyListeners();
-}
+    _themeMode =
+        _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    notifyListeners();
+  }
 
   void setThemeMode(ThemeMode mode) {
     _themeMode = mode;
     notifyListeners();
   }
 }
-

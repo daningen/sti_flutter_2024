@@ -10,6 +10,8 @@ import 'package:provider/provider.dart';
 import 'package:parking_app/providers/theme_notifier.dart';
 import 'package:parking_app/views/parking/parking_navigation_bar.dart';
 
+import '../../bloc/auth/auth_firebase_bloc.dart';
+
 class ParkingView extends StatelessWidget {
   const ParkingView({super.key});
 
@@ -38,7 +40,8 @@ class ParkingView extends StatelessWidget {
                           : 'Show All Parkings',
                       onPressed: () {
                         context.read<ParkingBloc>().add(
-                              LoadParkings(showActiveOnly: !state.isFilteringActive),
+                              LoadParkings(
+                                  showActiveOnly: !state.isFilteringActive),
                             );
                       },
                     ),
@@ -166,8 +169,12 @@ class ParkingView extends StatelessWidget {
           }
         },
         onLogoutPressed: () {
-          debugPrint('Logout pressed');
-          context.go('/login');
+          Navigator.of(context).pop(); // Close the dialog
+          debugPrint('🔴 Redirecting to login screen after logout');
+          context
+              .read<AuthFirebaseBloc>()
+              .add(LogoutRequested()); // Dispatch LogoutRequested
+          context.go('/login'); // Redirect to login after logout
         },
       ),
     );

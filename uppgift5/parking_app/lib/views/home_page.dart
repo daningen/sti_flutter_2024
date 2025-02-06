@@ -44,8 +44,9 @@ class HomePage extends StatelessWidget {
                         icon: const Icon(Icons.logout),
                         onPressed: () {
                           context.read<AuthBloc>().add(LogoutRequested());
-                          debugPrint('Navigating to StartView from HomePage...');
-                          context.go('/start');
+                          debugPrint(
+                              'Navigating to StartView from HomePage...');
+                          context.go('/login');
                         },
                       ),
                     ],
@@ -53,7 +54,7 @@ class HomePage extends StatelessWidget {
                 );
               } else {
                 // Handle unauthenticated state (e.g., display a message or redirect)
-                return const SizedBox.shrink(); 
+                return const SizedBox.shrink();
               }
             },
           ),

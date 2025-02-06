@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared/services/auth_service_interface.dart';
 
-enum AuthStatus {
-  unauthenticated,
-  authenticating,
-  authenticated,
-}
+enum AuthStatus { unauthenticated, authenticating, authenticated }
 
-class AuthService extends ChangeNotifier implements AuthServiceInterface {
+class AuthService implements AuthServiceInterface {
   AuthStatus _status = AuthStatus.unauthenticated;
   String _username = '';
 
@@ -17,33 +13,34 @@ class AuthService extends ChangeNotifier implements AuthServiceInterface {
   @override
   Future<void> login(String username, String password) async {
     _status = AuthStatus.authenticating;
-    debugPrint("ParkingApp: Authentication started...");
-    notifyListeners();
+    debugPrint("[AuthService] Authentication process started...");
 
-    await Future.delayed(const Duration(seconds: 2)); // Simulate network delay
+    try {
+      // Simulate delay (e.g., API call)
+      await Future.delayed(const Duration(seconds: 2));
 
-    if (username.isEmpty || password.isEmpty) {
-      debugPrint(
-          "ParkingApp: Invalid credentials. Empty username or password.");
-      _status = AuthStatus.unauthenticated;
-      notifyListeners();
-      throw Exception(
-          "Invalid credentials. Username and password are required.");
+      if (username != "admin" || password != "password") {
+        debugPrint(
+            "[AuthService] Invalid credentials provided: username=$username");
+        _status = AuthStatus.unauthenticated;
+        throw Exception('Invalid credentials for admin_app');
+      }
+
+      // Successfully authenticated
+      _status = AuthStatus.authenticated;
+      _username = username;
+      debugPrint("[AuthService] Authentication successful for user $username.");
+    } catch (e) {
+      debugPrint("[AuthService] Authentication failed: ${e.toString()}");
+      rethrow; // error for further handling
     }
-
-    // Successful login
-    _status = AuthStatus.authenticated;
-    _username = username;
-    debugPrint("ParkingApp: User $username successfully authenticated.");
-    notifyListeners();
   }
 
   @override
   void logout() {
-    debugPrint("ParkingApp: Logging out user $_username...");
+    debugPrint("[AuthService] Logging out user $_username...");
     _status = AuthStatus.unauthenticated;
     _username = '';
-    notifyListeners();
-    debugPrint("ParkingApp: Logout successful.");
+    debugPrint("[AuthService] Logout successful.");
   }
 }

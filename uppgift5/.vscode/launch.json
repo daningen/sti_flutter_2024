@@ -1,0 +1,93 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "admin_app",
+            "cwd": "admin_app",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "admin_app (profile mode)",
+            "cwd": "admin_app",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "admin_app (release mode)",
+            "cwd": "admin_app",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "firebase_repositories",
+            "cwd": "firebase_repositories",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "firebase_repositories (profile mode)",
+            "cwd": "firebase_repositories",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "firebase_repositories (release mode)",
+            "cwd": "firebase_repositories",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        
+        {
+            "name": "parking_app",
+            "cwd": "parking_app",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "emulator-5554"
+        },
+        {
+            "name": "parking_app (profile mode)",
+            "cwd": "parking_app",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile",
+            "deviceId": "emulator-5554"
+        },
+        {
+            "name": "parking_app (release mode)",
+            "cwd": "parking_app",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "deviceId": "emulator-5554"
+        },
+        
+        {
+            "name": "shared",
+            "cwd": "shared",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "shared (profile mode)",
+            "cwd": "shared",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "shared (release mode)",
+            "cwd": "shared",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        }
+    ]
+}

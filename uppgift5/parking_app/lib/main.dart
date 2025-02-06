@@ -2,171 +2,218 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_repositories/firebase_repositories.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:parking_app/bloc/auth/auth_firebase_bloc.dart';
+
 import 'package:parking_app/firebase_options.dart';
+import 'package:parking_app/providers/theme_notifier.dart';
+import 'package:parking_app/utils/go_router_refresh_stream.dart';
+import 'package:parking_app/views/login_view.dart';
+import 'package:parking_app/views/start_view.dart';
+import 'package:parking_app/views/parking/parking_view.dart';
+import 'package:parking_app/views/parking_space/parking_space_view.dart';
 import 'package:parking_app/views/person/person_view.dart';
 import 'package:parking_app/views/register_view.dart';
+import 'package:parking_app/views/statistics_view.dart';
+import 'package:parking_app/views/vehicle/vehicles_view.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
 
-import 'package:shared/bloc/parking_spaces/parking_space_event.dart';
-import 'package:shared/bloc/parkings/parking_event.dart';
 import 'package:shared/bloc/person/person_bloc.dart';
 import 'package:shared/bloc/person/person_event.dart';
-import 'package:shared/bloc/vehicles/vehicles_event.dart';
-
-import 'app_theme.dart';
-import 'services/auth_service.dart';
-import 'providers/theme_notifier.dart';
-
-import 'views/start_view.dart';
-import 'views/vehicle/vehicles_view.dart';
-import 'views/login_view.dart';
-import 'views/home_page.dart';
-import 'views/parking/parking_view.dart';
-import 'views/parking_space/parking_space_view.dart';
-import 'package:shared/bloc/auth/auth_bloc.dart';
-import 'package:shared/bloc/parkings/parking_bloc.dart';
+import 'package:shared/bloc/statistics/statistics_bloc.dart';
+import 'package:shared/bloc/statistics/statistics_event.dart';
 import 'package:shared/bloc/vehicles/vehicles_bloc.dart';
+import 'package:shared/bloc/vehicles/vehicles_event.dart';
 import 'package:shared/bloc/parking_spaces/parking_space_bloc.dart';
+import 'package:shared/bloc/parking_spaces/parking_space_event.dart';
+import 'package:shared/bloc/parkings/parking_bloc.dart';
+import 'package:shared/bloc/parkings/parking_event.dart';
+
+import 'widgets/app_layout.dart';
 
 Future<void> main() async {
-  // Ensure Flutter bindings are initialized before calling Firebase
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase with the appropriate options
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  // Instantiate required services and repositories
-  final authService = AuthService();
-  final parkingRepository = ParkingRepository();
-  final vehicleRepository = VehicleRepository();
-  final parkingSpaceRepository = ParkingSpaceRepository();
 
-  runApp(
-    MultiProvider(
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiRepositoryProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ThemeNotifier()),
+        RepositoryProvider<AuthRepository>(
+          create: (_) => AuthRepository(),
+        ),
+        RepositoryProvider<UserRepository>(
+          create: (_) => UserRepository(),
+        ),
+        RepositoryProvider<PersonRepository>(
+          create: (_) => PersonRepository(),
+        ),
+        RepositoryProvider<VehicleRepository>(
+          create: (_) => VehicleRepository(),
+        ),
+        RepositoryProvider<ParkingRepository>(
+          create: (_) => ParkingRepository(),
+        ),
+        RepositoryProvider<ParkingSpaceRepository>(
+          create: (_) => ParkingSpaceRepository(),
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
           BlocProvider(
-            create: (_) => AuthBloc(authService: authService),
+            create: (context) => AuthFirebaseBloc(
+              authRepository: context.read<AuthRepository>(),
+              userRepository: context.read<UserRepository>(),
+            )..add(AuthFirebaseUserSubscriptionRequested()),
           ),
           BlocProvider(
-            create: (_) => _initializeParkingBloc(
-              parkingRepository,
-              parkingSpaceRepository,
-              vehicleRepository,
-            ),
+            create: (context) => PersonBloc(
+              personRepository: context.read<PersonRepository>(),
+            )..add(LoadPersons()),
           ),
           BlocProvider(
-            create: (_) => _initializeVehiclesBloc(vehicleRepository),
+            create: (context) => ParkingBloc(
+              parkingRepository: context.read<ParkingRepository>(),
+              parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
+              vehicleRepository: context.read<VehicleRepository>(),
+            )..add(LoadParkings()),
           ),
           BlocProvider(
-            create: (_) => _initializeParkingSpaceBloc(parkingSpaceRepository),
+            create: (context) => VehiclesBloc(
+              vehicleRepository: context.read<VehicleRepository>(),
+            )..add(LoadVehicles()),
           ),
           BlocProvider(
-            create: (_) {
-              final personBloc =
-                  PersonBloc(personRepository: PersonRepository());
-              personBloc.add(LoadPersons()); // Dispatch initial event
-              return personBloc;
-            },
-          ),
-          BlocProvider(
-            create: (_) => ParkingSpaceBloc(
-              parkingSpaceRepository: ParkingSpaceRepository(),
+            create: (context) => ParkingSpaceBloc(
+              parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
             )..add(LoadParkingSpaces()),
           ),
+          BlocProvider(
+            create: (context) => StatisticsBloc(
+              parkingRepository: context.read<ParkingRepository>(),
+              parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
+            )..add(LoadStatistics()),
+          ),
         ],
-        child: ParkingApp(),
+        child: const AppInitializer(),
       ),
-    ),
-  );
+    );
+  }
 }
 
-/// Initialize and return the [ParkingBloc] with its initial event
-ParkingBloc _initializeParkingBloc(
-  ParkingRepository parkingRepository,
-  ParkingSpaceRepository parkingSpaceRepository,
-  VehicleRepository vehicleRepository,
-) {
-  final bloc = ParkingBloc(
-    parkingRepository: parkingRepository,
-    parkingSpaceRepository: parkingSpaceRepository,
-    vehicleRepository: vehicleRepository,
-  );
-  bloc.add(LoadParkings()); // Load initial parkings
-  return bloc;
-}
-
-/// Initialize and return the [VehiclesBloc] with its initial event
-VehiclesBloc _initializeVehiclesBloc(VehicleRepository vehicleRepository) {
-  final bloc = VehiclesBloc(vehicleRepository: vehicleRepository);
-  bloc.add(LoadVehicles()); // Load initial vehicles
-  return bloc;
-}
-
-/// Initialize and return the [ParkingSpaceBloc] with its initial event
-ParkingSpaceBloc _initializeParkingSpaceBloc(
-  ParkingSpaceRepository parkingSpaceRepository,
-) {
-  final bloc = ParkingSpaceBloc(parkingSpaceRepository: parkingSpaceRepository);
-  bloc.add(LoadParkingSpaces()); // Load initial parking spaces
-  return bloc;
-}
-
-class ParkingApp extends StatelessWidget {
-  ParkingApp({super.key});
-
-  final GoRouter _router = GoRouter(
-    initialLocation: '/start',
-    routes: [
-      GoRoute(
-        path: '/start',
-        builder: (context, state) => const StartView(),
-      ),
-      GoRoute(
-        path: '/register',
-        builder: (context, state) => const RegisterView(),
-      ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginView(),
-      ),
-      GoRoute(
-        path: '/',
-        builder: (context, state) => const HomePage(),
-      ),
-      GoRoute(
-        path: '/my-vehicles',
-        builder: (context, state) => const VehiclesView(),
-      ),
-      GoRoute(
-        path: '/parking',
-        builder: (context, state) => const ParkingView(),
-      ),
-      GoRoute(
-        path: '/parking-spaces',
-        builder: (context, state) => const ParkingSpacesView(),
-      ),
-      GoRoute(
-        path: '/user-page',
-        builder: (context, state) => const PersonView(),
-      ),
-    ],
-  );
+class AppInitializer extends StatelessWidget {
+  const AppInitializer({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Parking App',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: context.watch<ThemeNotifier>().themeMode,
-      routerConfig: _router,
+    final router = GoRouter(
+      initialLocation: '/login',
+      refreshListenable: GoRouterRefreshStream(
+        context.read<AuthFirebaseBloc>().stream,
+      ),
+      redirect: (context, state) {
+        final authState = context.read<AuthFirebaseBloc>().state;
+        final isLoggedIn = authState is AuthAuthenticated;
+        final isLoggingIn = state.uri.toString() == '/login';
+        final isRegistering = state.uri.toString() == '/register';
+
+        debugPrint(
+            'Redirect Logic: state=${state.uri.toString()}, isLoggedIn=$isLoggedIn, isLoggingIn=$isLoggingIn, isRegistering=$isRegistering');
+
+        if (!isLoggedIn && !isLoggingIn && !isRegistering) {
+          return '/login';
+        }
+
+        if (isLoggedIn && (isLoggingIn || isRegistering)) {
+          return '/start';
+        }
+
+        return null;
+      },
+      routes: [
+        GoRoute(
+          path: '/login',
+          builder: (context, state) => const LoginView(),
+        ),
+        GoRoute(
+          path: '/register',
+          builder: (context, state) => const RegisterView(),
+        ),
+        GoRoute(
+          path: '/', //  root path
+          builder: (context, state) => const AppLayout(
+            child: StartView(),
+          ),
+        ),
+        GoRoute(
+          path: '/start',
+          builder: (context, state) => const AppLayout(
+            // Use AppLayout
+            child:
+                StartView(), // Use StartView (NOT NavRailView if it's a Scaffold)
+          ),
+          routes: [
+            GoRoute(
+              path: 'statistics',
+              builder: (context, state) => const AppLayout(
+                // Use AppLayout
+                child: StatisticsView(),
+              ),
+            ),
+            GoRoute(
+              path: 'parkings',
+              // builder: (context, state) => const AppLayout(
+              builder: (context, state) => const ParkingView(),
+              // child: ParkingView(),
+            ),
+            GoRoute(
+              path: 'parking-spaces',
+              builder: (context, state) => const AppLayout(
+                child: ParkingSpacesView(),
+              ),
+            ),
+            GoRoute(
+              path: 'vehicles',
+              builder: (context, state) => const AppLayout(
+                child: VehiclesView(),
+              ),
+            ),
+            GoRoute(
+              path: 'persons',
+              builder: (context, state) => const AppLayout(
+                child: PersonView(),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+
+    return ChangeNotifierProvider(
+      create: (context) => ThemeNotifier(),
+      child: Builder(
+        builder: (context) {
+          final themeNotifier = Provider.of<ThemeNotifier>(context);
+
+          return MaterialApp.router(
+            routerConfig: router,
+            title: 'Parking App',
+            debugShowCheckedModeBanner: false,
+            theme: ThemeData.light(),
+            darkTheme: ThemeData.dark(),
+            themeMode: themeNotifier.themeMode,
+          );
+        },
+      ),
     );
   }
 }

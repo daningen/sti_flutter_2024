@@ -1,9 +1,9 @@
+import 'package:parking_app/bloc/auth/auth_firebase_bloc.dart' as local;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared/bloc/auth/auth_bloc.dart';
-import 'package:shared/bloc/auth/auth_event.dart';
-import 'package:shared/bloc/auth/auth_state.dart';
+ 
+
 import '../utils/validators.dart';
 
 class LoginView extends StatelessWidget {
@@ -11,97 +11,128 @@ class LoginView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authBloc = context.read<local.AuthFirebaseBloc>();
+
     final formKey = GlobalKey<FormState>();
-    final usernameController = TextEditingController();
-    final passwordController = TextEditingController();
-    final usernameFocus = FocusNode();
-    final passwordFocus = FocusNode();
+    final emailController =
+        TextEditingController(text: 'test@test.com'); // Prefilled email
+    final passwordController =
+        TextEditingController(text: 'password'); // Prefilled password
 
-    void save(BuildContext context) {
-      if (formKey.currentState!.validate()) {
-        final username = usernameController.text.trim();
-        final password = passwordController.text.trim();
-
-        debugPrint('LoginView: Attempting login for username: $username');
-        context.read<AuthBloc>().add(LoginRequested(
-              username: username,
-              password: password,
-            ));
-      }
-    }
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-      ),
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: Center(
-          child: BlocConsumer<AuthBloc, AuthState>(
-            listener: (context, state) {
-              debugPrint('Auth State changed: $state');
-              if (state is AuthAuthenticated) {
-                debugPrint('Login successful. Navigating to /start.');
-                context.go('/start');  
-              } else if (state is AuthUnauthenticated) {
-                debugPrint('Login failed. Showing error.');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(state.errorMessage ?? 'Login failed'),
-                  ),
-                );
-              }
-            },
-            builder: (context, state) {
-              return Form(
-                key: formKey,
-                child: Container(
-                  constraints: const BoxConstraints(maxWidth: 400),
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Welcome Back',
-                          style: Theme.of(context).textTheme.headlineLarge),
-                      const SizedBox(height: 32),
-                      TextFormField(
-                        controller: usernameController,
-                        focusNode: usernameFocus,
-                        enabled: state is! AuthLoading,
-                        decoration: const InputDecoration(
-                            labelText: 'Username',
-                            prefixIcon: Icon(Icons.person)),
-                        validator: Validators.validateUsername,
-                        onFieldSubmitted: (_) => passwordFocus.requestFocus(),
+    return BlocListener<local.AuthFirebaseBloc, local.AuthState>(
+      listener: (context, state) {
+        if (state is local.AuthAuthenticated) {
+          debugPrint('Auth successful: ${state.user.email}');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Login successful! Welcome, ${state.user.email}"),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else if (state is local.AuthFail) {
+          debugPrint('Auth failed: ${state.message}');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Authentication failed: ${state.message}"),
+              backgroundColor: Colors.red,
+            ),
+          );
+        } else if (state is local.AuthPending) {
+          debugPrint('Authenticating...');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Authenticating... Please wait."),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        } else {
+          debugPrint('Unexpected state: $state');
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Login')),
+        body: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Center(
+            child: Form(
+              key: formKey,
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 400),
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Welcome Back',
+                      style: Theme.of(context).textTheme.headlineLarge,
+                    ),
+                    const SizedBox(height: 32),
+                    TextFormField(
+                      controller: emailController,
+                      decoration: const InputDecoration(
+                        labelText: 'Email',
+                        prefixIcon: Icon(Icons.email),
                       ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: passwordController,
-                        focusNode: passwordFocus,
-                        obscureText: true,
-                        enabled: state is! AuthLoading,
-                        decoration: const InputDecoration(
-                            labelText: 'Password',
-                            prefixIcon: Icon(Icons.lock)),
-                        validator: Validators.validatePassword,
-                        onFieldSubmitted: (_) => save(context),
+                      validator: Validators.validateEmail,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: passwordController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Password',
+                        prefixIcon: Icon(Icons.lock),
                       ),
-                      const SizedBox(height: 32),
-                      if (state is AuthLoading)
-                        const CircularProgressIndicator()
-                      else
-                        ElevatedButton(
-                          onPressed: () {
-                            debugPrint('LoginView: Login button pressed');
-                            save(context);
-                          },
-                          child: const Text('Login'),
-                        ),
-                    ],
-                  ),
+                      validator: Validators.validatePassword,
+                    ),
+                    const SizedBox(height: 32),
+                    BlocBuilder<local.AuthFirebaseBloc, local.AuthState>(
+                      builder: (context, state) {
+                        return Column(
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                if (formKey.currentState!.validate()) {
+                                  final email = emailController.text.trim();
+                                  final password =
+                                      passwordController.text.trim();
+
+                                  authBloc.add(
+                                    local.AuthFirebaseLogin(
+                                      email: email,
+                                      password: password,
+                                    ),
+                                  );
+                                }
+                              },
+                              child: const Text('Login'),
+                            ),
+                            const SizedBox(height: 16),
+                            TextButton(
+                              onPressed: () {
+                                debugPrint(
+                                    'Navigating to RegisterView...from loginView');
+                                GoRouter.of(context).push(
+                                    '/register'); // Navigate to RegisterView
+                              },
+                              child:
+                                  const Text('Don’t have an account? Register'),
+                            ),
+                            if (state is local.AuthFail) ...[
+                              const SizedBox(height: 16),
+                              Text(
+                                "Authentication failed: ${state.message}",
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ],
+                          ],
+                        );
+                      },
+                    ),
+                  ],
                 ),
-              );
-            },
+              ),
+            ),
           ),
         ),
       ),
