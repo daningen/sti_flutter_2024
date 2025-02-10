@@ -1,0 +1,41 @@
+import 'package:equatable/equatable.dart';
+import 'package:shared/shared.dart';
+
+abstract class PersonState extends Equatable {
+  @override
+  List<Object?> get props => [];
+}
+
+class PersonInitial extends PersonState {}
+
+class PersonLoading extends PersonState {}
+
+class PersonLoaded extends PersonState {
+  final List<Person> persons;
+  final Person? selectedPerson; // Optional parameter
+
+  PersonLoaded({required this.persons, this.selectedPerson});
+
+  @override
+  List<Object?> get props => [persons, selectedPerson];
+
+  // Adding the copyWith method
+  PersonLoaded copyWith({
+    List<Person>? persons,
+    Person? selectedPerson,
+  }) {
+    return PersonLoaded(
+      persons: persons ?? this.persons,
+      selectedPerson: selectedPerson ?? this.selectedPerson,
+    );
+  }
+}
+
+class PersonError extends PersonState {
+  final String message;
+
+  PersonError(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
