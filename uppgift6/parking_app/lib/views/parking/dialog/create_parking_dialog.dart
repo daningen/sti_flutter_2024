@@ -126,8 +126,8 @@ class _CreateParkingDialogState extends State<CreateParkingDialog> {
                 decoration: const InputDecoration(
                   labelText: 'Estimated End Time (Optional)',
                 ),
-                format:
-                    DateFormat("yyyy-MM-dd HH:mm"), // Set your desired format
+                // format: DateFormat("yyyy-MM-ddTHH:mm:ss.SSSSSS"), //
+                format: DateFormat("yyyy-MM-ddTHH:mm:ss"), //
                 onShowPicker: (context, currentValue) async {
                   final date = await showDatePicker(
                     context: context,
@@ -145,14 +145,44 @@ class _CreateParkingDialogState extends State<CreateParkingDialog> {
                     );
                     return DateTimeField.combine(date, time);
                   } else {
+                    debugPrint(
+                        "[create_parking_dialog]: show it $currentValue");
                     return currentValue;
                   }
                 },
                 onChanged: (DateTime? value) {
-                  setState(() {
-                    estimatedEndTime = value;
-                  });
+                  debugPrint(
+                      "Selected DateTime value: $value, Type: ${value.runtimeType}");
+
+                  if (value != null) {
+                    // Handle the case where the user selected a date/time
+                    estimatedEndTime = DateTime(
+                      value.year,
+                      value.month,
+                      value.day,
+                      value.hour,
+                      value.minute,
+                      value.second,
+                      // value.millisecond,
+                      // value.microsecond,
+                    ); // Create a new DateTime object
+
+                    debugPrint(
+                        "New estimatedEndTime value: $estimatedEndTime, Type: ${estimatedEndTime.runtimeType}");
+                  } else {
+                    // Handle null case appropriately
+                    estimatedEndTime =
+                        null; // Or some default DateTime if needed
+                    debugPrint("estimatedEndTime set to null");
+                  }
                 },
+                // onChanged: (DateTime? value) {
+                //   debugPrint(
+                //       "[create_parking_dialog:] Selected DateTime value: $value, Type: ${value.runtimeType}");
+                //   setState(() {
+                //     estimatedEndTime = value;
+                //   });
+                // },
                 // You can add a validator if you want to make it required
               ),
             ],
@@ -166,8 +196,10 @@ class _CreateParkingDialogState extends State<CreateParkingDialog> {
         ),
         ElevatedButton(
           onPressed: () {
-            debugPrint("[create_parking_Dialog:] endtime is {$estimatedEndTime}");
-            debugPrint("[create_parking_Dialog:] endtime type is: ${estimatedEndTime.runtimeType}");
+            debugPrint(
+                "[create_parking_Dialog:] endtime is {$estimatedEndTime}");
+            debugPrint(
+                "[create_parking_Dialog:] endtime type is: ${estimatedEndTime.runtimeType}");
             if (formKey.currentState!.validate()) {
               // Create a new Parking instance with selected values
               final newParking = Parking(

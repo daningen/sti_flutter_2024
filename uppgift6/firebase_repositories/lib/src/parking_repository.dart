@@ -72,8 +72,7 @@ class ParkingRepository implements RepositoryInterface<Parking> {
       }
 
       final data = snapshot.data() as Map<String, dynamic>;
-      data['id'] = snapshot.id; // Still good to set the ID here
-
+      data['id'] = snapshot.id;
       return Parking.fromJson(data);
     } catch (e) {
       debugPrint("[ParkingRepository] Error fetching parking by ID: $e");
@@ -158,11 +157,7 @@ class ParkingRepository implements RepositoryInterface<Parking> {
           debugPrint(
               "endTime type (document ${doc.id}): ${data['endTime'].runtimeType}");
 
-          if (data['endTime'] is Timestamp) {
-            endTime = (data['endTime'] as Timestamp).toDate();
-            debugPrint(
-                "Parsed endTime (Timestamp, document ${doc.id}): $endTime");
-          } else if (data['endTime'] is DateTime) {
+          if (data['endTime'] is DateTime) {
             endTime = data['endTime'] as DateTime;
             debugPrint(
                 "Parsed endTime (DateTime, document ${doc.id}): $endTime");

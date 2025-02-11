@@ -4,14 +4,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 import 'package:uuid/uuid.dart';
+import 'package:intl/intl.dart';
 
 class Parking {
   final String id;
   final DateTime startTime;
   DateTime? endTime;
-  final Vehicle? vehicle; // Nullable because it might be missing in the JSON
-  final ParkingSpace?
-      parkingSpace; // Nullable because it might be missing in the JSON
+  final Vehicle? vehicle;
+  final ParkingSpace? parkingSpace;
 
   Parking({
     String? id,
@@ -19,13 +19,13 @@ class Parking {
     this.endTime,
     this.vehicle,
     this.parkingSpace,
-  }) : id = id ??
-            const Uuid().v4(); // Automatically generate an ID if not provided
+  }) : id = id ?? const Uuid().v4();
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'startTime': startTime.toIso8601String(),
+
       'endTime': endTime?.toIso8601String(),
       'vehicle': vehicle?.toJson(), // Assuming `Vehicle` has a `toJson` method
       'parkingSpace': parkingSpace
@@ -43,8 +43,28 @@ class Parking {
         throw FormatException("startTime cannot be null");
       }
 
-      DateTime startTime = DateTime.parse(json['startTime'] as String);
-      DateTime? endTime; // endTime remains nullable
+      // Handle both DateTime and String for Firestore compatibility
+      DateTime startTime = json['startTime'] is String
+          ? DateTime.parse(json['startTime'])
+          : json['startTime'] as DateTime;
+
+      DateTime? endTime;
+      if (json['endTime'] != null) {
+        if (json['endTime'] is String) {
+          try {
+            endTime = DateTime.parse(json['endTime']); // Try parsing string
+          } catch (e) {
+            debugPrint(
+                "Error parsing endTime as String: $e, Raw value: ${json['endTime']}");
+            endTime = null; // Default to null if parsing fails
+          }
+        } else if (json['endTime'] is Timestamp) {
+          endTime =
+              (json['endTime'] as Timestamp).toDate(); // Firestore Timestamp
+        } else if (json['endTime'] is DateTime) {
+          endTime = json['endTime']; // Already a DateTime
+        }
+      }
 
       final vehicle = json['vehicle'] is Map<String, dynamic>
           ? Vehicle.fromJson(json['vehicle'] as Map<String, dynamic>)
@@ -55,8 +75,8 @@ class Parking {
 
       return Parking(
         id: json['id'] ?? const Uuid().v4(),
-        startTime: startTime, // startTime is non-nullable
-        endTime: endTime, // endTime is nullable
+        startTime: startTime,
+        endTime: endTime,
         vehicle: vehicle,
         parkingSpace: parkingSpace,
       );
