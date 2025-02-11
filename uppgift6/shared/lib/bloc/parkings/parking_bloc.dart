@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_repositories/firebase_repositories.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
+// ignore: unused_import
 import 'package:uuid/uuid.dart';
 import 'parking_event.dart';
 import 'parking_state.dart';
@@ -94,25 +95,21 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
       CreateParking event, Emitter<ParkingState> emit) async {
     debugPrint('[ParkingBloc] Creating parking...');
     try {
-      final vehicle = await vehicleRepository.getById(event.vehicleId);
-      final parkingSpace =
-          await parkingSpaceRepository.getById(event.parkingSpaceId);
+      // final vehicle = await vehicleRepository.getById(event.vehicleId);
+      // final parkingSpace = await parkingSpaceRepository.getById(event.parkingSpaceId);
 
-      if (vehicle == null || parkingSpace == null) {
-        emit(ParkingError('Vehicle or Parking Space not found.'));
-        return;
-      }
+      // if (vehicle == null || parkingSpace == null) {
+      //   emit(ParkingError('Vehicle or Parking Space not found.'));
+      //   return;
+      // }
 
-      final parking = Parking(
-        id: const Uuid().v4(),
-        startTime: DateTime.now(),
-        vehicle: vehicle,
-        parkingSpace: parkingSpace,
-      );
+      // Use the Parking object passed in the event:
+      final parking = event.parking; // This is the key change!
 
       await parkingRepository.create(parking);
-      debugPrint('[ParkingBloc] Parking created: $parking');
-      add(LoadParkings()); // No filter needed here
+      debugPrint(
+          '[ParkingBloc] Parking created: ${parking.toJson()}'); // Print with toJson()
+      add(LoadParkings());
     } catch (e) {
       debugPrint('[ParkingBloc] Error creating parking: $e');
       emit(ParkingError('Failed to create parking: $e'));

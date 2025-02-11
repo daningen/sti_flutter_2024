@@ -12,7 +12,8 @@ class ParkingRepository implements RepositoryInterface<Parking> {
 
   @override
   Future<Parking> create(Parking parking) async {
-    debugPrint("[ParkingRepository] Creating a new parking session.");
+    debugPrint(
+        '[ParkingRepository] creating a new parking session: ${parking.toJson()}');
 
     final parkingId = parking.id.isEmpty ? _uuid.v4() : parking.id;
     final parkingToCreate = parking.copyWith(id: parkingId);
@@ -151,7 +152,7 @@ class ParkingRepository implements RepositoryInterface<Parking> {
       try {
         DateTime? endTime;
         debugPrint(
-            "Raw endTime value from Firestore (document ${doc.id}): ${data['endTime']}");
+            "[parking_repository:] Raw endTime value from Firestore (document ${doc.id}): ${data['endTime']}");
 
         if (data['endTime'] != null) {
           debugPrint(

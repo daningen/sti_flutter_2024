@@ -166,6 +166,8 @@ class _CreateParkingDialogState extends State<CreateParkingDialog> {
         ),
         ElevatedButton(
           onPressed: () {
+            debugPrint("[create_parking_Dialog:] endtime is {$estimatedEndTime}");
+            debugPrint("[create_parking_Dialog:] endtime type is: ${estimatedEndTime.runtimeType}");
             if (formKey.currentState!.validate()) {
               // Create a new Parking instance with selected values
               final newParking = Parking(

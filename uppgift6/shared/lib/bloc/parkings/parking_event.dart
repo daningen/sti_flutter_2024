@@ -20,13 +20,12 @@ class LoadParkings extends ParkingEvent {
 }
 
 class CreateParking extends ParkingEvent {
-  final String vehicleId;
-  final String parkingSpaceId;
+  final Parking parking; // This is the key change
 
-  const CreateParking({required this.vehicleId, required this.parkingSpaceId});
+  const CreateParking(this.parking); // Update the constructor
 
   @override
-  List<Object?> get props => [...super.props, vehicleId, parkingSpaceId];
+  List<Object?> get props => [parking]; // Include parking in props
 }
 
 class StopParking extends ParkingEvent {

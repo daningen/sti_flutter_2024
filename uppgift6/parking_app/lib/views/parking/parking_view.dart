@@ -117,7 +117,13 @@ class ParkingView extends StatelessWidget {
                         'Start Time: ${timeFormat.format(parking.startTime)}',
                       ),
                       Text(
+                        'End Time: ${parking.endTime != null ? timeFormat.format(parking.endTime!) : 'N/O'}',
+                      ),
+                      Text(
                         'End Time: ${parking.endTime != null ? timeFormat.format(parking.endTime!) : 'N/A'}',
+                      ),
+                      Text(
+                        'End Time: ${parking.endTime}',
                       ),
                       const SizedBox(height: 4.0),
                       if (parking.endTime != null &&
@@ -182,12 +188,13 @@ class ParkingView extends StatelessWidget {
                 availableVehicles: availableVehicles,
                 availableParkingSpaces: availableParkingSpaces,
                 onCreate: (newParking) {
-                  context.read<ParkingBloc>().add(
-                        CreateParking(
-                          vehicleId: newParking.vehicle?.id ?? '',
-                          parkingSpaceId: newParking.parkingSpace?.id ?? '',
-                        ),
-                      );
+                  context.read<ParkingBloc>().add(CreateParking(newParking));
+                  // context.read<ParkingBloc>().add(
+                  //       CreateParking(
+                  //         vehicleId: newParking.vehicle?.id ?? '',
+                  //         parkingSpaceId: newParking.parkingSpace?.id ?? '',
+                  //       ),
+                  //     );
                 },
               ),
             );

@@ -79,51 +79,51 @@ class ParkingView extends StatelessWidget {
                             DataCell(
                                 Text(timeFormat.format(parking.startTime))),
                             DataCell(
-                              parking.endTime != null &&
-                                      parking.endTime!.isAfter(DateTime.now())
-                                  ? ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        foregroundColor: Colors.white,
-                                        backgroundColor: Colors.red,
-                                      ),
-                                      onPressed: () async {
-                                        final confirm = await showDialog<bool>(
-                                          context: context,
-                                          builder: (context) => AlertDialog(
-                                            title: const Text(
-                                                'Confirm Stop Parking'),
-                                            content: const Text(
-                                                'Are you sure you want to stop this parking session?'),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () =>
-                                                    Navigator.of(context)
-                                                        .pop(false),
-                                                child: const Text('Cancel'),
-                                              ),
-                                              ElevatedButton(
-                                                onPressed: () =>
-                                                    Navigator.of(context)
-                                                        .pop(true),
-                                                child: const Text('Stop'),
-                                              ),
-                                            ],
+                              parking.endTime != null
+                                  ? (parking.endTime!.isAfter(DateTime.now())
+                                      ? ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            foregroundColor: Colors.white,
+                                            backgroundColor: Colors.red,
                                           ),
-                                        );
+                                          onPressed: () async {
+                                            final confirm =
+                                                await showDialog<bool>(
+                                              context: context,
+                                              builder: (context) => AlertDialog(
+                                                title: const Text(
+                                                    'Confirm Stop Parking'),
+                                                content: const Text(
+                                                    'Are you sure you want to stop this parking session?'),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.of(context)
+                                                            .pop(false),
+                                                    child: const Text('Cancel'),
+                                                  ),
+                                                  ElevatedButton(
+                                                    onPressed: () =>
+                                                        Navigator.of(context)
+                                                            .pop(true),
+                                                    child: const Text('Stop'),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
 
-                                        if (confirm == true) {
-                                          context.read<ParkingBloc>().add(
-                                              StopParking(
-                                                  parkingId: parking.id));
-                                        }
-                                      },
-                                      child: const Text('Stop'),
-                                    )
-                                  : Text(
-                                      parking.endTime != null
-                                          ? timeFormat.format(parking.endTime!)
-                                          : 'N/A', // Handle null endTime for the Text widget
-                                    ),
+                                            if (confirm == true) {
+                                              context.read<ParkingBloc>().add(
+                                                  StopParking(
+                                                      parkingId: parking.id));
+                                            }
+                                          },
+                                          child: const Text('Stop'),
+                                        )
+                                      : Text(timeFormat.format(parking
+                                          .endTime!))) // Format if endTime is in the past
+                                  : const Text(
+                                      'Not set'), // Display "Not set" if endTime is null
                             ),
                           ],
                         );
@@ -164,9 +164,7 @@ class ParkingView extends StatelessWidget {
                 availableParkingSpaces: availableParkingSpaces,
                 onCreate: (newParking) {
                   context.read<ParkingBloc>().add(CreateParking(
-                        vehicleId: newParking.vehicle?.id ?? '',
-                        parkingSpaceId: newParking.parkingSpace?.id ?? '',
-                      ));
+                      newParking)); // Pass the WHOLE Parking object
                 },
               ),
             );

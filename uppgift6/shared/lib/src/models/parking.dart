@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
@@ -32,27 +34,18 @@ class Parking {
   }
 
   factory Parking.fromJson(Map<String, dynamic> json) {
-    debugPrint('Parsing Parking from JSON: $json');
+    debugPrint('[parking model]Parsing Parking from JSON: $json');
 
     try {
-      DateTime? endTime;
-      if (json['endTime'] != null) {
-        if (json['endTime'] is Timestamp) {
-          endTime = (json['endTime'] as Timestamp).toDate();
-        } else if (json['endTime'] is String) {
-          try {
-            endTime = DateTime.parse(json['endTime']);
-          } catch (e) {
-            debugPrint("Error parsing endTime string: $e");
-          }
-        } else {
-          // Handle unexpected types (including DateTime)
-          debugPrint(
-              "WARNING: endTime is of unexpected type: ${json['endTime'].runtimeType}");
-        }
+      if (json['startTime'] == null) {
+        debugPrint(
+            "ERROR: startTime is null in Firestore document. This is not allowed.");
+        throw FormatException("startTime cannot be null");
       }
 
-      // Check for nulls and correct types for vehicle and parkingSpace
+      DateTime startTime = DateTime.parse(json['startTime'] as String);
+      DateTime? endTime; // endTime remains nullable
+
       final vehicle = json['vehicle'] is Map<String, dynamic>
           ? Vehicle.fromJson(json['vehicle'] as Map<String, dynamic>)
           : null;
@@ -62,8 +55,8 @@ class Parking {
 
       return Parking(
         id: json['id'] ?? const Uuid().v4(),
-        startTime: DateTime.parse(json['startTime']),
-        endTime: endTime,
+        startTime: startTime, // startTime is non-nullable
+        endTime: endTime, // endTime is nullable
         vehicle: vehicle,
         parkingSpace: parkingSpace,
       );
