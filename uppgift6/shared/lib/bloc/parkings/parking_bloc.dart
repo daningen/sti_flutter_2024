@@ -3,8 +3,6 @@ import 'dart:async';
 import 'package:firebase_repositories/firebase_repositories.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
-// ignore: unused_import
-import 'package:uuid/uuid.dart';
 import 'parking_event.dart';
 import 'parking_state.dart';
 import 'package:shared/shared.dart';
@@ -13,8 +11,9 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
   final ParkingRepository parkingRepository;
   final VehicleRepository vehicleRepository;
   final ParkingSpaceRepository parkingSpaceRepository;
-  late final Stream<List<ParkingSpace>> parkingSpaceStream;
-  StreamSubscription? _parkingSpaceSubscription;
+
+  // Maintain filter state at the class level
+  ParkingFilter _currentFilter = ParkingFilter.active;
 
   ParkingBloc({
     required this.parkingRepository,
@@ -26,125 +25,88 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
     on<StopParking>(_onStopParking);
     on<SelectParking>(_onSelectParking);
     on<UpdateParking>(_onUpdateParking);
+    on<ChangeFilter>(_onChangeFilter);
 
-    add(LoadParkings()); // Initial load
-
-    parkingSpaceStream = parkingSpaceRepository.parkingSpacesStream();
-    _parkingSpaceSubscription =
-        parkingSpaceStream.listen((updatedParkingSpaces) {
-      debugPrint('Parking spaces updated: $updatedParkingSpaces');
-      add(LoadParkings()); // Reload parkings when spaces change
-    });
-  }
-
-  @override
-  Future<void> close() async {
-    _parkingSpaceSubscription?.cancel();
-    super.close();
+    // Load initial data
+    add(LoadParkings(filter: _currentFilter));
   }
 
   Future<void> _onLoadParkings(
       LoadParkings event, Emitter<ParkingState> emit) async {
-    debugPrint('Loading parkings...');
-    emit(ParkingLoading());
+    debugPrint('🔄 Loading parkings with filter: ${event.filter ?? _currentFilter}');
 
-    try {
-      final parkings = await parkingRepository.getAll();
-      final vehicles = await vehicleRepository.getAll();
-      final parkingSpaces = await parkingSpaceRepository.getAll();
+    // Update the filter state
+    _currentFilter = event.filter ?? _currentFilter;
 
-      debugPrint('Fetched parkings');
-      debugPrint('Fetched vehicles');
-      debugPrint('Fetched parking spaces');
+    await emit.forEach<List<Parking>>(
+      parkingRepository.getParkingsStream(), // Real-time Firestore updates
+      onData: (parkings) {
+        debugPrint("🔥 Real-time update received. Updating parkings...");
 
-      // *** FILTERING COMMENTED OUT ***
-      // final filteredParkings = event.showActiveOnly
-      //     ? parkings.where((p) => p.endTime == null).toList()
-      //     : parkings;
-      final filteredParkings = parkings; // All parkings now
+        final filteredParkings = _currentFilter == ParkingFilter.active
+            ? parkings.where((p) => p.endTime == null).toList()
+            : parkings.where((p) => p.endTime != null).toList();
 
-      Parking? selectedParking = (state is ParkingLoaded)
-          ? (state as ParkingLoaded).selectedParking
-          : null;
-
-      final availableParkingSpaces = parkingSpaces.where((space) {
-        final isOccupied = parkings.any(
-          (p) => p.endTime == null && p.parkingSpace?.id == space.id,
+        return ParkingLoaded(
+          parkings: filteredParkings,
+          vehicles: [],
+          parkingSpaces: [],
+          availableVehicles: [],
+          availableParkingSpaces: [],
+          filter: _currentFilter,
         );
-        return !isOccupied;
-      }).toList();
+      },
+      onError: (error, stackTrace) {
+        debugPrint('❌ Error loading parkings from stream: $error');
+        return ParkingError('Failed to load parkings from stream: $error');
+      },
+    );
+  }
 
-      debugPrint('Available Parking Spaces: $availableParkingSpaces');
-
-      emit(ParkingLoaded(
-        parkings: filteredParkings,
-        vehicles: vehicles,
-        parkingSpaces: parkingSpaces,
-        availableVehicles: vehicles,
-        availableParkingSpaces: availableParkingSpaces,
-        selectedParking: selectedParking,
-        // isFilteringActive: false, // Always false now
-      ));
-    } catch (e) {
-      debugPrint('Error loading parkings: $e');
-      emit(ParkingError('Failed to load parkings: $e'));
-    }
+  void _onChangeFilter(ChangeFilter event, Emitter<ParkingState> emit) {
+    debugPrint('🔀 Changing filter to: ${event.filter}');
+    _currentFilter = event.filter;
+    add(LoadParkings(filter: _currentFilter)); // Reload parkings with new filter
   }
 
   Future<void> _onCreateParking(
       CreateParking event, Emitter<ParkingState> emit) async {
-    debugPrint('[ParkingBloc] Creating parking...');
+    debugPrint('➕ [ParkingBloc] Creating parking...');
     try {
-      // final vehicle = await vehicleRepository.getById(event.vehicleId);
-      // final parkingSpace = await parkingSpaceRepository.getById(event.parkingSpaceId);
-
-      // if (vehicle == null || parkingSpace == null) {
-      //   emit(ParkingError('Vehicle or Parking Space not found.'));
-      //   return;
-      // }
-
-      // Use the Parking object passed in the event:
-      final parking = event.parking; // This is the key change!
-
-      await parkingRepository.create(parking);
-      debugPrint(
-          '[ParkingBloc] Parking created: ${parking.toJson()}'); // Print with toJson()
-      add(LoadParkings());
+      await parkingRepository.create(event.parking);
+      debugPrint('✅ [ParkingBloc] Parking created');
     } catch (e) {
-      debugPrint('[ParkingBloc] Error creating parking: $e');
+      debugPrint('❌ [ParkingBloc] Error creating parking: $e');
       emit(ParkingError('Failed to create parking: $e'));
     }
   }
 
   Future<void> _onStopParking(
       StopParking event, Emitter<ParkingState> emit) async {
-    debugPrint('[ParkingBloc] Stopping parking with ID: ${event.parkingId}');
+    debugPrint('⏹ [ParkingBloc] Stopping parking with ID: ${event.parkingId}');
     try {
       await parkingRepository.stop(event.parkingId);
-      debugPrint('[ParkingBloc] Parking stopped successfully.');
-      add(LoadParkings()); // No filter needed here
+      debugPrint('✅ [ParkingBloc] Parking stopped successfully.');
     } catch (e) {
-      debugPrint('[ParkingBloc] Error stopping parking: $e');
+      debugPrint('❌ [ParkingBloc] Error stopping parking: $e');
       emit(ParkingError('Failed to stop parking: $e'));
     }
   }
 
   Future<void> _onUpdateParking(
       UpdateParking event, Emitter<ParkingState> emit) async {
-    debugPrint('[ParkingBloc] Updating parking: ${event.parking}');
+    debugPrint('✏️ [ParkingBloc] Updating parking: ${event.parking}');
     try {
-      final updatedParking = event.parking.copyWith();
-      await parkingRepository.update(updatedParking.id, updatedParking);
-      debugPrint('[ParkingBloc] Parking updated: $updatedParking');
-      add(LoadParkings()); // No filter needed here
+      await parkingRepository.update(event.parking.id, event.parking);
+      debugPrint('✅ [ParkingBloc] Parking updated');
     } catch (e) {
-      debugPrint('[ParkingBloc] Error updating parking: $e');
+      debugPrint('❌ [ParkingBloc] Error updating parking: $e');
       emit(ParkingError('Failed to update parking: $e'));
     }
   }
 
   void _onSelectParking(SelectParking event, Emitter<ParkingState> emit) {
-    debugPrint('[ParkingBloc] Selecting parking: ${event.selectedParking}');
+    debugPrint('🚗 [ParkingBloc] Selecting parking: ${event.selectedParking}');
     if (state is ParkingLoaded) {
       final currentState = state as ParkingLoaded;
       emit(currentState.copyWith(selectedParking: event.selectedParking));

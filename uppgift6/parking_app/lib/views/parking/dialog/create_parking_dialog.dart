@@ -153,7 +153,7 @@ class _CreateParkingDialogState extends State<CreateParkingDialog> {
                 onChanged: (DateTime? value) {
                   debugPrint(
                       "Selected DateTime value: $value, Type: ${value.runtimeType}");
-
+// todo can i remove this?
                   if (value != null) {
                     // Handle the case where the user selected a date/time
                     estimatedEndTime = DateTime(

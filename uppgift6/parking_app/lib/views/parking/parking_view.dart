@@ -21,13 +21,7 @@ class ParkingView extends StatelessWidget {
   Widget build(BuildContext context) {
     final timeFormat = DateFormat('yyyy-MM-dd HH:mm');
     final themeNotifier = Provider.of<ThemeNotifier>(context);
-    // useEffect(() {
-    //   final subscription = context.read<ParkingBloc>().stream.listen((state) {
-    //     debugPrint("ParkingBloc emitted state: $state");
-    //   });
-    //   return subscription.cancel; // Return the cancel function (VERY IMPORTANT)
-    // }, [context.read<ParkingBloc>()]);
-    // Listen to the ParkingBloc stream (if needed for debugging or other purposes)
+
     context.read<ParkingBloc>().stream.listen((state) {
       debugPrint("ParkingBloc emitted state: $state");
     });
@@ -55,13 +49,14 @@ class ParkingView extends StatelessWidget {
                           : 'Show Active Parkings',
                       onPressed: () {
                         final newFilter = state.filter == ParkingFilter.active
-                            ? ParkingFilter.inactive // Switch to inactive
-                            : ParkingFilter.active; // Switch to active
+                            ? ParkingFilter.inactive
+                            : ParkingFilter.active;
+
                         debugPrint('New filter selected: $newFilter');
 
                         context
                             .read<ParkingBloc>()
-                            .add(LoadParkings(filter: newFilter));
+                            .add(ChangeFilter(newFilter));
                       },
                     ),
                     IconButton(
@@ -121,8 +116,7 @@ class ParkingView extends StatelessWidget {
                       ),
                       const SizedBox(height: 4.0),
                       if (parking.endTime != null &&
-                          parking.endTime!
-                              .isAfter(DateTime.now())) // Correct null check
+                          parking.endTime!.isAfter(DateTime.now()))
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor:

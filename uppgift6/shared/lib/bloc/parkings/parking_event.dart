@@ -19,6 +19,15 @@ class LoadParkings extends ParkingEvent {
   List<Object?> get props => [...super.props, filter];
 }
 
+class ChangeFilter extends ParkingEvent {  
+  final ParkingFilter filter;
+
+  ChangeFilter(this.filter);
+
+  @override
+  List<Object> get props => [filter];
+}
+
 class CreateParking extends ParkingEvent {
   final Parking parking; // This is the key change
 
