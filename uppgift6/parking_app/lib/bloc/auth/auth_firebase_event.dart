@@ -28,3 +28,12 @@ class AuthFirebaseRegister extends AuthFirebaseEvent {
   @override
   List<Object?> get props => [email, password];
 }
+
+class AuthFirebaseCreatePerson extends AuthFirebaseEvent {
+  final String authId;
+  final String name;
+  final String ssn;
+
+  AuthFirebaseCreatePerson(
+      {required this.authId, required this.name, required this.ssn});
+}

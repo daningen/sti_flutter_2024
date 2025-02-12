@@ -57,5 +57,27 @@ class AuthUnauthenticated extends AuthState {
   List<Object?> get props => [errorMessage];
 
   @override
-  String toString() => 'AuthUnauthenticated: ${errorMessage ?? "No error message"}';
+  String toString() =>
+      'AuthUnauthenticated: ${errorMessage ?? "No error message"}';
 }
+
+class AuthFirebasePersonCreated extends AuthState {}
+
+class AuthFirebaseError extends AuthState {
+  final String message;
+  AuthFirebaseError(this.message);
+}
+
+class AuthAuthenticatedNoUser extends AuthState {
+  final String authId;
+  final String email;
+
+  AuthAuthenticatedNoUser({required this.authId, required this.email});
+
+  @override
+  List<Object?> get props => [authId, email];
+
+  @override
+  String toString() => 'AuthAuthenticatedNoUser: $email';
+}
+

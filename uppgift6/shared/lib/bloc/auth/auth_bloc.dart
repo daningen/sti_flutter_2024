@@ -15,6 +15,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   /// Handles the login request event
   Future<void> _onLoginRequested(
       LoginRequested event, Emitter<AuthState> emit) async {
+    debugPrint("[autbloc]: login");
     emit(AuthLoading()); // Transition to loading state
     try {
       await authService.login(event.username, event.password);
