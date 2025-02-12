@@ -35,9 +35,9 @@ class _NavRailViewState extends State<NavRailView> {
 
     return Scaffold(
       appBar: AppBar(
-        // todo
+        //todo
 
-        title: const Text('Admin Dashboard, from parking_app'),
+        title: const Text('Admin Dashboard, from parking_app Erik är du me?'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
