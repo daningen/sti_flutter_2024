@@ -33,20 +33,23 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
 
   Future<void> _onLoadParkings(
       LoadParkings event, Emitter<ParkingState> emit) async {
-    debugPrint(
-        '🔄 Loading parkings with filter: ${_currentFilter = event.filter}');
+    debugPrint('🔄 Loading parkings with filter: ${event.filter}');
 
     // Update the filter state
-    _currentFilter = event.filter; // No need for `?? _currentFilter`
+    _currentFilter = event.filter;
 
     await emit.forEach<List<Parking>>(
-      parkingRepository.getParkingsStream(), // Listen to Firestore updates
+      parkingRepository.getParkingsStream(), // Firestore real-time stream
       onData: (parkings) {
         debugPrint("🔥 Real-time update received. Updating parkings...");
 
+        final now = DateTime.now();
+
         final filteredParkings = _currentFilter == ParkingFilter.active
-            ? parkings.where((p) => p.endTime == null).toList()
-            : parkings.where((p) => p.endTime != null).toList();
+            ? parkings.where((p) => p.endTime!.isAfter(now)).toList()
+            : parkings.where((p) => p.endTime!.isBefore(now)).toList();
+
+        debugPrint("✅ Filtered parkings count: ${filteredParkings.length}");
 
         return ParkingLoaded(
           parkings: filteredParkings,
