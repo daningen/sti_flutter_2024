@@ -12,6 +12,7 @@ import 'package:shared/bloc/statistics/statistics_bloc.dart';
 import 'package:shared/bloc/statistics/statistics_event.dart';
 import 'package:shared/bloc/vehicles/vehicles_bloc.dart';
 import 'package:shared/bloc/vehicles/vehicles_event.dart';
+import 'router.dart'; // Import the router file
 import 'package:shared/bloc/parking_spaces/parking_space_bloc.dart';
 import 'package:shared/bloc/parking_spaces/parking_space_event.dart';
 import 'package:shared/bloc/parkings/parking_bloc.dart';
@@ -19,7 +20,7 @@ import 'package:shared/bloc/parkings/parking_event.dart';
 
 import 'package:parking_app/firebase_options.dart';
 import 'package:parking_app/providers/theme_notifier.dart';
-import 'router.dart'; // ✅ Import the new router
+// ✅ Import the new router
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

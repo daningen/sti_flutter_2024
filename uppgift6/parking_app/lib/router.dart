@@ -85,11 +85,8 @@ GoRouter createRouter(BuildContext context) {
             ),
           ),
           GoRoute(
-            path: 'vehicles',
-            builder: (context, state) => const AppLayout(
-              child: VehiclesView(),
-            ),
-          ),
+              path: 'vehicles',
+              builder: (context, state) => const VehiclesView()),
           GoRoute(
             path: 'persons',
             builder: (context, state) => const AppLayout(

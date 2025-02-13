@@ -3,8 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared/bloc/auth/auth_firebase_bloc.dart';
 
-// import '../bloc/auth/auth_firebase_bloc.dart';
-
 class AppLayout extends StatelessWidget {
   final Widget child;
 
@@ -14,7 +12,7 @@ class AppLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: child, // The actual page content
-      bottomNavigationBar: const CustomBottomNavigationBar(),
+      bottomNavigationBar: const CustomBottomNavigationBar(), // ✅ Bottom Navigation added
     );
   }
 }
@@ -24,19 +22,20 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Using GoRouter's `routerDelegate.currentConfiguration.fullPath` for current location
+    // ✅ Fix: Get the current path safely
     final String location =
         GoRouter.of(context).routerDelegate.currentConfiguration.fullPath;
 
     debugPrint('🟢 Current Route: $location');
 
     return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed, // ✅ Fix: Ensure visibility
       currentIndex: _getIndexForRoute(location),
       onTap: (index) => _handleNavigation(context, index),
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(
-            icon: Icon(Icons.local_parking), label: 'Parkings'),
+        BottomNavigationBarItem(icon: Icon(Icons.local_parking), label: 'Parkings'),
+        BottomNavigationBarItem(icon: Icon(Icons.directions_car), label: 'Vehicles'), // ✅ Fix: Vehicles tab added
         BottomNavigationBarItem(icon: Icon(Icons.logout), label: 'Logout'),
       ],
     );
@@ -44,25 +43,25 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
   void _handleNavigation(BuildContext context, int index) {
     final routes = [
-      '/', // Root path - CORRECTED
-      '/start/parkings', // Corrected to /start/parkings
+      '/start', // ✅ Fix: Ensure proper path
+      '/start/parkings',
+      '/start/vehicles',
       '/logout',
     ];
 
-    if (index == 2) {
-      // Handle logout separately
+    if (index == 3) {
       _logout(context);
     } else {
       debugPrint('🔵 Navigating to ${routes[index]}');
-      context.go(routes[index]);
+      context.go(routes[index]); // ✅ Fix: Use GoRouter
     }
   }
 
-  int _getIndexForRoute(String route) {
-    // Determine the active tab based on the current route
-    if (route.startsWith('/home/parking')) return 1;
-    if (route == '/home') return 0;
-    return 2; // Logout index by default
+  int _getIndexForRoute(String? route) {
+    if (route == '/' || route == '/start') return 0; // ✅ Fix: Ensure Home is selected correctly
+    if (route?.startsWith('/start/parkings') ?? false) return 1;
+    if (route?.startsWith('/start/vehicles') ?? false) return 2;
+    return 3; // ✅ Default to logout tab
   }
 
   void _logout(BuildContext context) {
@@ -80,9 +79,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
             onPressed: () {
               Navigator.of(context).pop(); // Close the dialog
               debugPrint('🔴 Redirecting to login screen after logout');
-              context
-                  .read<AuthFirebaseBloc>()
-                  .add(LogoutRequested()); // Dispatch LogoutRequested
+              context.read<AuthFirebaseBloc>().add(LogoutRequested()); // Dispatch LogoutRequested
               context.go('/login'); // Redirect to login after logout
             },
             child: const Text('Logout'),
