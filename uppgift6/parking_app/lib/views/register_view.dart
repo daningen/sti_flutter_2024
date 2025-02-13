@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart'; // ✅ Import GoRouter
+import 'package:go_router/go_router.dart';
+import 'package:shared/bloc/auth/auth_firebase_bloc.dart' as local;
+
 import '../utils/validators.dart';
-import '../bloc/auth/auth_firebase_bloc.dart' as local;
 import 'person/dialog/create_person_dialog.dart';
 
 class RegisterView extends StatelessWidget {
@@ -66,7 +67,16 @@ class RegisterView extends StatelessWidget {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text('Register')),
+        appBar: AppBar(
+          title: const Text('Register'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              debugPrint('⬅️ Going back to Login');
+              GoRouter.of(context).go('/login'); // ✅ Navigate back to Login
+            },
+          ),
+        ),
         body: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
           child: Center(

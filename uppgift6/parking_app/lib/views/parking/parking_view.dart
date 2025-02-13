@@ -10,8 +10,9 @@ import 'package:provider/provider.dart';
 import 'package:parking_app/providers/theme_notifier.dart';
 import 'package:parking_app/views/parking/parking_navigation_bar.dart';
 import 'package:shared/shared.dart';
+import 'package:shared/bloc/auth/auth_firebase_bloc.dart';
 
-import '../../bloc/auth/auth_firebase_bloc.dart';
+// import '../../bloc/auth/auth_firebase_bloc.dart';
 // import 'package:flutter_hooks/flutter_hooks.dart';
 
 class ParkingView extends StatelessWidget {

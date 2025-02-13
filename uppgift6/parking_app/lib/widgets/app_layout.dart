@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:shared/bloc/auth/auth_firebase_bloc.dart';
 
-import '../bloc/auth/auth_firebase_bloc.dart';
+// import '../bloc/auth/auth_firebase_bloc.dart';
 
 class AppLayout extends StatelessWidget {
   final Widget child;

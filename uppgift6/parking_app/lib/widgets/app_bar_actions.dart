@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 // Ensure you have this import for AuthFirebaseBloc
 import '../providers/theme_notifier.dart';
+import 'package:shared/bloc/auth/auth_firebase_bloc.dart';
 
-import '../bloc/auth/auth_firebase_bloc.dart'; // Update the path to your AuthFirebaseBloc
+ 
 
 class AppBarActions extends StatelessWidget {
   const AppBarActions({super.key});

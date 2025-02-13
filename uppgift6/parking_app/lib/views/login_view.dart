@@ -1,7 +1,8 @@
-import 'package:parking_app/bloc/auth/auth_firebase_bloc.dart' as local;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared/bloc/auth/auth_firebase_bloc.dart' as local;
+
 import '../utils/validators.dart';
 
 class LoginView extends StatelessWidget {
@@ -22,7 +23,6 @@ class LoginView extends StatelessWidget {
         if (state is local.AuthAuthenticated) {
           debugPrint('✅ Auth successful: ${state.user.email}');
 
-          // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text("Login successful! Welcome, ${state.user.email}"),
@@ -30,8 +30,35 @@ class LoginView extends StatelessWidget {
             ),
           );
 
-          // ✅ Navigate to /start upon successful login
-          context.go('/start');
+          context.go('/start'); // ✅ Navigate to start page
+        } else if (state is local.AuthUnauthenticated) {
+          debugPrint('⚠️ AuthUnauthenticated: ${state.errorMessage}');
+
+          // ✅ Handle "Pending person creation" case
+          if (state.errorMessage?.contains('Pending person creation') ??
+              false) {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('No Person Found'),
+                content: const Text(
+                    'No person exists for this account. Would you like to register a new person?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Stay on Login'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      context.go('/register'); // ✅ Go to Register View
+                    },
+                    child: const Text('Register Person'),
+                  ),
+                ],
+              ),
+            );
+          }
         } else if (state is local.AuthFail) {
           debugPrint('❌ Auth failed: ${state.message}');
           ScaffoldMessenger.of(context).showSnackBar(

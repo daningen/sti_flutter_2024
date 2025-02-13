@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../utils/validators.dart';
-import '../bloc/auth/auth_firebase_bloc.dart' as local;
+import 'package:shared/bloc/auth/auth_firebase_bloc.dart' as local;
 
 class RegisterView extends StatelessWidget {
   const RegisterView({super.key});

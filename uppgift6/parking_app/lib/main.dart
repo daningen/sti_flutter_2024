@@ -3,8 +3,10 @@ import 'package:firebase_repositories/firebase_repositories.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:parking_app/bloc/auth/auth_firebase_bloc.dart';
-//final remove
+import 'package:shared/bloc/auth/auth_firebase_bloc.dart';
+
+
+
 import 'package:parking_app/firebase_options.dart';
 import 'package:parking_app/providers/theme_notifier.dart';
 import 'package:parking_app/utils/go_router_refresh_stream.dart';

@@ -6,6 +6,8 @@ import 'package:admin_app/views/register_view.dart';
 import 'package:admin_app/views/statistics_view.dart';
 import 'package:admin_app/views/vehicles/vehicles_view.dart';
 
+import 'package:shared/bloc/auth/auth_firebase_bloc.dart';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_repositories/firebase_repositories.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +16,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:admin_app/firebase_options.dart';
-import 'package:admin_app/bloc/auth/auth_firebase_bloc.dart';
+ 
+
 import 'package:admin_app/theme_notifier.dart';
 import 'package:admin_app/views/login_view.dart';
 import 'package:admin_app/views/nav_rail_view.dart';
@@ -29,6 +32,7 @@ import 'package:shared/bloc/parking_spaces/parking_space_event.dart';
 import 'package:shared/bloc/parkings/parking_bloc.dart';
 import 'package:shared/bloc/parkings/parking_event.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
+
 // Import Firebase Core
 
 Future<void> main() async {
@@ -75,11 +79,12 @@ class MyApp extends StatelessWidget {
       child: MultiBlocProvider(
         providers: [
           BlocProvider(
-            create: (context) => AuthFirebaseBloc(
-              authRepository: context.read<AuthRepository>(),
-              userRepository: context.read<UserRepository>(),
-            )..add(AuthFirebaseUserSubscriptionRequested()),
-          ),
+  create: (context) => AuthFirebaseBloc(
+    authRepository: context.read<AuthRepository>(),
+    userRepository: context.read<UserRepository>(),
+    personRepository: context.read<PersonRepository>(), // ✅ Fix: Provide personRepository
+  )..add(AuthFirebaseUserSubscriptionRequested()),
+),
           BlocProvider(
             create: (context) => PersonBloc(
               personRepository: context.read<PersonRepository>(),

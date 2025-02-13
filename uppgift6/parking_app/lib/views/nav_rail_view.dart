@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared/bloc/auth/auth_firebase_bloc.dart';
 
-import '../bloc/auth/auth_firebase_bloc.dart';
+// import '../bloc/auth/auth_firebase_bloc.dart';
 import 'parking_space/parking_space_view.dart';
 import 'start_view.dart';
 import 'statistics_view.dart';

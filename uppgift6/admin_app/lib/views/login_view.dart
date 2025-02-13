@@ -1,4 +1,6 @@
-import 'package:admin_app/bloc/auth/auth_firebase_bloc.dart' as local;
+ 
+import 'package:shared/bloc/auth/auth_firebase_bloc.dart' as local;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared/bloc/auth/auth_event.dart';
+import 'package:shared/bloc/auth/auth_firebase_bloc.dart';
+// import 'package:shared/bloc/auth/auth_event.dart';
 
 import '../providers/theme_notifier.dart';
-import 'package:shared/bloc/auth/auth_bloc.dart';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared/bloc/auth/auth_state.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -28,7 +28,7 @@ class HomePage extends StatelessWidget {
               themeNotifier.toggleTheme();
             },
           ),
-          BlocBuilder<AuthBloc, AuthState>(
+          BlocBuilder<AuthFirebaseBloc, AuthState>(
             builder: (context, state) {
               if (state is AuthAuthenticated) {
                 return Padding(
@@ -36,14 +36,15 @@ class HomePage extends StatelessWidget {
                   child: Row(
                     children: [
                       Text(
-                        'Hello, ${state.username}', // Access username from AuthAuthenticated state
+                        'Hello, ${state.user.email ?? "User"}', // ✅ Fix: Use email instead
                         style: const TextStyle(fontSize: 16),
                       ),
                       const SizedBox(width: 10),
                       IconButton(
                         icon: const Icon(Icons.logout),
                         onPressed: () {
-                          context.read<AuthBloc>().add(LogoutRequested());
+                       context.read<AuthFirebaseBloc>().add(LogoutRequested()); // ✅ Correct
+
                           debugPrint(
                               'Navigating to StartView from HomePage...');
                           context.go('/login');
