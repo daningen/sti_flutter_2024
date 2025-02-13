@@ -46,19 +46,18 @@ class AuthAuthenticated extends AuthState {
   String toString() => 'AuthAuthenticated: ${user.email}';
 }
 
-/// The state when the user is unauthenticated, optionally including an error message.
 class AuthUnauthenticated extends AuthState {
+  final firebase_auth.User? user; // ✅ Store user data
   final String? errorMessage;
 
-  /// Constructor to capture an optional error message explaining why authentication failed.
-  AuthUnauthenticated({this.errorMessage});
+  AuthUnauthenticated({this.user, this.errorMessage});
 
   @override
-  List<Object?> get props => [errorMessage];
+  List<Object?> get props => [user, errorMessage];
 
   @override
   String toString() =>
-      'AuthUnauthenticated: ${errorMessage ?? "No error message"}';
+      'AuthUnauthenticated: ${errorMessage ?? "No error message"}, user=${user?.email ?? "null"}';
 }
 
 class AuthFirebasePersonCreated extends AuthState {}
@@ -80,4 +79,3 @@ class AuthAuthenticatedNoUser extends AuthState {
   @override
   String toString() => 'AuthAuthenticatedNoUser: $email';
 }
-

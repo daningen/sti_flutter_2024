@@ -1,59 +1,47 @@
 import 'package:uuid/uuid.dart';
 
 class Person {
-  String id;
-  String name;
-  String ssn;
+  final String id; // Unique Person ID
+  final String authId; // Firebase Auth ID
+  final String name;
+  final String ssn;
 
   Person({
-    String? id,
+    required this.id,
+    required this.authId,
     required this.name,
     required this.ssn,
-  }) : id = id ?? const Uuid().v4();
+  });
 
-  // Factory method to create a Person object from JSON
   factory Person.fromJson(Map<String, dynamic> json) {
     return Person(
       id: json['id'] ?? const Uuid().v4(),
+      authId: json['authId'] ?? '',
       name: json['name'] ?? '',
       ssn: json['ssn'] ?? '',
     );
   }
 
-  // Method to convert a Person object to JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'authId': authId,
       'name': name,
       'ssn': ssn,
     };
   }
 
-  // Add the copyWith method
   Person copyWith({
     String? id,
+    String? authId,
     String? name,
     String? ssn,
   }) {
     return Person(
       id: id ?? this.id,
+      authId: authId ?? this.authId,
       name: name ?? this.name,
       ssn: ssn ?? this.ssn,
     );
   }
-
-  @override
-  String toString() {
-    return 'Person{id: $id, name: $name, ssn: $ssn}';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is Person && other.id == id && other.name == name && other.ssn == ssn;
-  }
-
-  @override
-  int get hashCode => id.hashCode ^ name.hashCode ^ ssn.hashCode;
 }

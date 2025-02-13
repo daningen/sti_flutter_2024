@@ -99,7 +99,6 @@ class VehiclesView extends StatelessWidget {
         onNew: () async {
           debugPrint("onNew: Opening CreateVehicleDialog...");
 
-          // Fetch all owners from the repository
           final ownersFuture = context.read<PersonRepository>().getAll();
 
           await showDialog(
@@ -111,15 +110,21 @@ class VehiclesView extends StatelessWidget {
                   debugPrint(
                       "onNew: Creating new vehicle: ${newVehicle.toJson()}");
 
-                  // Dispatch the create event
+                  // Ensure authId is set correctly for new persons
+                  final authId = newVehicle.owner?.authId ?? 'unknown_auth_id';
+
                   context.read<VehiclesBloc>().add(CreateVehicle(
                         licensePlate: newVehicle.licensePlate,
                         vehicleType: newVehicle.vehicleType,
                         owner: newVehicle.owner ??
-                            Person(id: '', name: 'Unknown', ssn: '000000'),
+                            Person(
+                              id: '', 
+                              authId: authId, // ✅ Ensure authId is set
+                              name: 'Unknown', 
+                              ssn: '000000',
+                            ),
                       ));
 
-                  // Reload persons after a successful create
                   context.read<PersonBloc>().add(LoadPersons());
                 },
               );
@@ -132,10 +137,8 @@ class VehiclesView extends StatelessWidget {
           final selectedVehicle =
               context.read<VehiclesBloc>().state.selectedVehicle;
           if (selectedVehicle != null) {
-            // Fetch all owners from the repository
             final ownersFuture = context.read<PersonRepository>().getAll();
 
-            // Show the edit dialog
             await showDialog(
               context: context,
               builder: (context) {
@@ -143,13 +146,11 @@ class VehiclesView extends StatelessWidget {
                   ownersFuture: ownersFuture,
                   vehicle: selectedVehicle,
                   onEdit: (updatedVehicle) {
-                    // Dispatch the update event
                     context.read<VehiclesBloc>().add(UpdateVehicle(
                           vehicleId: updatedVehicle.id,
                           updatedVehicle: updatedVehicle,
                         ));
 
-                    // Reload persons after a successful update
                     context.read<PersonBloc>().add(LoadPersons());
                   },
                 );

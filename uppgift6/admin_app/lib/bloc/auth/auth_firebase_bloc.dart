@@ -79,19 +79,18 @@ class AuthFirebaseBloc extends Bloc<AuthFirebaseEvent, AuthState> {
   ) async {
     emit(AuthPending());
     try {
-      debugPrint(
-          "Processing registration for email: ${event.email} and password: ${event.password}");
-
-      await authRepository.register(
+      final userCredential = await authRepository.register(
           email: event.email, password: event.password);
-      final user = authRepository.getCurrentUser();
+      final user = userCredential.user;
+
       if (user != null) {
-        emit(AuthAuthenticated(user: user));
+        emit(AuthUnauthenticated(
+            errorMessage: 'Pending person creation',
+            user: user)); // ✅ Indicate that person creation is required
       } else {
         emit(AuthUnauthenticated(errorMessage: 'Registration failed.'));
       }
     } catch (e) {
-      debugPrint("Registration error: $e");
       emit(AuthUnauthenticated(errorMessage: e.toString()));
     }
   }

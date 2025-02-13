@@ -128,18 +128,24 @@ class AppInitializer extends StatelessWidget {
       redirect: (context, state) {
         final authState = context.read<AuthFirebaseBloc>().state;
         final isLoggedIn = authState is AuthAuthenticated;
-        final isLoggingIn = state.uri.toString() == '/login';
         final isRegistering = state.uri.toString() == '/register';
+        final isPendingRegistration = authState is AuthUnauthenticated &&
+            authState.errorMessage ==
+                'Pending person creation'; // ✅ Detect pending state
 
         debugPrint(
-            'Redirect Logic: state=${state.uri.toString()}, isLoggedIn=$isLoggedIn, isLoggingIn=$isLoggingIn, isRegistering=$isRegistering');
+            'Redirect Logic: state=${state.uri.toString()}, isLoggedIn=$isLoggedIn, isRegistering=$isRegistering, isPendingRegistration=$isPendingRegistration');
 
-        if (!isLoggedIn && !isLoggingIn && !isRegistering) {
-          return '/login';
+        if (isPendingRegistration) {
+          return '/register'; // ✅ Stay in registration flow until person is created
         }
 
-        if (isLoggedIn && (isLoggingIn || isRegistering)) {
-          return '/start';
+        if (!isLoggedIn && !isRegistering) {
+          return '/login'; // ✅ Send user to login only if fully unauthenticated
+        }
+
+        if (isLoggedIn) {
+          return '/start'; // ✅ Send user to main app after full authentication
         }
 
         return null;

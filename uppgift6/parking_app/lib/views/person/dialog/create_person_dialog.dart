@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:parking_app/utils/validators.dart';
 
-class CreatePersonDialog extends StatelessWidget {
-  final Function(String name, String ssn) onCreate;
 
-  const CreatePersonDialog({super.key, required this.onCreate});
+
+class CreatePersonDialog extends StatelessWidget {
+  final String authId; // ✅ Add authId parameter
+  final Function(String authId, String name, String ssn) onCreate;
+
+  const CreatePersonDialog({
+    required this.authId,
+    required this.onCreate,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
     final formKey = GlobalKey<FormState>();
-    final TextEditingController nameController = TextEditingController();
-    final TextEditingController ssnController = TextEditingController();
+    final nameController = TextEditingController();
+    final ssnController = TextEditingController();
 
     return AlertDialog(
       title: const Text('Create Person'),
@@ -40,7 +47,7 @@ class CreatePersonDialog extends StatelessWidget {
         ElevatedButton(
           onPressed: () {
             if (formKey.currentState!.validate()) {
-              onCreate(nameController.text, ssnController.text);
+              onCreate(authId, nameController.text, ssnController.text);
               Navigator.of(context).pop();
             }
           },
@@ -50,3 +57,4 @@ class CreatePersonDialog extends StatelessWidget {
     );
   }
 }
+

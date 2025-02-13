@@ -11,34 +11,37 @@ class LoadPersons extends PersonEvent {}
 class ReloadPersons extends PersonEvent {}
 
 class CreatePerson extends PersonEvent {
+  final String authId; // ✅ Added `authId`
   final String name;
   final String ssn;
 
-  CreatePerson({required this.name, required this.ssn});
+  CreatePerson({required this.authId, required this.name, required this.ssn});
 
   @override
-  List<Object?> get props => [name, ssn];
+  List<Object?> get props => [authId, name, ssn];
 }
 
 class UpdatePerson extends PersonEvent {
-  final String id; // Changed from `int` to `String`
+  final String id;
+  final String authId; // ✅ Added `authId`
   final String name;
   final String ssn;
 
   UpdatePerson({
-    required this.id, // Updated type
+    required this.id,
+    required this.authId,
     required this.name,
     required this.ssn,
   });
 
   @override
-  List<Object?> get props => [id, name, ssn];
+  List<Object?> get props => [id, authId, name, ssn];
 }
 
 class DeletePerson extends PersonEvent {
-  final String id; // Changed from `int` to `String`
+  final String id;
 
-  DeletePerson({required this.id}); // Updated type
+  DeletePerson({required this.id});
 
   @override
   List<Object?> get props => [id];

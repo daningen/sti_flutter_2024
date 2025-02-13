@@ -1,8 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:parking_app/views/person/dialog/create_person_dialog.dart';
-
 import 'package:parking_app/providers/theme_notifier.dart';
 import 'package:parking_app/views/person/person_navigation_bar.dart';
 import 'package:provider/provider.dart';
@@ -28,9 +28,7 @@ class PersonView extends StatelessWidget {
                   ? Icons.dark_mode
                   : Icons.light_mode,
             ),
-            onPressed: () {
-              themeNotifier.toggleTheme();
-            },
+            onPressed: themeNotifier.toggleTheme,
           ),
         ],
       ),
@@ -91,13 +89,28 @@ class PersonView extends StatelessWidget {
           context.read<PersonBloc>().add(ReloadPersons());
         },
         onAddPersonPressed: () async {
+          final user = FirebaseAuth.instance.currentUser; // Fetch user
+          final authId = user?.uid; // Extract authId
+
+          if (authId == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('❌ Error: User is not authenticated')),
+            );
+            return;
+          }
+
           await showDialog(
             context: context,
             builder: (context) => CreatePersonDialog(
-              onCreate: (name, ssn) {
-                context
-                    .read<PersonBloc>()
-                    .add(CreatePerson(name: name, ssn: ssn));
+              authId: authId, // ✅ Pass authId
+              onCreate: (authId, name, ssn) {
+                context.read<PersonBloc>().add(
+                      CreatePerson(
+                        authId: authId, // ✅ Pass authId
+                        name: name,
+                        ssn: ssn,
+                      ),
+                    );
               },
             ),
           );
@@ -156,13 +169,13 @@ class PersonView extends StatelessWidget {
                   context.read<PersonBloc>().add(
                         UpdatePerson(
                           id: person.id,
+                          authId: person.authId, // ✅ Preserve authId
                           name: nameController.text,
                           ssn: ssnController.text,
                         ),
                       );
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Person updated successfully')),
+                    const SnackBar(content: Text('Person updated successfully')),
                   );
                   Navigator.of(context).pop();
                 }

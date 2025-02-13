@@ -78,6 +78,8 @@ class MyApp extends StatelessWidget {
             create: (context) => AuthFirebaseBloc(
               authRepository: context.read<AuthRepository>(),
               userRepository: context.read<UserRepository>(),
+              personRepository: context
+                  .read<PersonRepository>(), // ✅ Fix: Pass PersonRepository
             )..add(AuthFirebaseUserSubscriptionRequested()),
           ),
           BlocProvider(
@@ -128,6 +130,13 @@ class AppInitializer extends StatelessWidget {
       redirect: (context, state) {
         final authState = context.read<AuthFirebaseBloc>().state;
         final isLoggedIn = authState is AuthAuthenticated;
+        final hasCreatedPerson = authState is AuthFirebasePersonCreated;
+
+        // ✅ Ensure person creation leads to login
+        if (hasCreatedPerson) {
+          return '/start';
+        }
+
         final isLoggingIn = state.uri.toString() == '/login';
         final isRegistering = state.uri.toString() == '/register';
 

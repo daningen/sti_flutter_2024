@@ -63,6 +63,7 @@ dependencies:
   firebase_auth: ^5.4.0
   datetime_picker_formfield: ^2.0.1
   cloud_firestore: ^5.6.3
+  uuid: ^4.5.1
   # flutter_hooks: ^0.20.5
 
 dev_dependencies:

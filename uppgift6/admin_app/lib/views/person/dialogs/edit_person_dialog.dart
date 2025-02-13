@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 import '../../../utils/validators.dart';
+
 class EditPersonDialog extends StatelessWidget {
   final Person person;
   final Function(Person) onEdit;
@@ -41,11 +42,12 @@ class EditPersonDialog extends StatelessWidget {
         ElevatedButton(
           onPressed: () {
             if (formKey.currentState!.validate()) {
-              final updatedPerson = Person(
-                id: person.id,
+              final updatedPerson = person.copyWith(
+                authId: person.authId, // ✅ Ensure authId remains unchanged
                 name: nameController.text,
                 ssn: ssnController.text,
               );
+
               Navigator.of(context).pop();
               onEdit(updatedPerson);
             }

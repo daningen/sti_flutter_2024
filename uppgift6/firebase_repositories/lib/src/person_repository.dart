@@ -3,105 +3,109 @@ import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:shared/shared.dart';
 
-class PersonRepository implements RepositoryInterface<Person> {
-  final db = FirebaseFirestore.instance;
-  final uuid = const Uuid();
+class PersonRepository {
+  final FirebaseFirestore db = FirebaseFirestore.instance;
+  final Uuid uuid = const Uuid();
 
-  @override
-  Future<Person?> getById(String id) async {
-    debugPrint("[PersonRepository] Fetching person with ID: $id");
-
-    final snapshot = await db.collection("persons").doc(id).get();
-
-    final json = snapshot.data();
-
-    if (json == null) {
-      debugPrint("[PersonRepository] Person not found with ID: $id");
-      return null;
-    }
-
-    json["id"] = snapshot.id;
-
-    final person = Person.fromJson(json);
-    debugPrint("[PersonRepository] Person fetched: $person");
-    return person;
-  }
-
-  @override
-  Future<Person> create(Person person) async {
-    debugPrint("[PersonRepository] Creating a new person.");
-
-    // Assign a UUID if not already set
-    final personId = person.id.isEmpty ? uuid.v4() : person.id;
-
-    final personToCreate = person.copyWith(id: personId);
-
-    await db.collection("persons").doc(personId).set(personToCreate.toJson());
-
-    debugPrint("[PersonRepository] Person created: ${personToCreate.toJson()}");
-    return personToCreate;
-  }
-
-  @override
-  @override
-  Future<List<Person>> getAll() async {
-    debugPrint("[PersonRepository] Fetching all persons.");
+  /// Fetch a person using Firebase Auth ID
+  Future<Person?> getByAuthId(String authId) async {
+    debugPrint("[PersonRepository] Fetching person with authId: $authId");
 
     try {
-      final snapshots = await db
+      final querySnapshot = await db
           .collection("persons")
-          .get(const GetOptions(source: Source.server)); // Ensure fresh fetch
+          .where("authId", isEqualTo: authId)
+          .limit(1)
+          .get();
 
-      final persons = snapshots.docs.map((doc) {
-        final json = doc.data();
-        json["id"] = doc.id; // Assign the Firestore doc ID
-        return Person.fromJson(json);
+      if (querySnapshot.docs.isEmpty) {
+        debugPrint("[PersonRepository] No person found for authId: $authId");
+        return null;
+      }
+
+      final data = querySnapshot.docs.first.data();
+      return Person.fromJson({...data, "id": querySnapshot.docs.first.id});
+    } catch (e) {
+      debugPrint("❌ Error fetching person by authId: $e");
+      return null;
+    }
+  }
+
+  /// Fetch all persons from Firestore
+  Future<List<Person>> getAll() async {
+    debugPrint("[PersonRepository] Fetching all persons...");
+
+    try {
+      final querySnapshot = await db.collection("persons").get();
+
+      final persons = querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        return Person.fromJson({...data, "id": doc.id});
       }).toList();
 
-      debugPrint("[PersonRepository] Fetched persons: $persons");
+      debugPrint("[PersonRepository] Fetched ${persons.length} persons.");
       return persons;
-    } catch (e, stackTrace) {
-      debugPrint("[PersonRepository] Error fetching persons: $e");
-      debugPrint("StackTrace: $stackTrace");
+    } catch (e) {
+      debugPrint("❌ Error fetching all persons: $e");
       return [];
     }
   }
 
-  @override
-  @override
-  Future<Person?> delete(String id) async {
-    debugPrint("[PersonRepository] Deleting person with ID: $id");
+  /// Create a new person entry in Firestore, ensuring `authId` is unique
+  Future<Person> create(Person person) async {
+    debugPrint("[PersonRepository] Checking if person with authId: ${person.authId} exists...");
 
     try {
-      final person = await getById(id);
-
-      if (person != null) {
-        await db.collection("persons").doc(id).delete();
-        debugPrint("[PersonRepository] Person deleted: $person");
-      } else {
-        debugPrint("[PersonRepository] Person not found for deletion.");
+      final existingPerson = await getByAuthId(person.authId);
+      if (existingPerson != null) {
+        debugPrint("[PersonRepository] Person already exists with authId: ${person.authId}");
+        return existingPerson;
       }
 
-      // Force a refresh of all persons to ensure data consistency
-      final remainingPersons = await getAll();
-      debugPrint(
-          "[PersonRepository] Remaining persons after deletion: $remainingPersons");
+      debugPrint("[PersonRepository] Creating a new person entry.");
 
-      return person;
-    } catch (e, stackTrace) {
-      debugPrint("[PersonRepository] Error deleting person: $e");
-      debugPrint("StackTrace: $stackTrace");
+      final personId = uuid.v4(); // Assign new unique ID for Firestore
+      final personToCreate = person.copyWith(id: personId);
+
+      await db.collection("persons").doc(personId).set(personToCreate.toJson());
+
+      debugPrint("[PersonRepository] Person created: ${personToCreate.toJson()}");
+      return personToCreate;
+    } catch (e) {
+      debugPrint("❌ Error creating person: $e");
+      rethrow;
+    }
+  }
+
+  /// Update an existing person
+  Future<Person?> update(String id, Person person) async {
+    debugPrint("[PersonRepository] Updating person with ID: $id");
+
+    try {
+      final updatedPerson = person.copyWith(id: id);
+
+      await db
+          .collection("persons")
+          .doc(id)
+          .set(updatedPerson.toJson(), SetOptions(merge: true));
+
+      debugPrint("[PersonRepository] Person updated: ${updatedPerson.toJson()}");
+      return updatedPerson;
+    } catch (e) {
+      debugPrint("❌ Error updating person: $e");
       return null;
     }
   }
 
-  @override
-  Future<Person> update(String id, Person person) async {
-    debugPrint("[PersonRepository] Updating person with ID: $id");
+  /// Delete a person by ID
+  Future<void> delete(String id) async {
+    debugPrint("[PersonRepository] Deleting person with ID: $id");
 
-    await db.collection("persons").doc(id).set(person.toJson());
-
-    debugPrint("[PersonRepository] Person updated: ${person.toJson()}");
-    return person;
+    try {
+      await db.collection("persons").doc(id).delete();
+      debugPrint("[PersonRepository] Person deleted successfully.");
+    } catch (e) {
+      debugPrint("❌ Error deleting person: $e");
+    }
   }
 }
