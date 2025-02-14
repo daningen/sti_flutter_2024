@@ -17,6 +17,7 @@ class ParkingLoading extends ParkingState {
 
 class ParkingLoaded extends ParkingState {
   final List<Parking> parkings;
+  final List<Parking> allParkings; // Add this line!
   final List<Vehicle> vehicles;
   final List<ParkingSpace> parkingSpaces;
   final List<Vehicle> availableVehicles;
@@ -26,6 +27,7 @@ class ParkingLoaded extends ParkingState {
 
   const ParkingLoaded({
     required this.parkings,
+    required this.allParkings, // Add this line!
     required this.vehicles,
     required this.parkingSpaces,
     required this.availableVehicles,
@@ -36,6 +38,7 @@ class ParkingLoaded extends ParkingState {
 
   ParkingLoaded copyWith({
     List<Parking>? parkings,
+    List<Parking>? allParkings, // Add this line!
     List<Vehicle>? vehicles,
     List<ParkingSpace>? parkingSpaces,
     List<Vehicle>? availableVehicles,
@@ -45,6 +48,7 @@ class ParkingLoaded extends ParkingState {
   }) {
     return ParkingLoaded(
       parkings: parkings ?? this.parkings,
+      allParkings: allParkings ?? this.allParkings, // Add this line!
       vehicles: vehicles ?? this.vehicles,
       parkingSpaces: parkingSpaces ?? this.parkingSpaces,
       availableVehicles: availableVehicles ?? this.availableVehicles,
@@ -57,6 +61,7 @@ class ParkingLoaded extends ParkingState {
   @override
   List<Object?> get props => [
         parkings,
+        allParkings, // Add this line!
         vehicles,
         parkingSpaces,
         availableVehicles,

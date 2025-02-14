@@ -45,11 +45,16 @@ class ParkingSpacesView extends StatelessWidget {
                 return ListTile(
                   title: Text(parkingSpace.address),
                   subtitle: Text(
-                      'Price: ${NumberFormat.currency(locale: 'sv_SE', symbol: 'SEK', decimalDigits: 0).format(parkingSpace.pricePerHour)} / hour'),
+                    'Price: ${NumberFormat.currency(
+                      locale: 'sv_SE',
+                      symbol: 'SEK',
+                      decimalDigits: 0,
+                    ).format(parkingSpace.pricePerHour)} / hour',
+                  ),
                   trailing: IconButton(
                     icon: const Icon(Icons.info),
                     onPressed: () {
-                      // Add action ??
+                      // Future action can be added here (e.g., details page)
                     },
                   ),
                 );
@@ -68,8 +73,73 @@ class ParkingSpacesView extends StatelessWidget {
           context.read<ParkingSpaceBloc>().add(LoadParkingSpaces());
         },
         onLogoutPressed: () {
-          context.go('/login');  
+          context.go('/login');
         },
+        onAddParkingSpace: () {
+          _showAddParkingSpaceDialog(context);
+        },
+      ),
+    );
+  }
+
+  void _showAddParkingSpaceDialog(BuildContext context) {
+    final addressController = TextEditingController();
+    final priceController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add Parking Space'),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: addressController,
+                decoration: const InputDecoration(labelText: 'Address'),
+                validator: (value) =>
+                    value == null || value.isEmpty ? 'Enter an address' : null,
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: priceController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: 'Price per Hour'),
+                validator: (value) {
+                  final price = int.tryParse(value ?? '');
+                  return (price == null || price <= 0)
+                      ? 'Enter a valid price'
+                      : null;
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                final address = addressController.text.trim();
+                final price = int.parse(priceController.text.trim()); // ✅ Fix: Ensure price is int
+
+                context.read<ParkingSpaceBloc>().add(
+                      CreateParkingSpace(
+                        address: address,
+                        pricePerHour: price,
+                      ),
+                    );
+                Navigator.of(context).pop();
+              }
+            },
+            child: const Text('Add'),
+          ),
+        ],
       ),
     );
   }

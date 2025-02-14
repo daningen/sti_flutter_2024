@@ -29,13 +29,14 @@ class CustomBottomNavigationBar extends StatelessWidget {
     debugPrint('🟢 Current Route: $location');
 
     return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed, // ✅ Fix: Ensure visibility
+      type: BottomNavigationBarType.fixed, // ✅ Fix: Ensure all icons are shown
       currentIndex: _getIndexForRoute(location),
       onTap: (index) => _handleNavigation(context, index),
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
         BottomNavigationBarItem(icon: Icon(Icons.local_parking), label: 'Parkings'),
-        BottomNavigationBarItem(icon: Icon(Icons.directions_car), label: 'Vehicles'), // ✅ Fix: Vehicles tab added
+        BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Parking Spaces'), // ✅ New Tab
+        BottomNavigationBarItem(icon: Icon(Icons.directions_car), label: 'Vehicles'),
         BottomNavigationBarItem(icon: Icon(Icons.logout), label: 'Logout'),
       ],
     );
@@ -43,13 +44,14 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
   void _handleNavigation(BuildContext context, int index) {
     final routes = [
-      '/start', // ✅ Fix: Ensure proper path
+      '/start', // ✅ Home (Start)
       '/start/parkings',
+      '/start/parking-spaces', // ✅ New Parking Spaces Route
       '/start/vehicles',
       '/logout',
     ];
 
-    if (index == 3) {
+    if (index == 4) {
       _logout(context);
     } else {
       debugPrint('🔵 Navigating to ${routes[index]}');
@@ -58,10 +60,11 @@ class CustomBottomNavigationBar extends StatelessWidget {
   }
 
   int _getIndexForRoute(String? route) {
-    if (route == '/' || route == '/start') return 0; // ✅ Fix: Ensure Home is selected correctly
+    if (route == '/' || route == '/start') return 0; // ✅ Home
     if (route?.startsWith('/start/parkings') ?? false) return 1;
-    if (route?.startsWith('/start/vehicles') ?? false) return 2;
-    return 3; // ✅ Default to logout tab
+    if (route?.startsWith('/start/parking-spaces') ?? false) return 2; // ✅ Parking Spaces
+    if (route?.startsWith('/start/vehicles') ?? false) return 3;
+    return 4; // ✅ Logout by default
   }
 
   void _logout(BuildContext context) {

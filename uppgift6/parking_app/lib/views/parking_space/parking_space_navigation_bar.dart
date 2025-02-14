@@ -1,40 +1,45 @@
 import 'package:flutter/material.dart';
 
 class ParkingSpacesNavigationBar extends StatelessWidget {
-  final Function onHomePressed;
-  final Function onReloadPressed;
-  final Function onLogoutPressed;
+  final VoidCallback onHomePressed;
+  final VoidCallback onReloadPressed;
+  final VoidCallback onLogoutPressed;
+  final VoidCallback onAddParkingSpace;  
 
   const ParkingSpacesNavigationBar({
     super.key,
     required this.onHomePressed,
     required this.onReloadPressed,
     required this.onLogoutPressed,
+    required this.onAddParkingSpace,  
   });
 
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: 0,
-      onTap: (index) {
-        switch (index) {
-          case 0:
-            onHomePressed();
-            break;
-          case 1:
-            onReloadPressed();
-            break;
-          case 2:
-            onLogoutPressed();
-            break;
-        }
-      },
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.refresh), label: 'Reload'),
-        BottomNavigationBarItem(icon: Icon(Icons.logout), label: 'Logout'),
-      ],
-      type: BottomNavigationBarType.fixed,
+    return BottomAppBar(
+      shape: const CircularNotchedRectangle(),
+      notchMargin: 8.0,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.home),
+            onPressed: onHomePressed,
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: onReloadPressed,
+          ),
+          IconButton(
+            icon: const Icon(Icons.add), 
+            onPressed: onAddParkingSpace, 
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: onLogoutPressed,
+          ),
+        ],
+      ),
     );
   }
 }

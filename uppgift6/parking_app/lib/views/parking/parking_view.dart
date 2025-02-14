@@ -11,7 +11,7 @@ import 'package:parking_app/providers/theme_notifier.dart';
 import 'package:parking_app/views/parking/parking_navigation_bar.dart';
 import 'package:shared/shared.dart';
 import 'package:shared/bloc/auth/auth_firebase_bloc.dart';
-
+//
 // import '../../bloc/auth/auth_firebase_bloc.dart';
 // import 'package:flutter_hooks/flutter_hooks.dart';
 
@@ -22,10 +22,6 @@ class ParkingView extends StatelessWidget {
   Widget build(BuildContext context) {
     final timeFormat = DateFormat('yyyy-MM-dd HH:mm');
     final themeNotifier = Provider.of<ThemeNotifier>(context);
-
-    context.read<ParkingBloc>().stream.listen((state) {
-      debugPrint("ParkingBloc emitted state: $state");
-    });
 
     return Scaffold(
       appBar: AppBar(
@@ -38,12 +34,9 @@ class ParkingView extends StatelessWidget {
                   children: [
                     IconButton(
                       icon: Icon(
-                        state.filter ==
-                                ParkingFilter.active // Check the current filter
-                            ? Icons
-                                .filter_list_alt // Show "inactive" icon when active is selected
-                            : Icons
-                                .filter_list, // Show "active" icon when inactive is selected
+                        state.filter == ParkingFilter.active
+                            ? Icons.filter_list_alt
+                            : Icons.filter_list,
                       ),
                       tooltip: state.filter == ParkingFilter.active
                           ? 'Show Inactive Parkings'
@@ -52,8 +45,6 @@ class ParkingView extends StatelessWidget {
                         final newFilter = state.filter == ParkingFilter.active
                             ? ParkingFilter.inactive
                             : ParkingFilter.active;
-
-                        debugPrint('New filter selected: $newFilter');
 
                         context
                             .read<ParkingBloc>()
@@ -81,7 +72,7 @@ class ParkingView extends StatelessWidget {
           if (state is ParkingLoading) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is ParkingLoaded) {
-            final parkings = state.parkings;
+            final parkings = state.parkings; // Access the filtered list
 
             return ListView.builder(
               itemCount: parkings.length,
@@ -105,9 +96,7 @@ class ParkingView extends StatelessWidget {
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4.0),
-                      Text(
-                        'Vehicle: ${vehicle?.licensePlate ?? 'N/A'}',
-                      ),
+                      Text('Vehicle: ${vehicle?.licensePlate ?? 'N/A'}'),
                       const SizedBox(height: 4.0),
                       Text(
                         'Start Time: ${timeFormat.format(parking.startTime)}',
@@ -116,8 +105,8 @@ class ParkingView extends StatelessWidget {
                         'End Time: ${parking.endTime != null ? timeFormat.format(parking.endTime!) : 'N/A'}',
                       ),
                       const SizedBox(height: 4.0),
-                      if (parking.endTime != null &&
-                          parking.endTime!.isAfter(DateTime.now()))
+                      if (parking.endTime == null || // Correct condition
+                          parking.endTime!.isAfter(DateTime.now().toUtc()))
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor:

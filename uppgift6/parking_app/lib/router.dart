@@ -15,6 +15,8 @@ import 'package:parking_app/views/vehicle/vehicles_view.dart';
 import 'package:parking_app/widgets/app_layout.dart';
 import 'package:parking_app/utils/go_router_refresh_stream.dart';
 
+//current 
+
 /// **Create and return the GoRouter instance**
 GoRouter createRouter(BuildContext context) {
   return GoRouter(
@@ -80,9 +82,7 @@ GoRouter createRouter(BuildContext context) {
           ),
           GoRoute(
             path: 'parking-spaces',
-            builder: (context, state) => const AppLayout(
-              child: ParkingSpacesView(),
-            ),
+            builder: (context, state) => const ParkingSpacesView(),
           ),
           GoRoute(
               path: 'vehicles',
