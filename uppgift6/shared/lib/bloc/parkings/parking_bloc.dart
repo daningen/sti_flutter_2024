@@ -37,29 +37,32 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
 
     _currentFilter = event.filter;
 
-    
-
     try {
       final vehicles = await vehicleRepository.getAll();
       final parkingSpaces = await parkingSpaceRepository.getAll();
 
-      final availableVehicles = vehicles
-          .where(
-              (vehicle) => !_allParkings.any((p) => p.vehicle?.id == vehicle.id))
-          .toList();
-
-      final availableParkingSpaces = parkingSpaces
-          .where((space) =>
-              !_allParkings.any((p) => p.parkingSpace?.id == space.id))
-          .toList();
-
       await emit.forEach<List<Parking>>(
+        // Stream listening with emit.forEach ensures real-time updates
         parkingRepository.getParkingsStream(),
         onData: (parkings) {
           debugPrint("🔥 Real-time update received. Updating parkings...");
 
           _allParkings = parkings;
           final filteredParkings = _filterParkings(parkings, _currentFilter);
+
+          // Update available vehicles and parking spaces dynamically whenever the state updates
+          final availableVehicles = vehicles
+              .where((vehicle) => !_allParkings.any((p) =>
+                  p.vehicle?.id == vehicle.id &&
+                  p.endTime ==
+                      null)) // Only exclude vehicles with active parking
+              .toList();
+
+          final availableParkingSpaces = parkingSpaces
+              .where((space) => !_allParkings.any((p) =>
+                  p.parkingSpace?.id == space.id &&
+                  p.endTime == null)) // Only exclude occupied parking spaces
+              .toList();
 
           return ParkingLoaded(
             parkings: filteredParkings,
