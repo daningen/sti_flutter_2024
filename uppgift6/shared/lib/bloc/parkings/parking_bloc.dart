@@ -37,34 +37,49 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
 
     _currentFilter = event.filter;
 
-    await emit.forEach<List<Parking>>(
-      parkingRepository.getParkingsStream(),
-      onData: (parkings) {
-        debugPrint("🔥 Real-time update received. Updating parkings...");
-        debugPrint("Current filter: $_currentFilter");
+    
 
-        _allParkings = parkings;
+    try {
+      final vehicles = await vehicleRepository.getAll();
+      final parkingSpaces = await parkingSpaceRepository.getAll();
 
-        final filteredParkings = _filterParkings(parkings, _currentFilter);
+      final availableVehicles = vehicles
+          .where(
+              (vehicle) => !_allParkings.any((p) => p.vehicle?.id == vehicle.id))
+          .toList();
 
-        debugPrint("✅ Filtered parkings count: ${filteredParkings.length}");
+      final availableParkingSpaces = parkingSpaces
+          .where((space) =>
+              !_allParkings.any((p) => p.parkingSpace?.id == space.id))
+          .toList();
 
-        return ParkingLoaded(
-          parkings: filteredParkings,
-          allParkings: parkings, // Pass all parkings here
-          vehicles: [],
-          parkingSpaces: [],
-          availableVehicles: [],
-          availableParkingSpaces: [],
-          filter: _currentFilter,
-        );
-      },
-      onError: (error, stackTrace) {
-        debugPrint('❌ Error loading parkings: $error, Stacktrace: $stackTrace');
-        emit(ParkingError('Failed to load parkings: $error'));
-        return ParkingError('Failed to load parkings: $error');
-      },
-    );
+      await emit.forEach<List<Parking>>(
+        parkingRepository.getParkingsStream(),
+        onData: (parkings) {
+          debugPrint("🔥 Real-time update received. Updating parkings...");
+
+          _allParkings = parkings;
+          final filteredParkings = _filterParkings(parkings, _currentFilter);
+
+          return ParkingLoaded(
+            parkings: filteredParkings,
+            allParkings: parkings,
+            vehicles: vehicles,
+            parkingSpaces: parkingSpaces,
+            availableVehicles: availableVehicles,
+            availableParkingSpaces: availableParkingSpaces,
+            filter: _currentFilter,
+          );
+        },
+        onError: (error, stackTrace) {
+          debugPrint('❌ Error loading parkings: $error');
+          return ParkingError('Failed to load parkings: $error');
+        },
+      );
+    } catch (error) {
+      debugPrint('❌ Failed to fetch vehicles or parking spaces: $error');
+      emit(ParkingError('Failed to load parkings: $error'));
+    }
   }
 
   List<Parking> _filterParkings(List<Parking> parkings, ParkingFilter filter) {
@@ -81,7 +96,7 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
         if (endTimeUtc == null) {
           debugPrint("endTime is null, so it's considered active.");
           return true; // Treat null endTime as active
-        } 
+        }
 
         final isAfter = endTimeUtc.isAfter(nowUtc); // Compare UTC times
         debugPrint(

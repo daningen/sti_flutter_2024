@@ -152,6 +152,12 @@ class ParkingView extends StatelessWidget {
             final availableParkingSpaces = currentState.availableParkingSpaces;
 
             if (availableVehicles.isEmpty || availableParkingSpaces.isEmpty) {
+              debugPrint("🚨 No available vehicles or parking spaces!");
+              debugPrint(
+                  "Available Vehicles: ${availableVehicles.map((v) => v.licensePlate).toList()}");
+              debugPrint(
+                  "Available Parking Spaces: ${availableParkingSpaces.map((p) => p.address).toList()}");
+
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('No available vehicles or parking spaces.'),
@@ -159,7 +165,6 @@ class ParkingView extends StatelessWidget {
               );
               return;
             }
-
             await showDialog(
               context: context,
               builder: (context) => CreateParkingDialog(

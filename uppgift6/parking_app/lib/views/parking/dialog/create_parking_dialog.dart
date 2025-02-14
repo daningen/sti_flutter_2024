@@ -42,19 +42,24 @@ class _CreateParkingDialogState extends State<CreateParkingDialog> {
   void _filterAvailableItems() {
     // Access the current state of the ParkingBloc
     final currentState = context.read<ParkingBloc>().state;
+    final nowUtc = DateTime.now().toUtc(); // Get current UTC time
 
     if (currentState is ParkingLoaded) {
-      // Filter available vehicles
+      // Filter available vehicles (Exclude only actively parked vehicles)
       _filteredAvailableVehicles = widget.availableVehicles.where((vehicle) {
         return !currentState.parkings.any((parking) =>
-            parking.vehicle?.id == vehicle.id && parking.endTime == null);
+            parking.vehicle?.id == vehicle.id &&
+            (parking.endTime == null ||
+                parking.endTime!.toUtc().isAfter(nowUtc)));
       }).toList();
 
-      // Filter available parking spaces
+      // Filter available parking spaces (Exclude only actively occupied spaces)
       _filteredAvailableParkingSpaces =
           widget.availableParkingSpaces.where((space) {
         return !currentState.parkings.any((parking) =>
-            parking.parkingSpace?.id == space.id && parking.endTime == null);
+            parking.parkingSpace?.id == space.id &&
+            (parking.endTime == null ||
+                parking.endTime!.toUtc().isAfter(nowUtc)));
       }).toList();
     }
   }
