@@ -1,10 +1,14 @@
+// import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_repositories/firebase_repositories.dart';
+// import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:notification_utils/notification_utils.dart';
+// import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:provider/provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:shared/bloc/auth/auth_firebase_bloc.dart';
 import 'package:shared/bloc/person/person_bloc.dart';
 import 'package:shared/bloc/person/person_event.dart';
@@ -20,7 +24,15 @@ import 'package:shared/bloc/parkings/parking_event.dart';
 
 import 'package:parking_app/firebase_options.dart';
 import 'package:parking_app/providers/theme_notifier.dart';
-// ✅ Import the new router
+import 'package:flutter_local_notifications/flutter_local_notifications.dart'; // Import the local notifications plugin
+
+
+
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +40,21 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  await configureLocalTimeZone(); // Configure timezone before initializing notifications
+
+// Android-inställningar
+  var initializationSettingsAndroid = const AndroidInitializationSettings(
+      '@mipmap/ic_launcher'); // Eller använd egen ikon: '@drawable/ic_notification'
+
+  // iOS-inställningar
+  // var initializationSettingsIOS = const DarwinInitializationSettings();
+
+  // Kombinera plattformsinställningar
+  var initializationSettings =
+      InitializationSettings(android: initializationSettingsAndroid);
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+ 
 
   runApp(const MyApp());
 }

@@ -4,6 +4,7 @@ import 'package:firebase_repositories/firebase_repositories.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared/shared.dart';
+import 'package:notification_utils/notification_utils.dart'; 
 
 import 'parking_event.dart';
 import 'parking_state.dart';
@@ -27,7 +28,7 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
     on<SelectParking>(_onSelectParking);
     on<UpdateParking>(_onUpdateParking);
     on<ChangeFilter>(_onChangeFilter);
-
+ on<ScheduleParkingNotification>(_onScheduleParkingNotification); 
     add(LoadParkings(filter: _currentFilter));
   }
 
@@ -222,6 +223,30 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
     } catch (e) {
       debugPrint('❌ [ParkingBloc] Error updating parking: $e');
       emit(ParkingError('Failed to update parking: $e'));
+    }
+  }
+
+  Future<void> _onScheduleParkingNotification(
+      ScheduleParkingNotification event, Emitter<ParkingState> emit) async {
+
+    debugPrint('🔔 [ParkingBloc] Scheduling notification for parking ID: ${event.parkingId}');
+
+    try {
+      await scheduleNotification(
+        title: event.title,
+        content: event.content,
+        deliveryTime: event.deliveryTime,
+        id: event.parkingId.hashCode, // Use parkingId.hashCode for unique ID
+      );
+
+      debugPrint('✅ [ParkingBloc] Notification scheduled successfully.');
+
+      // Optionally, you can emit a state to indicate that the notification was scheduled
+      // emit(NotificationScheduled(parkingId: event.parkingId));
+
+    } catch (e) {
+      debugPrint('❌ [ParkingBloc] Error scheduling notification: $e');
+      emit(ParkingError('Failed to schedule notification: $e'));
     }
   }
 }

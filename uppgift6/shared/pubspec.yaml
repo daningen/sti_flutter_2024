@@ -24,6 +24,9 @@ dependencies:
   firebase_repositories:
     path: ../firebase_repositories
   uuid: ^4.5.1
+  notification_utils: # Add this line!
+    # If the package is local:
+    path: '../notification_utils' 
 
 dev_dependencies:
   flutter_test:
