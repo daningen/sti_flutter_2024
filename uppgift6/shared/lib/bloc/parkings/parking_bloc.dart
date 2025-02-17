@@ -4,7 +4,7 @@ import 'package:firebase_repositories/firebase_repositories.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared/shared.dart';
-import 'package:notification_utils/notification_utils.dart'; 
+import 'package:notification_utils/notification_utils.dart';
 
 import 'parking_event.dart';
 import 'parking_state.dart';
@@ -28,7 +28,7 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
     on<SelectParking>(_onSelectParking);
     on<UpdateParking>(_onUpdateParking);
     on<ChangeFilter>(_onChangeFilter);
- on<ScheduleParkingNotification>(_onScheduleParkingNotification); 
+    on<ScheduleParkingNotification>(_onScheduleParkingNotification);
     add(LoadParkings(filter: _currentFilter));
   }
 
@@ -47,6 +47,7 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
         parkingRepository.getParkingsStream(),
         onData: (parkings) {
           debugPrint("🔥 Real-time update received. Updating parkings...");
+           "Current Time: ${DateTime.now().toUtc()}",
 
           _allParkings = parkings;
           final filteredParkings = _filterParkings(parkings, _currentFilter);
@@ -182,10 +183,45 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
   Future<void> _onCreateParking(
       CreateParking event, Emitter<ParkingState> emit) async {
     debugPrint('➕ [ParkingBloc] Creating parking...');
+    debugPrint("🕒 Current time (UTC): ${DateTime.now().toUtc()}");
+
+    final parking = event.parking;
+
+    // 🔹 Log the received parking details
+    debugPrint(
+        "🚗 Parking details: ID: ${parking.id}, StartTime: ${parking.startTime}, EndTime: ${parking.endTime}");
+
     try {
-      await parkingRepository.create(event.parking);
+      await parkingRepository.create(parking);
       debugPrint('✅ [ParkingBloc] Parking created');
-      add(LoadParkings(filter: _currentFilter)); // Refresh the list
+      debugPrint(
+          "🚗 New Parking Created - ID: ${event.parking.id}, EndTime: ${event.parking.endTime}");
+
+      if (parking.endTime != null) {
+        final reminderTimeUtc =
+            parking.endTime!.subtract(const Duration(minutes: 3));
+        debugPrint("🔔 Scheduling notification for: $reminderTimeUtc (UTC)");
+
+        if (reminderTimeUtc.isAfter(DateTime.now().toUtc())) {
+          debugPrint(
+              "✅ [ParkingBloc] Notification scheduled at: $reminderTimeUtc");
+
+          add(ScheduleParkingNotification(
+            title: "Parking Reminder",
+            content:
+                "Your parking at ${parking.parkingSpace?.address} expires soon!",
+            deliveryTime: reminderTimeUtc,
+            parkingId: parking.id,
+          ));
+        } else {
+          debugPrint(
+              "⚠️ Notification time is in the past. No notification scheduled.");
+        }
+      } else {
+        debugPrint("🚨 ERROR: Parking was created with `endTime` = null!");
+      }
+
+      add(LoadParkings(filter: _currentFilter));
     } catch (e) {
       debugPrint('❌ [ParkingBloc] Error creating parking: $e');
       emit(ParkingError('Failed to create parking: $e'));
@@ -228,8 +264,8 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
 
   Future<void> _onScheduleParkingNotification(
       ScheduleParkingNotification event, Emitter<ParkingState> emit) async {
-
-    debugPrint('🔔 [ParkingBloc] Scheduling notification for parking ID: ${event.parkingId}');
+    debugPrint(
+        "ParkingBloc (_onScheduleParkingNotification): event.deliveryTime (UTC): ${event.deliveryTime}");
 
     try {
       await scheduleNotification(
@@ -243,7 +279,6 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
 
       // Optionally, you can emit a state to indicate that the notification was scheduled
       // emit(NotificationScheduled(parkingId: event.parkingId));
-
     } catch (e) {
       debugPrint('❌ [ParkingBloc] Error scheduling notification: $e');
       emit(ParkingError('Failed to schedule notification: $e'));

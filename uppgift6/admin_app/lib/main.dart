@@ -16,7 +16,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'package:admin_app/firebase_options.dart';
- 
 
 import 'package:admin_app/theme_notifier.dart';
 import 'package:admin_app/views/login_view.dart';
@@ -79,12 +78,13 @@ class MyApp extends StatelessWidget {
       child: MultiBlocProvider(
         providers: [
           BlocProvider(
-  create: (context) => AuthFirebaseBloc(
-    authRepository: context.read<AuthRepository>(),
-    userRepository: context.read<UserRepository>(),
-    personRepository: context.read<PersonRepository>(), // ✅ Fix: Provide personRepository
-  )..add(AuthFirebaseUserSubscriptionRequested()),
-),
+            create: (context) => AuthFirebaseBloc(
+              authRepository: context.read<AuthRepository>(),
+              userRepository: context.read<UserRepository>(),
+              personRepository: context
+                  .read<PersonRepository>(), // ✅ Fix: Provide personRepository
+            )..add(AuthFirebaseUserSubscriptionRequested()),
+          ),
           BlocProvider(
             create: (context) => PersonBloc(
               personRepository: context.read<PersonRepository>(),

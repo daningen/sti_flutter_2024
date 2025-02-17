@@ -67,71 +67,90 @@ class ParkingView extends StatelessWidget {
           ),
         ],
       ),
-      body: BlocBuilder<ParkingBloc, ParkingState>(
-        builder: (context, state) {
-          if (state is ParkingLoading) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is ParkingLoaded) {
-            final parkings = state.parkings; // Access the filtered list
+     body: BlocBuilder<ParkingBloc, ParkingState>(
+  buildWhen: (previous, current) {
+    if (previous is ParkingLoaded && current is ParkingLoaded) {
+      return previous.parkings != current.parkings; // Only rebuild if parkings changed
+    }
+    return true; // Rebuild for other state changes (Loading, Error, etc.)
+  },
+  builder: (context, state) {
+    debugPrint(
+        "[parking_view]: ParkingBlocBuilder is rebuilding. State: ${state.runtimeType}");
+    if (state is ParkingLoading) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (state is ParkingLoaded) {
+      final parkings = state.parkings; // Access the filtered list
 
-            return ListView.builder(
-              itemCount: parkings.length,
-              itemBuilder: (context, index) {
-                final parking = parkings[index];
-                final parkingSpace = parking.parkingSpace;
-                final vehicle = parking.vehicle;
+      return ListView.builder(
+        itemCount: parkings.length,
+        itemBuilder: (context, index) {
+          final parking = parkings[index];
+          final parkingSpace = parking.parkingSpace;
+          final vehicle = parking.vehicle;
 
-                return Container(
-                  margin: const EdgeInsets.all(8.0),
-                  padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(8.0),
+          return Container(
+            margin: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Parking at: ${parkingSpace?.address ?? 'N/A'}',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4.0),
+                Text('Vehicle: ${vehicle?.licensePlate ?? 'N/A'}'),
+                const SizedBox(height: 4.0),
+                Text(
+                  'Start Time: ${timeFormat.format(parking.startTime)}',
+                ),
+                Text(
+                  'End Time: ${parking.endTime != null ? timeFormat.format(parking.endTime!) : 'N/A'}',
+                ),
+                const SizedBox(height: 4.0),
+                if (parking.endTime == null ||
+                    parking.endTime!.isAfter(DateTime.now().toUtc()))
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          const Color.fromARGB(255, 243, 112, 102),
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () {
+                      context.read<ParkingBloc>().add(
+                            StopParking(parkingId: parking.id),
+                          );
+                    },
+                    child: const Text('Stop Parking'),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Parking at: ${parkingSpace?.address ?? 'N/A'}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 4.0),
-                      Text('Vehicle: ${vehicle?.licensePlate ?? 'N/A'}'),
-                      const SizedBox(height: 4.0),
-                      Text(
-                        'Start Time: ${timeFormat.format(parking.startTime)}',
-                      ),
-                      Text(
-                        'End Time: ${parking.endTime != null ? timeFormat.format(parking.endTime!) : 'N/A'}',
-                      ),
-                      const SizedBox(height: 4.0),
-                      if (parking.endTime == null || // Correct condition
-                          parking.endTime!.isAfter(DateTime.now().toUtc()))
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                const Color.fromARGB(255, 243, 112, 102),
-                            foregroundColor: Colors.white,
-                          ),
-                          onPressed: () {
-                            context.read<ParkingBloc>().add(
-                                  StopParking(parkingId: parking.id),
-                                );
-                          },
-                          child: const Text('Stop Parking'),
-                        ),
-                    ],
-                  ),
-                );
-              },
-            );
-          } else if (state is ParkingError) {
-            return Center(child: Text('Error: ${state.message}'));
-          } else {
-            return const Center(child: Text('No Parkings Available'));
-          }
+                Icon(
+                  parking.endTime == null ||
+                          parking.endTime!.isAfter(DateTime.now().toUtc())
+                      ? Icons.directions_car
+                      : Icons.local_parking,
+                  color: parking.endTime == null ||
+                          parking.endTime!.isAfter(DateTime.now().toUtc())
+                      ? Colors.green
+                      : Colors.grey,
+                  size: 30,
+                ),
+              ],
+            ),
+          );
         },
-      ),
+      );
+    } else if (state is ParkingError) {
+      return Center(child: Text('Error: ${state.message}'));
+    } else {
+      return const Center(child: Text('No Parkings Available'));
+    }
+  },
+),
       bottomNavigationBar: ParkingNavigationBar(
         onHomePressed: () => context.go('/'),
         onShowAllParkings: () {
@@ -140,6 +159,7 @@ class ParkingView extends StatelessWidget {
               .add(LoadParkings(filter: ParkingFilter.all));
         },
         onShowActiveParkings: () {
+          debugPrint('🔵 Showing active parkings');
           context
               .read<ParkingBloc>()
               .add(LoadParkings(filter: ParkingFilter.active));

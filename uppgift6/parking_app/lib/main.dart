@@ -1,8 +1,11 @@
 // import 'dart:io';
 
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_repositories/firebase_repositories.dart';
+ 
 // import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -26,13 +29,10 @@ import 'package:parking_app/firebase_options.dart';
 import 'package:parking_app/providers/theme_notifier.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'; // Import the local notifications plugin
 
-
-
-
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
-
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,22 +41,91 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  await configureLocalTimeZone(); // Configure timezone before initializing notifications
+  await configureLocalTimeZone();
+  await requestPermissions(); // Request permissions BEFORE initialization
 
-// Android-inställningar
-  var initializationSettingsAndroid = const AndroidInitializationSettings(
-      '@mipmap/ic_launcher'); // Eller använd egen ikon: '@drawable/ic_notification'
+  // Android initialization settings
+  var initializationSettingsAndroid =
+      const AndroidInitializationSettings('@mipmap/ic_launcher');
 
-  // iOS-inställningar
-  // var initializationSettingsIOS = const DarwinInitializationSettings();
+  // iOS initialization settings
+  var initializationSettingsIOS = const DarwinInitializationSettings();
 
-  // Kombinera plattformsinställningar
-  var initializationSettings =
-      InitializationSettings(android: initializationSettingsAndroid);
-  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
- 
+  // Combine platform-specific settings
+  var initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
+
+  debugPrint("Initializing notifications...");
+  var isInitialized = await flutterLocalNotificationsPlugin.initialize(
+    initializationSettings,
+    onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
+  );
+
+  debugPrint("Notification initialized: $isInitialized");
+  // if (isInitialized != null && isInitialized) {
+  //   Future.delayed(Duration(seconds: 5), () async {
+  //     await showTestNotification();
+  //   });
+  // } else {
+  //   debugPrint(
+  //       "Failed to initialize notifications. Test notification not sent.");
+  // }
 
   runApp(const MyApp());
+}
+
+Future<void> requestPermissions() async {
+  debugPrint("Requesting notification permissions...");
+  if (Platform.isIOS) {
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin>()
+        ?.requestPermissions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+  } else if (Platform.isAndroid) {
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestNotificationsPermission();
+  }
+}
+
+Future<void> showTestNotification() async {
+  debugPrint("Showing test notification...");
+
+  const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    'channel_id',
+    'Test Channel',
+    importance: Importance.high,
+    priority: Priority.high,
+  );
+
+  const DarwinNotificationDetails iosDetails = DarwinNotificationDetails();
+
+  const NotificationDetails platformDetails =
+      NotificationDetails(android: androidDetails, iOS: iosDetails);
+
+  await flutterLocalNotificationsPlugin.show(
+    0,
+    'Test Notification',
+    'This is a test notification',
+    platformDetails,
+    payload: 'test_payload',
+  );
+
+  debugPrint("Test notification should be visible.");
+}
+
+void onDidReceiveNotificationResponse(
+    NotificationResponse notificationResponse) {
+  debugPrint('Notification tapped: ${notificationResponse.payload}');
+  if (notificationResponse.payload != null) {
+    navigatorKey.currentState
+        ?.pushNamed('/parkings', arguments: notificationResponse.payload);
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -126,7 +195,7 @@ class AppInitializer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final router = createRouter(context); // separate file `router.dart`
+    final router = createRouter(context);
 
     return ChangeNotifierProvider(
       create: (context) => ThemeNotifier(),

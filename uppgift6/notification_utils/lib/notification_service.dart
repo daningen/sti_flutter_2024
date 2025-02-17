@@ -1,47 +1,81 @@
+// import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
- 
 import 'package:timezone/timezone.dart' as tz;
 import 'package:uuid/uuid.dart';
 
 import 'permission_utils.dart';
 
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
 Future<void> scheduleNotification({
-    required String title,
-    required String content,
-    required DateTime deliveryTime,
-    required int id}) async {
+  required String title,
+  required String content,
+  required DateTime deliveryTime,
+  required int id,
+}) async {
+  await requestPermissions(); // Request permissions before scheduling
 
-  await requestPermissions(); // be om tillåtelse innan schemaläggning sker (kommer ihåg ditt val sen tidigare)
+  String channelId = const Uuid().v4(); // Unique ID per notification
+  const String channelName = "notifications_channel";
+  String channelDescription = "Standard notifications";
 
-  String channelId = const Uuid().v4(); // unikt per notis. Oklart varför den heter channelId om jag förstått docs.
-  const String channelName = "notifications_channel"; // kanal av notiser där alla notiser inom denna kanal levereras på liknande sätt. Går att konfigurera kanaler på olika sätt.
-  String channelDescription = "Standard notifications"; // Beskrivningen av denna kanal som dyker upp i settings på android.
-  
-  // Android-specifika inställningar
+  // Android-specific settings
   var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      channelId, 
-      channelName,
-      channelDescription: channelDescription,
-      importance: Importance.max,
-      priority: Priority.high,
-      ticker: 'ticker');
-      
-  // iOS-specifika inställningar
-  var iOSPlatformChannelSpecifics = const DarwinNotificationDetails();
-  
-  // Kombinera plattformsinställningar
-  var platformChannelSpecifics = NotificationDetails(
-      android: androidPlatformChannelSpecifics,
-      iOS: iOSPlatformChannelSpecifics);
+    channelId,
+    channelName,
+    channelDescription: channelDescription,
+    importance: Importance.max,
+    priority: Priority.high,
+    ticker: 'ticker',
+  );
 
-      
+  // iOS-specific settings
+  var iOSPlatformChannelSpecifics = const DarwinNotificationDetails();
+
+  // Combine platform settings
+  var platformChannelSpecifics = NotificationDetails(
+    android: androidPlatformChannelSpecifics,
+    iOS: iOSPlatformChannelSpecifics,
+  );
+
   await flutterLocalNotificationsPlugin.zonedSchedule(
-      id,
-      title,
-      content,
-      tz.TZDateTime.from(deliveryTime, tz.local),
-      platformChannelSpecifics,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime);
+    id,
+    title,
+    content,
+    tz.TZDateTime.from(deliveryTime, tz.local),
+    platformChannelSpecifics,
+    androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    uiLocalNotificationDateInterpretation:
+        UILocalNotificationDateInterpretation.absoluteTime,
+  );
+}
+
+// ✅ Add the new function for showing parking notifications
+Future<void> showParkingNotification(String parkingId) async {
+  await requestPermissions(); // Ensure permissions are granted
+
+  const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    'parking_channel_id',
+    'Parking Notifications',
+    channelDescription: 'Notifications for parking events',
+    importance: Importance.high,
+    priority: Priority.high,
+    playSound: true,
+  );
+
+  const DarwinNotificationDetails iosDetails = DarwinNotificationDetails();
+
+  const NotificationDetails platformDetails =
+      NotificationDetails(android: androidDetails, iOS: iosDetails);
+
+  await flutterLocalNotificationsPlugin.show(
+    
+    1, // Unique notification ID
+    'Parking Update',
+    'A new parking event has occurred!',
+   
+    platformDetails,
+    payload: parkingId, // Attach parking ID to notification
+  );
 }

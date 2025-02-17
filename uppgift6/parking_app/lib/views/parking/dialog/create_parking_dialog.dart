@@ -5,6 +5,8 @@ import 'package:shared/bloc/parkings/parking_bloc.dart';
 import 'package:shared/bloc/parkings/parking_state.dart';
 import 'package:shared/shared.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
+
+
 //current create
 
 class CreateParkingDialog extends StatefulWidget {
@@ -40,29 +42,75 @@ class _CreateParkingDialogState extends State<CreateParkingDialog> {
   }
 
   void _filterAvailableItems() {
-    // Access the current state of the ParkingBloc
-    final currentState = context.read<ParkingBloc>().state;
-    final nowUtc = DateTime.now().toUtc(); // Get current UTC time
+  debugPrint("Entering _filterAvailableItems");
 
-    if (currentState is ParkingLoaded) {
-      // Filter available vehicles (Exclude only actively parked vehicles)
-      _filteredAvailableVehicles = widget.availableVehicles.where((vehicle) {
-        return !currentState.parkings.any((parking) =>
-            parking.vehicle?.id == vehicle.id &&
-            (parking.endTime == null ||
-                parking.endTime!.toUtc().isAfter(nowUtc)));
-      }).toList();
+  final currentState = context.read<ParkingBloc>().state;
+  debugPrint("Current State: ${currentState.runtimeType}");
 
-      // Filter available parking spaces (Exclude only actively occupied spaces)
-      _filteredAvailableParkingSpaces =
-          widget.availableParkingSpaces.where((space) {
-        return !currentState.parkings.any((parking) =>
-            parking.parkingSpace?.id == space.id &&
-            (parking.endTime == null ||
-                parking.endTime!.toUtc().isAfter(nowUtc)));
-      }).toList();
-    }
+  if (currentState is ParkingLoaded) {
+    final loadedState = currentState;
+    final nowUtc = DateTime.now().toUtc(); // Current time in UTC (only get it ONCE)
+
+    debugPrint("Filtering Available Items:");
+    debugPrint("Total Vehicles: ${widget.availableVehicles.length}");
+    debugPrint("Total Parking Spaces: ${widget.availableParkingSpaces.length}");
+    debugPrint("Current Parkings: ${loadedState.parkings.length}");
+
+    _filteredAvailableVehicles = widget.availableVehicles.where((vehicle) {
+      final isAvailable = !loadedState.parkings.any((parking) {
+        // More robust null check and availability logic:
+        return parking.vehicle?.id == vehicle.id &&
+               (parking.endTime == null || parking.endTime!.toUtc().isAfter(nowUtc));
+      });
+
+      debugPrint(
+          "Vehicle ${vehicle.licensePlate}: Available = $isAvailable "
+          "(endTime: ${loadedState.parkings.firstWhere(
+                (p) => p.vehicle?.id == vehicle.id,
+                orElse: () => Parking(
+                  startTime: DateTime.now(), // Provide default values
+                  endTime: null, // Important: endTime can be null
+                  vehicle: vehicle,
+                  parkingSpace: ParkingSpace(address: '', pricePerHour: 0, id: ''),
+                ),
+              ).endTime?.toUtc()}, "
+          "nowUtc: $nowUtc)");
+
+      return isAvailable;
+    }).toList();
+
+    _filteredAvailableParkingSpaces = widget.availableParkingSpaces.where((space) {
+      final isAvailable = !loadedState.parkings.any((parking) {
+       return parking.parkingSpace?.id == space.id &&
+               (parking.endTime == null || parking.endTime!.toUtc().isAfter(nowUtc));
+      });
+
+      debugPrint(
+          "Parking Space ${space.address}: Available = $isAvailable "
+          "(endTime: ${loadedState.parkings.firstWhere(
+                (p) => p.parkingSpace?.id == space.id,
+                orElse: () => Parking(
+                  startTime: DateTime.now(), // Provide default values
+                  endTime: null, // Important: endTime can be null
+                  vehicle: Vehicle(owner: Person(name: '', id: '', authId: '', ssn: ''), licensePlate: '', vehicleType: ''),
+                  parkingSpace: space,
+                ),
+              ).endTime?.toUtc()}, "
+          "nowUtc: $nowUtc)");
+
+      return isAvailable;
+    }).toList();
+    
+    debugPrint("Filtered Vehicles: ${_filteredAvailableVehicles.length}");
+    debugPrint("Filtered Parking Spaces: ${_filteredAvailableParkingSpaces.length}");
+    debugPrint("Filtered Vehicles (License Plates): ${_filteredAvailableVehicles.map((v) => v.licensePlate).join(", ")}");
+    debugPrint("Filtered Parking Spaces (Addresses): ${_filteredAvailableParkingSpaces.map((s) => s.address).join(", ")}");
+
+  } else {
+    debugPrint("Current State is NOT ParkingLoaded: ${currentState.runtimeType}");
   }
+  debugPrint("Exiting _filterAvailableItems");
+}
 
   @override
   Widget build(BuildContext context) {

@@ -3,7 +3,8 @@ import 'permission_utils.dart';
 import 'package:uuid/uuid.dart';
 import 'package:timezone/timezone.dart' as tz;
 export 'notification_service.dart'; // Export the notification service
-export 'permission_utils.dart'; // Export permission utilities
+export 'permission_utils.dart'
+    hide flutterLocalNotificationsPlugin; // Export permission utilities
 export 'timezone_utils.dart';
 
 Future<void> scheduleNotification(
@@ -26,6 +27,7 @@ Future<void> scheduleNotification(
       channelDescription: channelDescription,
       importance: Importance.max,
       priority: Priority.high,
+      timeoutAfter: 40000,
       ticker: 'ticker');
 
   // iOS-specifika inställningar

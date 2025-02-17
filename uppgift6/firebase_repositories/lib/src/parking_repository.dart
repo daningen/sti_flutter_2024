@@ -46,16 +46,19 @@ class ParkingRepository implements RepositoryInterface<Parking> {
   }
 
   Stream<List<Parking>> getParkingsStream() {
-    // Correctly defined outside getAll
     debugPrint("[ParkingRepository] Getting parkings stream...");
 
     return _db.collection('parkings').snapshots().map((snapshot) {
       debugPrint(
           "[ParkingRepository] Received parkings snapshot: ${snapshot.docs.length} documents");
-      return _mapParkingSnapshots(snapshot);
+      final parkings = _mapParkingSnapshots(
+          snapshot); // Store the result of _mapParkingSnapshots
+      debugPrint(
+          "[ParkingRepository] Mapped parkings: $parkings"); // Log the mapped parkings
+      return parkings;
     }).handleError((error) {
       debugPrint("[ParkingRepository] Error getting parkings stream: $error");
-      return const Stream.empty(); // Or handle the error as needed
+      return const Stream.empty();
     });
   }
 
@@ -150,6 +153,7 @@ class ParkingRepository implements RepositoryInterface<Parking> {
 
       try {
         DateTime? endTime;
+        
         debugPrint(
             "[parking_repository:] Raw endTime value from Firestore (document ${doc.id}): ${data['endTime']}");
 
