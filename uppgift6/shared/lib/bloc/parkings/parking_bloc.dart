@@ -16,6 +16,8 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
 
   ParkingFilter _currentFilter = ParkingFilter.active;
   List<Parking> _allParkings = [];
+  List<Vehicle> _allVehicles = [];
+  List<ParkingSpace> _allParkingSpaces = [];
 
   ParkingBloc({
     required this.parkingRepository,
@@ -32,190 +34,92 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
     add(LoadParkings(filter: _currentFilter));
   }
 
-  Future<void> _onLoadParkings(
-      LoadParkings event, Emitter<ParkingState> emit) async {
+  Future<void> _onLoadParkings(LoadParkings event, Emitter<ParkingState> emit) async {
     debugPrint('🔄 Loading parkings with filter: ${event.filter}');
-
     _currentFilter = event.filter;
-
     try {
-      final vehicles = await vehicleRepository.getAll();
-      final parkingSpaces = await parkingSpaceRepository.getAll();
+      _allVehicles = await vehicleRepository.getAll();
+      _allParkingSpaces = await parkingSpaceRepository.getAll();
 
       await emit.forEach<List<Parking>>(
-        // Stream listening with emit.forEach ensures real-time updates
         parkingRepository.getParkingsStream(),
         onData: (parkings) {
-          debugPrint("🔥 Real-time update received. Updating parkings...");
-           "Current Time: ${DateTime.now().toUtc()}",
+          _allParkings = List.from(parkings);
+          final filteredParkings = _filterParkings(_allParkings, _currentFilter);
 
-          _allParkings = parkings;
-          final filteredParkings = _filterParkings(parkings, _currentFilter);
-
-          // Update available vehicles and parking spaces dynamically whenever the state updates
-          final availableVehicles = vehicles
-              .where((vehicle) => !_allParkings.any((p) =>
-                  p.vehicle?.id == vehicle.id &&
-                  p.endTime ==
-                      null)) // Only exclude vehicles with active parking
-              .toList();
-
-          final availableParkingSpaces = parkingSpaces
-              .where((space) => !_allParkings.any((p) =>
-                  p.parkingSpace?.id == space.id &&
-                  p.endTime == null)) // Only exclude occupied parking spaces
-              .toList();
+          final availableVehicles = _allVehicles.where((vehicle) => !_allParkings.any((p) => p.vehicle?.id == vehicle.id && p.endTime == null)).toList();
+          final availableParkingSpaces = _allParkingSpaces.where((space) => !_allParkings.any((p) => p.parkingSpace?.id == space.id && p.endTime == null)).toList();
 
           return ParkingLoaded(
             parkings: filteredParkings,
-            allParkings: parkings,
-            vehicles: vehicles,
-            parkingSpaces: parkingSpaces,
+            allParkings: _allParkings,
+            vehicles: _allVehicles,
+            parkingSpaces: _allParkingSpaces,
             availableVehicles: availableVehicles,
             availableParkingSpaces: availableParkingSpaces,
             filter: _currentFilter,
           );
         },
         onError: (error, stackTrace) {
-          debugPrint('❌ Error loading parkings: $error');
+          emit(ParkingError('Failed to load parkings: $error'));
           return ParkingError('Failed to load parkings: $error');
         },
       );
     } catch (error) {
-      debugPrint('❌ Failed to fetch vehicles or parking spaces: $error');
       emit(ParkingError('Failed to load parkings: $error'));
     }
   }
 
   List<Parking> _filterParkings(List<Parking> parkings, ParkingFilter filter) {
-    final nowUtc = DateTime.now().toUtc(); // Get current time in UTC
+    final nowUtc = DateTime.now().toUtc();
 
     if (filter == ParkingFilter.all) {
       return parkings;
     } else if (filter == ParkingFilter.active) {
       return parkings.where((p) {
-        final endTimeUtc = p.endTime?.toUtc(); // Convert endTime to UTC
-
-        debugPrint("Checking if $endTimeUtc is after $nowUtc (Active Filter)");
-
-        if (endTimeUtc == null) {
-          debugPrint("endTime is null, so it's considered active.");
-          return true; // Treat null endTime as active
-        }
-
-        final isAfter = endTimeUtc.isAfter(nowUtc); // Compare UTC times
-        debugPrint(
-            "$endTimeUtc is ${isAfter ? "after" : "before or equal to"} $nowUtc");
-        return isAfter;
+        final endTimeUtc = p.endTime?.toUtc();
+        return endTimeUtc == null || endTimeUtc.isAfter(nowUtc);
       }).toList();
     } else {
       return parkings.where((p) {
-        final endTimeUtc = p.endTime?.toUtc(); // Convert endTime to UTC
-
-        debugPrint(
-            "Checking if $endTimeUtc is before $nowUtc (Inactive Filter)");
-
-        if (endTimeUtc == null) {
-          debugPrint("endTime is null, so it's NOT considered inactive.");
-          return false; // Treat null endTime as NOT inactive
-        }
-
-        final isBefore = endTimeUtc.isBefore(nowUtc); // Compare UTC times
-        debugPrint(
-            "$endTimeUtc is ${isBefore ? "before" : "after or equal to"} $nowUtc");
-        return isBefore;
+        final endTimeUtc = p.endTime?.toUtc();
+        return endTimeUtc != null && endTimeUtc.isBefore(nowUtc);
       }).toList();
-    }
-  }
-
-  void testFiltering(List<Parking> parkings) {
-    final nowUtc = DateTime.now().toUtc(); // Current time in UTC
-
-    debugPrint(
-        "Current time (nowUtc): $nowUtc"); // Print the current time being used
-
-    final activeParkings = _filterParkings(parkings, ParkingFilter.active);
-    final inactiveParkings = _filterParkings(parkings, ParkingFilter.inactive);
-    final allParkings = _filterParkings(parkings, ParkingFilter.all);
-
-    debugPrint("Active Parkings Count: ${activeParkings.length}");
-    debugPrint("Inactive Parkings Count: ${inactiveParkings.length}");
-    debugPrint("All Parkings Count: ${allParkings.length}");
-
-    // Print endTime details for active parkings
-    debugPrint("\nDetails of Active Parkings:");
-    for (final parking in activeParkings) {
-      debugPrint(
-          "Parking ID: ${parking.id}, endTime: ${parking.endTime}, endTime (UTC): ${parking.endTime?.toUtc()}");
-    }
-
-    // Print endTime details for inactive parkings
-    debugPrint("\nDetails of Inactive Parkings:");
-    for (final parking in inactiveParkings) {
-      debugPrint(
-          "Parking ID: ${parking.id}, endTime: ${parking.endTime}, endTime (UTC): ${parking.endTime?.toUtc()}");
-    }
-
-    debugPrint("\nDetails of ALL Parkings:");
-    for (final parking in allParkings) {
-      debugPrint(
-          "Parking ID: ${parking.id}, endTime: ${parking.endTime}, endTime (UTC): ${parking.endTime?.toUtc()}");
     }
   }
 
   void _onChangeFilter(ChangeFilter event, Emitter<ParkingState> emit) {
-    debugPrint('🔀 Changing filter to: ${event.filter}');
     _currentFilter = event.filter;
-
-    final filteredParkings = _filterParkings(_allParkings, _currentFilter);
-
-    emit(ParkingLoaded(
-      parkings: filteredParkings,
-      allParkings: _allParkings, // Pass all parkings here
-      vehicles: [],
-      parkingSpaces: [],
-      availableVehicles: [],
-      availableParkingSpaces: [],
-      filter: _currentFilter,
-    ));
+    if (state is ParkingLoaded) {
+      final currentState = state as ParkingLoaded;
+      final filteredParkings = _filterParkings(currentState.allParkings, _currentFilter);
+      emit(currentState.copyWith(parkings: filteredParkings, filter: _currentFilter));
+    } else {
+      add(LoadParkings(filter: _currentFilter));
+    }
   }
 
-  Future<void> _onCreateParking(
-      CreateParking event, Emitter<ParkingState> emit) async {
-    debugPrint('➕ [ParkingBloc] Creating parking...');
-    debugPrint("🕒 Current time (UTC): ${DateTime.now().toUtc()}");
-
-    final parking = event.parking;
-
-    // 🔹 Log the received parking details
-    debugPrint(
-        "🚗 Parking details: ID: ${parking.id}, StartTime: ${parking.startTime}, EndTime: ${parking.endTime}");
-
+  Future<void> _onCreateParking(CreateParking event, Emitter<ParkingState> emit) async {
     try {
-      await parkingRepository.create(parking);
+      await parkingRepository.create(event.parking);
       debugPrint('✅ [ParkingBloc] Parking created');
-      debugPrint(
-          "🚗 New Parking Created - ID: ${event.parking.id}, EndTime: ${event.parking.endTime}");
+      debugPrint("🚗 New Parking Created - ID: ${event.parking.id}, EndTime: ${event.parking.endTime}");
 
-      if (parking.endTime != null) {
-        final reminderTimeUtc =
-            parking.endTime!.subtract(const Duration(minutes: 3));
+      if (event.parking.endTime != null) {
+        final reminderTimeUtc = event.parking.endTime!.subtract(const Duration(minutes: 3));
         debugPrint("🔔 Scheduling notification for: $reminderTimeUtc (UTC)");
 
         if (reminderTimeUtc.isAfter(DateTime.now().toUtc())) {
-          debugPrint(
-              "✅ [ParkingBloc] Notification scheduled at: $reminderTimeUtc");
+          debugPrint("✅ [ParkingBloc] Notification scheduled at: $reminderTimeUtc");
 
           add(ScheduleParkingNotification(
             title: "Parking Reminder",
-            content:
-                "Your parking at ${parking.parkingSpace?.address} expires soon!",
+            content: "Your parking at ${event.parking.parkingSpace?.address} expires soon!",
             deliveryTime: reminderTimeUtc,
-            parkingId: parking.id,
+            parkingId: event.parking.id,
           ));
         } else {
-          debugPrint(
-              "⚠️ Notification time is in the past. No notification scheduled.");
+          debugPrint("⚠️ Notification time is in the past. No notification scheduled.");
         }
       } else {
         debugPrint("🚨 ERROR: Parking was created with `endTime` = null!");
@@ -223,64 +127,44 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
 
       add(LoadParkings(filter: _currentFilter));
     } catch (e) {
-      debugPrint('❌ [ParkingBloc] Error creating parking: $e');
       emit(ParkingError('Failed to create parking: $e'));
     }
   }
 
-  Future<void> _onStopParking(
-      StopParking event, Emitter<ParkingState> emit) async {
-    debugPrint('⏹ [ParkingBloc] Stopping parking with ID: ${event.parkingId}');
+  Future<void> _onStopParking(StopParking event, Emitter<ParkingState> emit) async {
     try {
       await parkingRepository.stop(event.parkingId);
-      debugPrint('✅ [ParkingBloc] Parking stopped successfully.');
-      add(LoadParkings(filter: _currentFilter)); // Refresh the list
+      add(LoadParkings(filter: _currentFilter));
     } catch (e) {
-      debugPrint('❌ [ParkingBloc] Error stopping parking: $e');
       emit(ParkingError('Failed to stop parking: $e'));
     }
   }
 
   void _onSelectParking(SelectParking event, Emitter<ParkingState> emit) {
-    debugPrint('🚗 [ParkingBloc] Selecting parking: ${event.selectedParking}');
     if (state is ParkingLoaded) {
       final currentState = state as ParkingLoaded;
       emit(currentState.copyWith(selectedParking: event.selectedParking));
     }
   }
 
-  Future<void> _onUpdateParking(
-      UpdateParking event, Emitter<ParkingState> emit) async {
-    debugPrint('✏️ [ParkingBloc] Updating parking: ${event.parking}');
+  Future<void> _onUpdateParking(UpdateParking event, Emitter<ParkingState> emit) async {
     try {
       await parkingRepository.update(event.parking.id, event.parking);
-      debugPrint('✅ [ParkingBloc] Parking updated');
-      add(LoadParkings(filter: _currentFilter)); // Refresh the list
+      add(LoadParkings(filter: _currentFilter));
     } catch (e) {
-      debugPrint('❌ [ParkingBloc] Error updating parking: $e');
       emit(ParkingError('Failed to update parking: $e'));
     }
   }
 
-  Future<void> _onScheduleParkingNotification(
-      ScheduleParkingNotification event, Emitter<ParkingState> emit) async {
-    debugPrint(
-        "ParkingBloc (_onScheduleParkingNotification): event.deliveryTime (UTC): ${event.deliveryTime}");
-
+  Future<void> _onScheduleParkingNotification(ScheduleParkingNotification event, Emitter<ParkingState> emit) async {
     try {
       await scheduleNotification(
         title: event.title,
         content: event.content,
         deliveryTime: event.deliveryTime,
-        id: event.parkingId.hashCode, // Use parkingId.hashCode for unique ID
+        id: event.parkingId.hashCode,
       );
-
-      debugPrint('✅ [ParkingBloc] Notification scheduled successfully.');
-
-      // Optionally, you can emit a state to indicate that the notification was scheduled
-      // emit(NotificationScheduled(parkingId: event.parkingId));
     } catch (e) {
-      debugPrint('❌ [ParkingBloc] Error scheduling notification: $e');
       emit(ParkingError('Failed to schedule notification: $e'));
     }
   }

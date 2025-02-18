@@ -6,7 +6,6 @@ import 'package:shared/bloc/parkings/parking_state.dart';
 import 'package:shared/shared.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 
-
 //current create
 
 class CreateParkingDialog extends StatefulWidget {
@@ -42,75 +41,89 @@ class _CreateParkingDialogState extends State<CreateParkingDialog> {
   }
 
   void _filterAvailableItems() {
-  debugPrint("Entering _filterAvailableItems");
+    debugPrint("Entering _filterAvailableItems");
 
-  final currentState = context.read<ParkingBloc>().state;
-  debugPrint("Current State: ${currentState.runtimeType}");
+    final currentState = context.read<ParkingBloc>().state;
+    debugPrint("Current State: ${currentState.runtimeType}");
 
-  if (currentState is ParkingLoaded) {
-    final loadedState = currentState;
-    final nowUtc = DateTime.now().toUtc(); // Current time in UTC (only get it ONCE)
+    if (currentState is ParkingLoaded) {
+      final loadedState = currentState;
+      final nowUtc =
+          DateTime.now().toUtc(); // Current time in UTC (only get it ONCE)
 
-    debugPrint("Filtering Available Items:");
-    debugPrint("Total Vehicles: ${widget.availableVehicles.length}");
-    debugPrint("Total Parking Spaces: ${widget.availableParkingSpaces.length}");
-    debugPrint("Current Parkings: ${loadedState.parkings.length}");
-
-    _filteredAvailableVehicles = widget.availableVehicles.where((vehicle) {
-      final isAvailable = !loadedState.parkings.any((parking) {
-        // More robust null check and availability logic:
-        return parking.vehicle?.id == vehicle.id &&
-               (parking.endTime == null || parking.endTime!.toUtc().isAfter(nowUtc));
-      });
-
+      debugPrint("Filtering Available Items:");
+      debugPrint("Total Vehicles: ${widget.availableVehicles.length}");
       debugPrint(
-          "Vehicle ${vehicle.licensePlate}: Available = $isAvailable "
-          "(endTime: ${loadedState.parkings.firstWhere(
-                (p) => p.vehicle?.id == vehicle.id,
-                orElse: () => Parking(
-                  startTime: DateTime.now(), // Provide default values
-                  endTime: null, // Important: endTime can be null
-                  vehicle: vehicle,
-                  parkingSpace: ParkingSpace(address: '', pricePerHour: 0, id: ''),
-                ),
-              ).endTime?.toUtc()}, "
-          "nowUtc: $nowUtc)");
-
-      return isAvailable;
-    }).toList();
-
-    _filteredAvailableParkingSpaces = widget.availableParkingSpaces.where((space) {
-      final isAvailable = !loadedState.parkings.any((parking) {
-       return parking.parkingSpace?.id == space.id &&
-               (parking.endTime == null || parking.endTime!.toUtc().isAfter(nowUtc));
-      });
-
+          "Total Parking Spaces: ${widget.availableParkingSpaces.length}");
       debugPrint(
-          "Parking Space ${space.address}: Available = $isAvailable "
-          "(endTime: ${loadedState.parkings.firstWhere(
-                (p) => p.parkingSpace?.id == space.id,
-                orElse: () => Parking(
-                  startTime: DateTime.now(), // Provide default values
-                  endTime: null, // Important: endTime can be null
-                  vehicle: Vehicle(owner: Person(name: '', id: '', authId: '', ssn: ''), licensePlate: '', vehicleType: ''),
-                  parkingSpace: space,
-                ),
-              ).endTime?.toUtc()}, "
-          "nowUtc: $nowUtc)");
+          "All Parkings: ${loadedState.allParkings.length}"); // Log allParkings
 
-      return isAvailable;
-    }).toList();
-    
-    debugPrint("Filtered Vehicles: ${_filteredAvailableVehicles.length}");
-    debugPrint("Filtered Parking Spaces: ${_filteredAvailableParkingSpaces.length}");
-    debugPrint("Filtered Vehicles (License Plates): ${_filteredAvailableVehicles.map((v) => v.licensePlate).join(", ")}");
-    debugPrint("Filtered Parking Spaces (Addresses): ${_filteredAvailableParkingSpaces.map((s) => s.address).join(", ")}");
+      _filteredAvailableVehicles = widget.availableVehicles.where((vehicle) {
+        final isAvailable = !loadedState.allParkings.any((parking) {
+          // Use allParkings
+          return parking.vehicle?.id == vehicle.id &&
+              (parking.endTime == null ||
+                  parking.endTime!.toUtc().isAfter(nowUtc));
+        });
 
-  } else {
-    debugPrint("Current State is NOT ParkingLoaded: ${currentState.runtimeType}");
+        debugPrint("Vehicle ${vehicle.licensePlate}: Available = $isAvailable "
+            "(endTime: ${loadedState.allParkings.firstWhere(
+                  // Use allParkings here too
+                  (p) => p.vehicle?.id == vehicle.id,
+                  orElse: () => Parking(
+                    startTime: DateTime.now(),
+                    endTime: null,
+                    vehicle: vehicle,
+                    parkingSpace:
+                        ParkingSpace(address: '', pricePerHour: 0, id: ''),
+                  ),
+                ).endTime?.toUtc()}, "
+            "nowUtc: $nowUtc)");
+
+        return isAvailable;
+      }).toList();
+
+      _filteredAvailableParkingSpaces =
+          widget.availableParkingSpaces.where((space) {
+        final isAvailable = !loadedState.allParkings.any((parking) {
+          // Use allParkings
+          return parking.parkingSpace?.id == space.id &&
+              (parking.endTime == null ||
+                  parking.endTime!.toUtc().isAfter(nowUtc));
+        });
+
+        debugPrint("Parking Space ${space.address}: Available = $isAvailable "
+            "(endTime: ${loadedState.allParkings.firstWhere(
+                  // And here
+                  (p) => p.parkingSpace?.id == space.id,
+                  orElse: () => Parking(
+                    startTime: DateTime.now(),
+                    endTime: null,
+                    vehicle: Vehicle(
+                        owner: Person(name: '', id: '', authId: '', ssn: ''),
+                        licensePlate: '',
+                        vehicleType: ''),
+                    parkingSpace: space,
+                  ),
+                ).endTime?.toUtc()}, "
+            "nowUtc: $nowUtc)");
+
+        return isAvailable;
+      }).toList();
+
+      debugPrint("Filtered Vehicles: ${_filteredAvailableVehicles.length}");
+      debugPrint(
+          "Filtered Parking Spaces: ${_filteredAvailableParkingSpaces.length}");
+      debugPrint(
+          "Filtered Vehicles (License Plates): ${_filteredAvailableVehicles.map((v) => v.licensePlate).join(", ")}");
+      debugPrint(
+          "Filtered Parking Spaces (Addresses): ${_filteredAvailableParkingSpaces.map((s) => s.address).join(", ")}");
+    } else {
+      debugPrint(
+          "Current State is NOT ParkingLoaded: ${currentState.runtimeType}");
+    }
+    debugPrint("Exiting _filterAvailableItems");
   }
-  debugPrint("Exiting _filterAvailableItems");
-}
 
   @override
   Widget build(BuildContext context) {
@@ -175,70 +188,57 @@ class _CreateParkingDialogState extends State<CreateParkingDialog> {
                 validator: (value) =>
                     value == null ? 'Please select a parking space' : null,
               ),
-              // Date/Time Picker for Estimated End Time
-              DateTimeField(
-                decoration: const InputDecoration(
-                  labelText: 'Estimated End Time (Optional)',
-                ),
-                // format: DateFormat("yyyy-MM-ddTHH:mm:ss.SSSSSS"), //
-                format: DateFormat("yyyy-MM-ddTHH:mm:ss"), //
-                onShowPicker: (context, currentValue) async {
-                  final date = await showDatePicker(
-                    context: context,
-                    initialDate: currentValue ?? DateTime.now(),
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime(2100),
-                  );
-                  if (date != null) {
-                    final time = await showTimePicker(
-                      // ignore: use_build_context_synchronously
-                      context: context,
-                      initialTime: TimeOfDay.fromDateTime(
-                        currentValue ?? DateTime.now(),
-                      ),
-                    );
-                    return DateTimeField.combine(date, time);
-                  } else {
-                    debugPrint(
-                        "[create_parking_dialog]: show it $currentValue");
-                    return currentValue;
-                  }
-                },
-                onChanged: (DateTime? value) {
-                  debugPrint(
-                      "Selected DateTime value: $value, Type: ${value.runtimeType}");
-// todo can i remove this?
-                  if (value != null) {
-                    // Handle the case where the user selected a date/time
-                    estimatedEndTime = DateTime(
-                      value.year,
-                      value.month,
-                      value.day,
-                      value.hour,
-                      value.minute,
-                      value.second,
-                      // value.millisecond,
-                      // value.microsecond,
-                    ); // Create a new DateTime object
+              
+             DateTimeField(
+  decoration: const InputDecoration(
+    labelText: 'Estimated End Time (Optional)',
+  ),
+  format: DateFormat("yyyy-MM-ddTHH:mm:ss"),
+  onShowPicker: (context, currentValue) async {
+  DateTime? pickedDate = currentValue; // Initialize with current value
+  TimeOfDay? pickedTime;
+  DateTime? finalDateTime;
 
-                    debugPrint(
-                        "New estimatedEndTime value: $estimatedEndTime, Type: ${estimatedEndTime.runtimeType}");
-                  } else {
-                    // Handle null case appropriately
-                    estimatedEndTime =
-                        null; // Or some default DateTime if needed
-                    debugPrint("estimatedEndTime set to null");
-                  }
-                },
-                // onChanged: (DateTime? value) {
-                //   debugPrint(
-                //       "[create_parking_dialog:] Selected DateTime value: $value, Type: ${value.runtimeType}");
-                //   setState(() {
-                //     estimatedEndTime = value;
-                //   });
-                // },
-                // You can add a validator if you want to make it required
-              ),
+  final date = await showDatePicker(
+    context: context,
+    initialDate: currentValue ?? DateTime.now(),
+    firstDate: DateTime.now(),
+    lastDate: DateTime(2100),
+  );
+
+  if (date != null) {
+    pickedDate = date; // Update pickedDate if date is selected
+
+    // Initialize time based on currentValue only if same date is picked
+    if (currentValue != null && currentValue.year == date.year && currentValue.month == date.month && currentValue.day == date.day) {
+      pickedTime = TimeOfDay.fromDateTime(currentValue);
+    }
+
+    final time = await showTimePicker(
+      // ignore: use_build_context_synchronously
+      context: context,
+      initialTime: pickedTime ?? TimeOfDay.fromDateTime(
+        currentValue ?? DateTime.now(),
+      ),
+    );
+
+    if (time != null) {
+      pickedTime = time;
+      finalDateTime = DateTimeField.combine(pickedDate, pickedTime); // Combine date and time. Use pickedDate!
+    } else {
+      finalDateTime = pickedDate; // Only date selected. Use pickedDate
+    }
+  } else {
+      finalDateTime = currentValue; // Use the initial value if date picker is cancelled.
+  }
+
+  estimatedEndTime = finalDateTime; // Set estimatedEndTime 
+  return finalDateTime; // Return the final DateTime
+},
+  onChanged: (DateTime? value) {
+    // Do NOTHING here.  This is essential.
+  },
+),
             ],
           ),
         ),
