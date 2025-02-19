@@ -1,190 +1,185 @@
-import 'package:admin_app/utils/go_router_refresh_stream.dart';
-import 'package:admin_app/views/parking/parking_view.dart';
-import 'package:admin_app/views/parking_spaces/parking_space_view.dart';
-import 'package:admin_app/views/person/person_view.dart';
-import 'package:admin_app/views/register_view.dart';
-import 'package:admin_app/views/statistics_view.dart';
-import 'package:admin_app/views/vehicles/vehicles_view.dart';
+import 'package:admin_app/utils/go_router_refresh_stream.dart';  
+import 'package:admin_app/views/parking/parking_view.dart';  
+import 'package:admin_app/views/parking_spaces/parking_space_view.dart';  
+import 'package:admin_app/views/person/person_view.dart';  
+import 'package:admin_app/views/register_view.dart';  
+import 'package:admin_app/views/statistics_view.dart';  
+import 'package:admin_app/views/vehicles/vehicles_view.dart';  
+import 'package:shared/bloc/auth/auth_firebase_bloc.dart';  
+import 'package:firebase_core/firebase_core.dart';  
+import 'package:firebase_repositories/firebase_repositories.dart';  
+import 'package:flutter/material.dart'; 
+import 'package:flutter_bloc/flutter_bloc.dart'; 
+import 'package:go_router/go_router.dart';  
+import 'package:provider/provider.dart'; // Provider for state management (ThemeNotifier)
+import 'package:admin_app/firebase_options.dart';  
+import 'package:admin_app/theme_notifier.dart';  
+import 'package:admin_app/views/login_view.dart';  
+import 'package:admin_app/views/nav_rail_view.dart';  
+import 'package:shared/bloc/person/person_bloc.dart';  
+import 'package:shared/bloc/person/person_event.dart';  
+import 'package:shared/bloc/statistics/statistics_bloc.dart'; 
+import 'package:shared/bloc/statistics/statistics_event.dart';  
+import 'package:shared/bloc/vehicles/vehicles_bloc.dart';  
+import 'package:shared/bloc/vehicles/vehicles_event.dart'; 
+import 'package:shared/bloc/parking_spaces/parking_space_bloc.dart';  
+import 'package:shared/bloc/parking_spaces/parking_space_event.dart';  
+import 'package:shared/bloc/parkings/parking_bloc.dart';  
+import 'package:shared/bloc/parkings/parking_event.dart';  
+import 'package:cloud_firestore/cloud_firestore.dart';  
 
-import 'package:shared/bloc/auth/auth_firebase_bloc.dart';
-
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_repositories/firebase_repositories.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-
-import 'package:admin_app/firebase_options.dart';
-
-import 'package:admin_app/theme_notifier.dart';
-import 'package:admin_app/views/login_view.dart';
-import 'package:admin_app/views/nav_rail_view.dart';
-import 'package:shared/bloc/person/person_bloc.dart';
-import 'package:shared/bloc/person/person_event.dart';
-import 'package:shared/bloc/statistics/statistics_bloc.dart';
-import 'package:shared/bloc/statistics/statistics_event.dart';
-import 'package:shared/bloc/vehicles/vehicles_bloc.dart';
-import 'package:shared/bloc/vehicles/vehicles_event.dart';
-import 'package:shared/bloc/parking_spaces/parking_space_bloc.dart';
-import 'package:shared/bloc/parking_spaces/parking_space_event.dart';
-import 'package:shared/bloc/parkings/parking_bloc.dart';
-import 'package:shared/bloc/parkings/parking_event.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
-
-// Import Firebase Core
-
+// Main function to initialize Firebase and run the app
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized(); 
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+  await Firebase.initializeApp(  
+    options: DefaultFirebaseOptions.currentPlatform,  
   );
 
-  runApp(const MyApp());
+  runApp(const MyApp());  
 }
 
+// Main app widget
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // MultiRepositoryProvider to provide repositories to the app
     return MultiRepositoryProvider(
       providers: [
-        RepositoryProvider<AuthRepository>(
+        RepositoryProvider<AuthRepository>(  
           create: (_) => AuthRepository(),
         ),
-        RepositoryProvider<UserRepository>(
+        RepositoryProvider<UserRepository>(  
           create: (_) => UserRepository(),
         ),
-        RepositoryProvider<PersonRepository>(
+        RepositoryProvider<PersonRepository>(  
           create: (_) => PersonRepository(),
         ),
-        RepositoryProvider<VehicleRepository>(
+        RepositoryProvider<VehicleRepository>( 
           create: (_) => VehicleRepository(),
         ),
-        // RepositoryProvider<ParkingRepository>(
-        //   create: (_) => ParkingRepository(),
-        // ),
-        RepositoryProvider<ParkingRepository>(
+        RepositoryProvider<ParkingRepository>(  
           create: (context) => ParkingRepository(
-              db: FirebaseFirestore.instance), // Provide db here!
+              db: FirebaseFirestore.instance),  
         ),
-
-        RepositoryProvider<ParkingSpaceRepository>(
+        RepositoryProvider<ParkingSpaceRepository>( 
           create: (_) => ParkingSpaceRepository(db: FirebaseFirestore.instance),
         ),
       ],
+      // MultiBlocProvider to provide BLoCs to the app
       child: MultiBlocProvider(
         providers: [
-          BlocProvider(
+          BlocProvider( // Authentication BLoC
             create: (context) => AuthFirebaseBloc(
               authRepository: context.read<AuthRepository>(),
               userRepository: context.read<UserRepository>(),
-              personRepository: context
-                  .read<PersonRepository>(), // ✅ Fix: Provide personRepository
-            )..add(AuthFirebaseUserSubscriptionRequested()),
+              personRepository: context.read<PersonRepository>(),
+            )..add(AuthFirebaseUserSubscriptionRequested()), // Start listening for auth changes
           ),
-          BlocProvider(
+          BlocProvider(  
             create: (context) => PersonBloc(
               personRepository: context.read<PersonRepository>(),
-            )..add(LoadPersons()),
+            )..add(LoadPersons()),  
           ),
-          BlocProvider(
+          BlocProvider(  
             create: (context) => ParkingBloc(
               parkingRepository: context.read<ParkingRepository>(),
               parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
               vehicleRepository: context.read<VehicleRepository>(),
-            )..add(LoadParkings()),
+            )..add(LoadParkings()), 
           ),
-          BlocProvider(
+          BlocProvider( 
             create: (context) => VehiclesBloc(
               vehicleRepository: context.read<VehicleRepository>(),
-            )..add(LoadVehicles()),
+            )..add(LoadVehicles()),  
           ),
-          BlocProvider(
+          BlocProvider(  
             create: (context) => ParkingSpaceBloc(
               parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
-            )..add(LoadParkingSpaces()),
+            )..add(LoadParkingSpaces()),  
           ),
-          BlocProvider(
+          BlocProvider(  
             create: (context) => StatisticsBloc(
               parkingRepository: context.read<ParkingRepository>(),
               parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
-            )..add(LoadStatistics()),
+            )..add(LoadStatistics()), 
           ),
         ],
-        child: const AppInitializer(),
+        child: const AppInitializer(),  
       ),
     );
   }
 }
 
+// Widget to initialize the app's routing and theme
 class AppInitializer extends StatelessWidget {
   const AppInitializer({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Configure GoRouter for navigation
     final router = GoRouter(
-      initialLocation: '/login',
-      refreshListenable: GoRouterRefreshStream(
-        context.read<AuthFirebaseBloc>().stream,
+      initialLocation: '/login',  
+      refreshListenable: GoRouterRefreshStream(  
+        context.read<AuthFirebaseBloc>().stream,  
       ),
       redirect: (context, state) {
-        final authState = context.read<AuthFirebaseBloc>().state;
-        final isLoggedIn = authState is AuthAuthenticated;
-        final isRegistering = state.uri.toString() == '/register';
-        final isPendingRegistration = authState is AuthUnauthenticated &&
+        final authState = context.read<AuthFirebaseBloc>().state;  
+        final isLoggedIn = authState is AuthAuthenticated;  
+        final isRegistering = state.uri.toString() == '/register';  
+        final isPendingRegistration = authState is AuthUnauthenticated &&  
             authState.errorMessage ==
-                'Pending person creation'; // ✅ Detect pending state
+                'Pending person creation';
 
         debugPrint(
             'Redirect Logic: state=${state.uri.toString()}, isLoggedIn=$isLoggedIn, isRegistering=$isRegistering, isPendingRegistration=$isPendingRegistration');
 
         if (isPendingRegistration) {
-          return '/register'; // ✅ Stay in registration flow until person is created
+          return '/register';  
         }
 
         if (!isLoggedIn && !isRegistering) {
-          return '/login'; // ✅ Send user to login only if fully unauthenticated
+          return '/login';  
         }
 
         if (isLoggedIn) {
-          return '/start'; // ✅ Send user to main app after full authentication
+          return '/start';  
         }
 
-        return null;
+        return null; 
       },
       routes: [
-        GoRoute(
+        GoRoute(  
           path: '/login',
           builder: (context, state) => const LoginView(),
         ),
-        GoRoute(
+        GoRoute(  
           path: '/register',
           builder: (context, state) => const RegisterView(),
         ),
-        GoRoute(
+        GoRoute( // Start route (main app)
           path: '/start',
           builder: (context, state) => const NavRailView(initialIndex: 0),
-          routes: [
-            GoRoute(
+          routes: [ // Sub-routes for the main app
+            GoRoute(  
               path: 'statistics',
               builder: (context, state) => const StatisticsView(),
             ),
-            GoRoute(
+            GoRoute( 
               path: 'parkings',
               builder: (context, state) => const ParkingView(),
             ),
-            GoRoute(
+            GoRoute(  
               path: 'parking-spaces',
               builder: (context, state) => const ParkingSpacesView(),
             ),
-            GoRoute(
+            GoRoute(  
               path: 'vehicles',
               builder: (context, state) => const VehiclesView(),
             ),
-            GoRoute(
+            GoRoute(  
               path: 'persons',
               builder: (context, state) => const PersonView(),
             ),

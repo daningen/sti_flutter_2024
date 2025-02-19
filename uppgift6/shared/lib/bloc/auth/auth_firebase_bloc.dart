@@ -14,22 +14,25 @@ part 'auth_firebase_event.dart';
 class AuthFirebaseBloc extends Bloc<AuthFirebaseEvent, AuthState> {
   final AuthRepository authRepository;
   final UserRepository userRepository;
-  final PersonRepository personRepository; // ✅ Added PersonRepository
+  final PersonRepository personRepository;
 
   AuthFirebaseBloc({
     required this.authRepository,
     required this.userRepository,
-    required this.personRepository, // ✅ Initialize PersonRepository
+    required this.personRepository,
   }) : super(AuthInitial()) {
     on<AuthFirebaseLogin>(_onLogin);
     on<AuthFirebaseRegister>(_onRegister);
     on<AuthFirebaseCreatePerson>(_onCreatePerson);
     on<AuthFirebaseUserSubscriptionRequested>(_onUserSubscriptionRequested);
     on<LogoutRequested>(_onLogout);
+
+    // Start listening to authentication changes when the bloc is created.
+    add(AuthFirebaseUserSubscriptionRequested());
   }
 
   void _onLogin(AuthFirebaseLogin event, Emitter<AuthState> emit) async {
-    emit(AuthPending());
+    emit(AuthPending()); // Emit loading state
 
     try {
       final userCredential = await authRepository.login(
@@ -43,19 +46,20 @@ class AuthFirebaseBloc extends Bloc<AuthFirebaseEvent, AuthState> {
         return;
       }
 
-      // 🔍 Fetch associated person data
-      final person = await personRepository.getByAuthId(user.uid); // ✅ Fix: Use personRepository
+      final person = await personRepository.getByAuthId(user.uid);
 
       if (person == null) {
-        debugPrint("🟡 Login successful, but no Person found. Waiting for creation.");
+        debugPrint(
+            "🟡 Login successful, but no Person found. Waiting for creation.");
         emit(AuthUnauthenticated(
             errorMessage: "Pending person creation, user=${user.email}"));
         return;
       }
 
-      // ✅ User and person exist, mark as fully authenticated
       debugPrint("✅ Login complete. User=${user.email}, Person=${person.name}");
-      emit(AuthAuthenticated(user: user)); // 🔥 Mark as authenticated
+      emit(AuthAuthenticated(
+          user: user,
+          person: person)); // Emit authenticated state with user and person
     } catch (e) {
       emit(AuthFail(message: "Login failed: ${e.toString()}"));
     }
@@ -65,7 +69,8 @@ class AuthFirebaseBloc extends Bloc<AuthFirebaseEvent, AuthState> {
     AuthFirebaseRegister event,
     Emitter<AuthState> emit,
   ) async {
-    emit(AuthPending());
+    emit(AuthPending()); // Emit loading state
+
     try {
       debugPrint("Processing registration for email: ${event.email}");
 
@@ -78,6 +83,7 @@ class AuthFirebaseBloc extends Bloc<AuthFirebaseEvent, AuthState> {
         debugPrint('✅ Registration successful. User UID: ${firebaseUser.uid}');
 
         emit(AuthAuthenticatedNoUser(
+          // User registered but person data missing
           authId: firebaseUser.uid,
           email: firebaseUser.email!,
         ));
@@ -110,7 +116,6 @@ class AuthFirebaseBloc extends Bloc<AuthFirebaseEvent, AuthState> {
 
       debugPrint('✅ Person created successfully');
 
-      // ✅ Fetch user from Firebase Authentication
       final firebaseUser = FirebaseAuth.instance.currentUser;
       if (firebaseUser == null) {
         debugPrint(
@@ -120,8 +125,18 @@ class AuthFirebaseBloc extends Bloc<AuthFirebaseEvent, AuthState> {
         return;
       }
 
-      // ✅ Now update state to authenticated
-      emit(AuthAuthenticated(user: firebaseUser));
+      // Fetch the person object to emit correct state
+      final createdPerson =
+          await personRepository.getByAuthId(firebaseUser.uid);
+
+      if (createdPerson != null) {
+        emit(AuthAuthenticated(
+            user: firebaseUser,
+            person:
+                createdPerson)); // Emit authenticated state with user and person
+      } else {
+        emit(AuthFirebaseError('Failed to load user data after creation.'));
+      }
     } catch (e) {
       debugPrint('❌ Error creating person: $e');
       emit(AuthFirebaseError('Failed to create person'));
@@ -133,7 +148,33 @@ class AuthFirebaseBloc extends Bloc<AuthFirebaseEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     debugPrint('🔄 Fetching user subscription...');
-    // Implement logic for handling subscription if needed
+
+     
+    return emit.onEach<firebase_auth.User?>(
+      authRepository.signedInAuthId,  
+      onData: (authUser) async {
+        if (authUser == null) {
+          emit(AuthUnauthenticated());  
+        } else {
+          // Check if the user has a corresponding person document
+          final person = await personRepository.getByAuthId(authUser.uid);
+
+          if (person == null) {
+            emit(AuthAuthenticatedNoUser(
+              // User exists in Firebase Auth, but not in Firestore
+              authId: authUser.uid,
+              email: authUser.email!,
+            ));
+          } else {
+            emit(AuthAuthenticated(
+                user: authUser, person: person)); // User is fully authenticated
+          }
+        }
+      },
+      onError: (error, stackTrace) {
+        emit(AuthFail(message: error.toString()));  
+      },
+    );
   }
 
   Future<void> _onLogout(
@@ -142,7 +183,7 @@ class AuthFirebaseBloc extends Bloc<AuthFirebaseEvent, AuthState> {
   ) async {
     try {
       await authRepository.logout();
-      emit(AuthUnauthenticated(errorMessage: 'Logged out successfully.'));
+       
     } catch (e) {
       emit(AuthFail(message: e.toString()));
     }

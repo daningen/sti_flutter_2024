@@ -4,7 +4,10 @@ import 'package:flutter/foundation.dart';
 class AuthRepository {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
-  // Getter for signed-in user as a stream
+  /// Provides a stream of Firebase Auth user objects.
+  /// This stream emits a User object whenever the authentication state changes
+  /// (e.g., user logs in, logs out, or the authentication state is initialized).
+  /// It emits `null` if the user is not authenticated.
   Stream<User?> get signedInAuthId => _firebaseAuth.authStateChanges();
 
   Future<UserCredential> login({
@@ -12,19 +15,19 @@ class AuthRepository {
     required String password,
   }) async {
     try {
-      // Set persistence only for web platforms
+      // Set persistence only for web platforms.
       if (kIsWeb) {
         await _firebaseAuth.setPersistence(Persistence.LOCAL);
       }
 
-      // Sign in with email and password
+      // Sign in with email and password using Firebase Auth.
       return await _firebaseAuth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
     } catch (e) {
-      // Log or handle the error
       debugPrint("Login error: $e");
+
       rethrow;
     }
   }
@@ -40,9 +43,12 @@ class AuthRepository {
   }
 
   Future<void> logout() async {
+    // Sign out the current user using Firebase Auth.
     await _firebaseAuth.signOut();
   }
 
+  /// Gets the currently signed-in user.
+  /// Returns the Firebase Auth User object if a user is signed in, or `null` otherwise.
   User? getCurrentUser() {
     return _firebaseAuth.currentUser;
   }
