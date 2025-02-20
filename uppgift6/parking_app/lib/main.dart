@@ -1,16 +1,11 @@
-// import 'dart:io';
-
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_repositories/firebase_repositories.dart';
- 
-// import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:notification_utils/notification_utils.dart';
-// import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:provider/provider.dart';
 import 'package:shared/bloc/auth/auth_firebase_bloc.dart';
 import 'package:shared/bloc/person/person_bloc.dart';
@@ -29,20 +24,22 @@ import 'package:parking_app/firebase_options.dart';
 import 'package:parking_app/providers/theme_notifier.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'; // Import the local notifications plugin
 
+// Initialize FlutterLocalNotificationsPlugin
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
+// Global key for navigation
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter is initialized
 
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+    options: DefaultFirebaseOptions.currentPlatform, // Initialize Firebase
   );
 
-  await configureLocalTimeZone();
-  await requestPermissions(); // Request permissions BEFORE initialization
+  await configureLocalTimeZone(); // Configure the local timezone for notifications
+  await requestPermissions(); // Request notification permissions
 
   // Android initialization settings
   var initializationSettingsAndroid =
@@ -58,22 +55,15 @@ Future<void> main() async {
   debugPrint("Initializing notifications...");
   var isInitialized = await flutterLocalNotificationsPlugin.initialize(
     initializationSettings,
-    onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
+    onDidReceiveNotificationResponse: onDidReceiveNotificationResponse, // Callback for notification taps
   );
 
   debugPrint("Notification initialized: $isInitialized");
-  // if (isInitialized != null && isInitialized) {
-  //   Future.delayed(Duration(seconds: 5), () async {
-  //     await showTestNotification();
-  //   });
-  // } else {
-  //   debugPrint(
-  //       "Failed to initialize notifications. Test notification not sent.");
-  // }
 
-  runApp(const MyApp());
+  runApp(const MyApp()); // Run the app
 }
 
+// Function to request notification permissions
 Future<void> requestPermissions() async {
   debugPrint("Requesting notification permissions...");
   if (Platform.isIOS) {
@@ -93,6 +83,7 @@ Future<void> requestPermissions() async {
   }
 }
 
+// Function to show a test notification (for debugging)
 Future<void> showTestNotification() async {
   debugPrint("Showing test notification...");
 
@@ -119,12 +110,13 @@ Future<void> showTestNotification() async {
   debugPrint("Test notification should be visible.");
 }
 
+// Callback function for when a notification is tapped
 void onDidReceiveNotificationResponse(
     NotificationResponse notificationResponse) {
   debugPrint('Notification tapped: ${notificationResponse.payload}');
   if (notificationResponse.payload != null) {
-    navigatorKey.currentState
-        ?.pushNamed('/parkings', arguments: notificationResponse.payload);
+    navigatorKey.currentState?.pushNamed('/parkings',
+        arguments: notificationResponse.payload); // Navigate to parkings view
   }
 }
 
@@ -139,7 +131,7 @@ class MyApp extends StatelessWidget {
         RepositoryProvider<UserRepository>(create: (_) => UserRepository()),
         RepositoryProvider<PersonRepository>(create: (_) => PersonRepository()),
         RepositoryProvider<VehicleRepository>(
-            create: (_) => VehicleRepository()),
+            create: (_) => VehicleRepository(db: FirebaseFirestore.instance)),
         RepositoryProvider<ParkingRepository>(
             create: (_) => ParkingRepository(db: FirebaseFirestore.instance)),
         RepositoryProvider<ParkingSpaceRepository>(
@@ -153,38 +145,40 @@ class MyApp extends StatelessWidget {
               authRepository: context.read<AuthRepository>(),
               userRepository: context.read<UserRepository>(),
               personRepository: context.read<PersonRepository>(),
-            )..add(AuthFirebaseUserSubscriptionRequested()),
+            )..add(AuthFirebaseUserSubscriptionRequested()), // Subscribe to user changes
           ),
           BlocProvider(
             create: (context) => PersonBloc(
               personRepository: context.read<PersonRepository>(),
-            )..add(LoadPersons()),
+            )..add(LoadPersons()), // Load persons initially
           ),
           BlocProvider(
             create: (context) => ParkingBloc(
               parkingRepository: context.read<ParkingRepository>(),
               parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
               vehicleRepository: context.read<VehicleRepository>(),
-            )..add(LoadParkings()),
+              authFirebaseBloc: context.read<AuthFirebaseBloc>(),
+            )..add(LoadParkings()), // Load parkings initially
           ),
           BlocProvider(
             create: (context) => VehiclesBloc(
               vehicleRepository: context.read<VehicleRepository>(),
-            )..add(LoadVehicles()),
+              authFirebaseBloc: context.read<AuthFirebaseBloc>(),
+            )..add(LoadVehicles()), // Load vehicles initially
           ),
           BlocProvider(
             create: (context) => ParkingSpaceBloc(
               parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
-            )..add(LoadParkingSpaces()),
+            )..add(LoadParkingSpaces()), // Load parking spaces initially
           ),
           BlocProvider(
             create: (context) => StatisticsBloc(
               parkingRepository: context.read<ParkingRepository>(),
               parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
-            )..add(LoadStatistics()),
+            )..add(LoadStatistics()), // Load statistics initially
           ),
         ],
-        child: const AppInitializer(),
+        child: const AppInitializer(), // Initialize the app
       ),
     );
   }
@@ -195,21 +189,21 @@ class AppInitializer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final router = createRouter(context);
+    final router = createRouter(context); // Create the router
 
     return ChangeNotifierProvider(
-      create: (context) => ThemeNotifier(),
+      create: (context) => ThemeNotifier(), // Provide the theme notifier
       child: Builder(
         builder: (context) {
-          final themeNotifier = Provider.of<ThemeNotifier>(context);
+          final themeNotifier = Provider.of<ThemeNotifier>(context); // Access the theme notifier
 
           return MaterialApp.router(
-            routerConfig: router,
+            routerConfig: router, // Set the router configuration
             title: 'Parking App',
             debugShowCheckedModeBanner: false,
-            theme: ThemeData.light(),
-            darkTheme: ThemeData.dark(),
-            themeMode: themeNotifier.themeMode,
+            theme: ThemeData.light(), // Set light theme
+            darkTheme: ThemeData.dark(), // Set dark theme
+            themeMode: themeNotifier.themeMode, // Set theme mode
           );
         },
       ),

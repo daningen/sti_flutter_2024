@@ -4,11 +4,9 @@ import 'package:shared/shared.dart';
 import '../../../utils/validators.dart';
 
 class CreateVehicleDialog extends StatefulWidget {
-  final Function(Vehicle) onCreate;
   final Future<List<Person>> ownersFuture;
 
   const CreateVehicleDialog({
-    required this.onCreate,
     required this.ownersFuture,
     super.key,
   });
@@ -22,6 +20,7 @@ class _CreateVehicleDialogState extends State<CreateVehicleDialog> {
   final licensePlateController = TextEditingController();
   String? selectedVehicleType;
   Person? selectedOwner;
+  String? selectedOwnerAuthId; // Store the selected owner's authId
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +30,7 @@ class _CreateVehicleDialogState extends State<CreateVehicleDialog> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
+
         final persons = snapshot.data ?? [];
 
         return AlertDialog(
@@ -53,7 +53,8 @@ class _CreateVehicleDialogState extends State<CreateVehicleDialog> {
                             child: Text(type),
                           ))
                       .toList(),
-                  onChanged: (value) => selectedVehicleType = value,
+                  onChanged: (value) => setState(
+                      () => selectedVehicleType = value), // Add setState
                   validator: (value) =>
                       value == null ? 'Please select a vehicle type' : null,
                 ),
@@ -65,7 +66,11 @@ class _CreateVehicleDialogState extends State<CreateVehicleDialog> {
                       child: Text(person.name),
                     );
                   }).toList(),
-                  onChanged: (person) => selectedOwner = person,
+                  onChanged: (person) => setState(() {
+                    // Add setState
+                    selectedOwner = person;
+                    selectedOwnerAuthId = person?.authId; // Store the authId
+                  }),
                   validator: (value) =>
                       value == null ? 'Please select an owner' : null,
                 ),
@@ -80,13 +85,24 @@ class _CreateVehicleDialogState extends State<CreateVehicleDialog> {
             ElevatedButton(
               onPressed: () {
                 if (formKey.currentState!.validate()) {
+                  if (selectedOwnerAuthId == null) {
+                    // Only check ownerAuthId
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Owner is missing!')),
+                    );
+                    return;
+                  }
+
                   final newVehicle = Vehicle(
                     licensePlate: licensePlateController.text,
                     vehicleType: selectedVehicleType!,
-                  ).copyWith(owner: selectedOwner); // Set owner using copyWith
+                    authId: selectedOwnerAuthId!, // Correct: Use ownerAuthId
+                    ownerAuthId:
+                        selectedOwnerAuthId!, // Correct: Use ownerAuthId
+                  );
 
-                  Navigator.of(context).pop(newVehicle);
-                  widget.onCreate(newVehicle);
+                  Navigator.of(context)
+                      .pop(newVehicle); // Pop with the new Vehicle
                 }
               },
               child: const Text('Create'),

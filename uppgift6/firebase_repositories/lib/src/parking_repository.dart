@@ -1,95 +1,124 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
-import 'package:shared/shared.dart';
-import 'package:flutter/foundation.dart';
-import 'package:uuid/uuid.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // For Firestore interaction
+import 'package:shared/shared.dart'; // For shared models (Parking)
+import 'package:flutter/foundation.dart'; // For debugPrint
+import 'package:uuid/uuid.dart'; // For generating unique IDs
 
 class ParkingRepository implements RepositoryInterface<Parking> {
-  final FirebaseFirestore _db;
-  final Uuid _uuid = const Uuid();
+  final FirebaseFirestore _db; // Firestore instance
+  final Uuid _uuid = const Uuid(); // UUID generator
 
   ParkingRepository({required FirebaseFirestore db}) : _db = db;
 
+  /// Creates a new parking session.
   @override
   Future<Parking> create(Parking parking) async {
     debugPrint(
-        '[ParkingRepository] creating a new parking session: ${parking.toJson()}');
+        '[ParkingRepository] Creating a new parking session: ${parking.toJson()}');
 
-    final parkingId = parking.id.isEmpty ? _uuid.v4() : parking.id;
-    final parkingToCreate = parking.copyWith(id: parkingId);
+    final parkingId = parking.id.isEmpty
+        ? _uuid.v4()
+        : parking.id; // Generate ID if not provided
+    final parkingToCreate =
+        parking.copyWith(id: parkingId); // Create a copy with the ID
 
     try {
       await _db
           .collection("parkings")
           .doc(parkingId)
-          .set(parkingToCreate.toJson());
+          .set(parkingToCreate.toJson()); // Store in Firestore
       debugPrint(
           "[ParkingRepository] Parking created: ${parkingToCreate.toJson()}");
       return parkingToCreate;
     } catch (e) {
       debugPrint("[ParkingRepository] Error creating parking: $e");
-      rethrow;
+      rethrow; // Re-throw the error for handling elsewhere
     }
   }
 
+  /// Gets all parking sessions (for admin users).
   @override
   Future<List<Parking>> getAll() async {
     debugPrint("[ParkingRepository] Fetching all parking sessions.");
 
     try {
-      final snapshots = await _db.collection("parkings").get();
-      return _mapParkingSnapshots(snapshots);
+      final snapshots =
+          await _db.collection("parkings").get(); // Get all documents
+      return _mapParkingSnapshots(
+          snapshots); // Map snapshots to Parking objects
     } catch (e) {
       debugPrint("[ParkingRepository] Error fetching all parkings: $e");
       rethrow;
     }
   }
 
-  Stream<List<Parking>> getParkingsStream() {
-    debugPrint("[ParkingRepository] Getting parkings stream...");
+  /// Streams parking sessions based on user role and ID.
+  Stream<List<Parking>> getParkingsStream(
+      String userRole, String loggedInUserAuthId) {
+    debugPrint(
+        "[ParkingRepository] Getting parkings stream for role: $userRole, user: $loggedInUserAuthId");
 
-    return _db.collection('parkings').snapshots().map((snapshot) {
+    CollectionReference parkingsCollection = _db.collection('parkings');
+    Query query;
+
+    if (userRole == 'admin') {
+      debugPrint("[ParkingRepository] Querying all parkings (admin)");
+      query = parkingsCollection; // Admin: Get all parkings
+    } else {
+      // Regular user: Get only their parkings
       debugPrint(
-          "[ParkingRepository] Received parkings snapshot: ${snapshot.docs.length} documents");
-      final parkings = _mapParkingSnapshots(
-          snapshot); // Store the result of _mapParkingSnapshots
+          "[ParkingRepository] Querying parkings for user: $loggedInUserAuthId"); // Debug print for user query
+      query = parkingsCollection.where('vehicle.owner.authId',
+          isEqualTo: loggedInUserAuthId);
+      debugPrint("[ParkingRepository] the query result is: $query");
+    }
+
+    return query.snapshots().map((snapshot) {
       debugPrint(
-          "[ParkingRepository] Mapped parkings: $parkings"); // Log the mapped parkings
+          "[ParkingRepository] Received parkings snapshot: ${snapshot.docs.length} documents for user $loggedInUserAuthId"); // Print snapshot length
+      final parkings = _mapParkingSnapshots(snapshot);
+      debugPrint(
+          "[ParkingRepository] Mapped parkings length: ${parkings.length} for user $loggedInUserAuthId"); // Print mapped parkings length
       return parkings;
     }).handleError((error) {
       debugPrint("[ParkingRepository] Error getting parkings stream: $error");
-      return const Stream.empty();
+      return const Stream.empty(); // Return an empty stream on error
     });
   }
 
+  /// Gets a parking session by ID.
   @override
   Future<Parking?> getById(String id) async {
     debugPrint("[ParkingRepository] Fetching parking session with ID: $id");
 
     try {
-      final docRef = _db.collection("parkings").doc(id);
-      final snapshot = await docRef.get();
+      final docRef =
+          _db.collection("parkings").doc(id); // Get document reference
+      final snapshot = await docRef.get(); // Get document snapshot
 
       if (!snapshot.exists) {
-        return null; // Return null directly
+        return null; // Return null if document doesn't exist
       }
 
-      final data = snapshot.data() as Map<String, dynamic>;
-      data['id'] = snapshot.id;
-      return Parking.fromJson(data);
+      final data = snapshot.data() as Map<String, dynamic>; // Get data
+      data['id'] = snapshot.id; // Add document ID to data
+      return Parking.fromJson(data); // Create Parking object from data
     } catch (e) {
       debugPrint("[ParkingRepository] Error fetching parking by ID: $e");
       rethrow;
     }
   }
 
+  /// Updates a parking session.
   @override
   Future<Parking> update(String id, Parking parking) async {
     debugPrint("[ParkingRepository] Updating parking session with ID: $id");
     debugPrint("[ParkingRepository] Parking to update: ${parking.toJson()}");
 
     try {
-      await _db.collection("parkings").doc(id).set(parking.toJson());
+      await _db
+          .collection("parkings")
+          .doc(id)
+          .set(parking.toJson()); // Update in Firestore
       debugPrint("[ParkingRepository] Parking updated: ${parking.toJson()}");
       return parking;
     } catch (e) {
@@ -98,37 +127,43 @@ class ParkingRepository implements RepositoryInterface<Parking> {
     }
   }
 
+  /// Deletes a parking session.
   @override
   Future<Parking?> delete(String id) async {
     debugPrint("[ParkingRepository] Deleting parking session with ID: $id");
 
     try {
-      final parking = await getById(id);
+      final parking = await getById(id); // Get parking before deleting
       if (parking != null) {
-        await _db.collection("parkings").doc(id).delete();
+        await _db
+            .collection("parkings")
+            .doc(id)
+            .delete(); // Delete from Firestore
         debugPrint("[ParkingRepository] Parking deleted: $parking");
       } else {
         debugPrint("[ParkingRepository] Parking not found for deletion.");
       }
-      return parking;
+      return parking; // Return the deleted parking (or null if not found)
     } catch (e) {
       debugPrint("[ParkingRepository] Error deleting parking: $e");
       rethrow;
     }
   }
 
+  /// Stops a parking session (updates the endTime).
   Future<void> stop(String id) async {
     debugPrint("[ParkingRepository] Stopping parking session with ID: $id");
 
     try {
-      final parking = await getById(id);
+      final parking = await getById(id); // Get parking before stopping
       if (parking != null) {
         debugPrint("[ParkingRepository] Parking to stop: $parking");
-        final updatedParking = parking.copyWith(endTime: DateTime.now());
+        final updatedParking = parking.copyWith(
+            endTime: DateTime.now()); // Create updated parking object
         debugPrint(
             "[ParkingRepository] Updated parking object: $updatedParking");
 
-        await update(id, updatedParking);
+        await update(id, updatedParking); // Update in Firestore
         debugPrint("[ParkingRepository] Parking session stopped successfully.");
       } else {
         debugPrint("[ParkingRepository] Parking not found for stopping.");
@@ -140,6 +175,7 @@ class ParkingRepository implements RepositoryInterface<Parking> {
     }
   }
 
+  /// Maps Firestore QuerySnapshot to a list of Parking objects.
   List<Parking> _mapParkingSnapshots(QuerySnapshot snapshot) {
     List<Parking> parkings = [];
 
@@ -148,23 +184,25 @@ class ParkingRepository implements RepositoryInterface<Parking> {
 
       if (data == null) {
         debugPrint("WARNING: Document data is null for document ${doc.id}");
-        continue;
+        continue; // Skip this document if data is null
       }
 
       try {
         DateTime? endTime;
-        
+
         debugPrint(
             "[parking_repository:] Raw endTime value from Firestore (document ${doc.id}): ${data['endTime']}");
 
+        // Handle different endTime types (DateTime, String, or null)
         if (data['endTime'] != null) {
           debugPrint(
               "endTime type (document ${doc.id}): ${data['endTime'].runtimeType}");
 
-          if (data['endTime'] is DateTime) {
-            endTime = data['endTime'] as DateTime;
+          if (data['endTime'] is Timestamp) {
+            // Correctly handle Firestore Timestamp
+            endTime = (data['endTime'] as Timestamp).toDate();
             debugPrint(
-                "Parsed endTime (DateTime, document ${doc.id}): $endTime");
+                "Parsed endTime (Timestamp, document ${doc.id}): $endTime");
           } else if (data['endTime'] is String) {
             try {
               endTime = DateTime.parse(data['endTime']);
@@ -183,6 +221,7 @@ class ParkingRepository implements RepositoryInterface<Parking> {
           debugPrint(
               "WARNING: endTime is null in Firestore document: ${doc.id}");
         }
+
         debugPrint("Vehicle Data (Document ${doc.id}): ${data['vehicle']}");
         debugPrint(
             "ParkingSpace Data (Document ${doc.id}): ${data['parkingSpace']}");
@@ -190,13 +229,14 @@ class ParkingRepository implements RepositoryInterface<Parking> {
         final parking = Parking.fromJson({
           ...data,
           'endTime': endTime,
+          'id': doc.id, // Include the document ID explicitly
         });
 
         debugPrint('Parking from JSON (document ${doc.id}): $parking');
 
         parkings.add(parking);
         debugPrint(
-            "About to add to parkings list endTime: ${parking.endTime} for document ${doc.id}");
+            "Added to parkings list endTime: ${parking.endTime} for document ${doc.id}");
       } catch (e) {
         debugPrint(
             'Error deserializing parking (document ${doc.id}): $e, data: $data');

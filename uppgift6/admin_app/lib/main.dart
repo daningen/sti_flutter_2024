@@ -58,7 +58,7 @@ class MyApp extends StatelessWidget {
           create: (_) => PersonRepository(),
         ),
         RepositoryProvider<VehicleRepository>( 
-          create: (_) => VehicleRepository(),
+          create: (_) => VehicleRepository(db: FirebaseFirestore.instance),
         ),
         RepositoryProvider<ParkingRepository>(  
           create: (context) => ParkingRepository(
@@ -87,12 +87,12 @@ class MyApp extends StatelessWidget {
             create: (context) => ParkingBloc(
               parkingRepository: context.read<ParkingRepository>(),
               parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
-              vehicleRepository: context.read<VehicleRepository>(),
+              vehicleRepository: context.read<VehicleRepository>(), authFirebaseBloc: context.read<AuthFirebaseBloc>(),
             )..add(LoadParkings()), 
           ),
           BlocProvider( 
             create: (context) => VehiclesBloc(
-              vehicleRepository: context.read<VehicleRepository>(),
+              vehicleRepository: context.read<VehicleRepository>(), authFirebaseBloc: context.read<AuthFirebaseBloc>(),
             )..add(LoadVehicles()),  
           ),
           BlocProvider(  

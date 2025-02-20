@@ -108,4 +108,22 @@ class PersonRepository {
       debugPrint("❌ Error deleting person: $e");
     }
   }
+   Future<Person?> getPersonByAuthId(String authId) async {
+    try {
+      final querySnapshot = await db
+          .collection('persons') // Replace 'persons' with your collection name
+          .where('authId', isEqualTo: authId)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final personData = querySnapshot.docs.first.data();
+        return Person.fromJson(personData);
+      } else {
+        return null; // Return null if no person is found
+      }
+    } catch (e) {
+      debugPrint("Error fetching person by authId: $e"); // Handle errors
+      return null;
+    }
+  }
 }

@@ -99,10 +99,12 @@ class _CreateParkingDialogState extends State<CreateParkingDialog> {
                   orElse: () => Parking(
                     startTime: DateTime.now(),
                     endTime: null,
-                    vehicle: Vehicle(
-                        owner: Person(name: '', id: '', authId: '', ssn: ''),
-                        licensePlate: '',
-                        vehicleType: ''),
+                   vehicle: Vehicle( // Create a Vehicle *instance*
+                    ownerAuthId: '', // Provide ownerAuthId
+                    licensePlate: '',
+                    vehicleType: '',
+                    authId: '',
+                  ),
                     parkingSpace: space,
                   ),
                 ).endTime?.toUtc()}, "

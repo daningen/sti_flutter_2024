@@ -4,8 +4,8 @@ import 'package:shared/shared.dart';
 import '../../../utils/validators.dart';
 
 class CreateVehicleDialog extends StatefulWidget {
-  final Function(Vehicle) onCreate;
-  final Future<List<Person>> ownersFuture;
+  final Function(Vehicle) onCreate; // Callback function to be called when a vehicle is created
+  final Future<List<Person>> ownersFuture; // Future that resolves to a list of Person objects
 
   const CreateVehicleDialog({
     required this.onCreate,
@@ -18,29 +18,27 @@ class CreateVehicleDialog extends StatefulWidget {
 }
 
 class _CreateVehicleDialogState extends State<CreateVehicleDialog> {
-  final formKey = GlobalKey<FormState>();
-  final licensePlateController = TextEditingController();
-  String? selectedVehicleType;
-  Person? selectedOwner;
+  final formKey = GlobalKey<FormState>(); // Key for the form
+  final licensePlateController = TextEditingController(); // Controller for the license plate text field
+  String? selectedVehicleType; // Stores the selected vehicle type
+  Person? selectedOwner; // Stores the selected owner (Person object)
+  String? selectedOwnerAuthId; // Stores the selected owner's authId
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Person>>(
-      future: widget.ownersFuture,
+      future: widget.ownersFuture, // The future that resolves to the list of owners
       builder: (context, snapshot) {
-        // Log the state of the FutureBuilder
-        debugPrint("FutureBuilder snapshot state: ${snapshot.connectionState}");
+        debugPrint("FutureBuilder snapshot state: ${snapshot.connectionState}"); // Log the connection state
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          // Log when waiting for the future
-          debugPrint("Fetching owners: Waiting for data...");
-          return const Center(child: CircularProgressIndicator());
+          debugPrint("Fetching owners: Waiting for data..."); // Log waiting message
+          return const Center(child: CircularProgressIndicator()); // Show a loading indicator
         }
 
         if (snapshot.hasError) {
-          // Log the error if any
-          debugPrint("Error fetching owners: ${snapshot.error}");
-          return AlertDialog(
+          debugPrint("Error fetching owners: ${snapshot.error}"); // Log the error
+          return AlertDialog( // Show an error dialog
             title: const Text('Error'),
             content: Text('Failed to fetch owners: ${snapshot.error}'),
             actions: [
@@ -52,17 +50,14 @@ class _CreateVehicleDialogState extends State<CreateVehicleDialog> {
           );
         }
 
-        // Extract persons from snapshot data
-        final persons = snapshot.data ?? [];
-        debugPrint("Fetched owners: $persons");
+        final persons = snapshot.data ?? []; // Extract the list of Person objects from the snapshot
+        debugPrint("Fetched owners: $persons"); // Log the fetched owners
 
-        // If no persons are fetched, show an appropriate message
         if (persons.isEmpty) {
-          debugPrint("No owners found in the fetched data.");
-          return AlertDialog(
+          debugPrint("No owners found in the fetched data."); // Log if no owners are found
+          return AlertDialog( // Show a dialog indicating no owners are available
             title: const Text('No Owners Available'),
-            content:
-                const Text('No owners found. Please create a person first.'),
+            content: const Text('No owners found. Please create a person first.'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
@@ -75,84 +70,80 @@ class _CreateVehicleDialogState extends State<CreateVehicleDialog> {
         return AlertDialog(
           title: const Text('Create New Vehicle'),
           content: Form(
-            key: formKey,
+            key: formKey, // Assign the form key
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // License plate input
-                TextFormField(
+                TextFormField( // License plate input field
                   controller: licensePlateController,
                   decoration: const InputDecoration(labelText: 'License Plate'),
-                  validator: Validators.validateLicensePlate,
+                  validator: Validators.validateLicensePlate, // Validate the license plate
                 ),
                 const SizedBox(height: 16),
 
-                // Vehicle type dropdown
-                DropdownButtonFormField<String>(
+                DropdownButtonFormField<String>( // Vehicle type dropdown
                   decoration: const InputDecoration(labelText: 'Type'),
-                  items: vehicleTypes
-                      .map((type) => DropdownMenuItem(
-                            value: type,
-                            child: Text(type),
-                          ))
-                      .toList(),
+                  items: vehicleTypes.map((type) => DropdownMenuItem( // Create dropdown items
+                        value: type,
+                        child: Text(type),
+                      )).toList(),
                   onChanged: (value) {
-                    setState(() => selectedVehicleType = value);
-                    // Log selected vehicle type
-                    debugPrint("Selected vehicle type: $selectedVehicleType");
+                    setState(() => selectedVehicleType = value); // Update selected vehicle type
+                    debugPrint("Selected vehicle type: $selectedVehicleType"); // Log the selected type
                   },
-                  validator: (value) =>
-                      value == null ? 'Please select a vehicle type' : null,
+                  validator: (value) => value == null ? 'Please select a vehicle type' : null, // Validate selection
                 ),
                 const SizedBox(height: 16),
 
-                // Owner dropdown
-                DropdownButtonFormField<Person>(
+                DropdownButtonFormField<Person>( // Owner dropdown
                   decoration: const InputDecoration(labelText: 'Owner'),
-                  items: persons.map((person) {
+                  items: persons.map((person) { // Create dropdown items for owners
                     return DropdownMenuItem<Person>(
                       value: person,
                       child: Text(person.name),
                     );
                   }).toList(),
                   onChanged: (person) {
-                    setState(() => selectedOwner = person);
-                    // Log selected owner
-                    debugPrint("Selected owner: ${selectedOwner?.name}");
+                    setState(() {
+                      selectedOwner = person; // Update selected owner (Person object)
+                      selectedOwnerAuthId = person?.authId; // Store the selected owner's authId
+                    });
+                    debugPrint("Selected owner: ${selectedOwner?.name}, authId: $selectedOwnerAuthId"); // Log the selected owner and authId
                   },
-                  validator: (value) =>
-                      value == null ? 'Please select an owner' : null,
+                  validator: (value) => value == null ? 'Please select an owner' : null, // Validate selection
                 ),
               ],
             ),
           ),
           actions: [
-            // Cancel button
-            TextButton(
+            TextButton( // Cancel button
               onPressed: () {
-                debugPrint("CreateVehicleDialog canceled.");
-                Navigator.of(context).pop();
+                debugPrint("CreateVehicleDialog canceled."); // Log cancellation
+                Navigator.of(context).pop(); // Close the dialog
               },
               child: const Text('Cancel'),
             ),
-
-            // Create button
-            ElevatedButton(
+            ElevatedButton( // Create button
               onPressed: () {
-                if (formKey.currentState!.validate()) {
-                  // Create a new vehicle with the provided data
-                  final newVehicle = Vehicle(
+                if (formKey.currentState!.validate()) { // Validate the form
+                  if (selectedOwnerAuthId == null) { // Check if authId is available
+                    ScaffoldMessenger.of(context).showSnackBar( // Show a snackbar message
+                      const SnackBar(content: Text('Owner AuthId is missing!')),
+                    );
+                    return; // Don't proceed with vehicle creation
+                  }
+
+                  final newVehicle = Vehicle( // Create the new Vehicle object
                     licensePlate: licensePlateController.text.trim(),
                     vehicleType: selectedVehicleType!,
-                    owner: selectedOwner, // Assign the owner directly
+                    authId: selectedOwnerAuthId!, ownerAuthId: '', // Use the stored authId
+                    // owner: selectedOwner, // You can keep the Person object if needed.
                   );
 
-                  // Log the created vehicle
-                  debugPrint("Creating vehicle: ${newVehicle.toJson()}");
+                  debugPrint("Creating vehicle: ${newVehicle.toJson()}"); // Log the created vehicle
 
-                  // Close the dialog and invoke the onCreate callback
-                  Navigator.of(context).pop();
-                  widget.onCreate(newVehicle);
+                  Navigator.of(context).pop(); // Close the dialog
+                  widget.onCreate(newVehicle); // Call the onCreate callback
                 }
               },
               child: const Text('Create'),

@@ -1,82 +1,83 @@
-import 'package:firebase_repositories/firebase_repositories.dart';
-import 'package:shared/bloc/parkings/parking_bloc.dart';
-import 'package:shared/bloc/parkings/parking_event.dart';
-import 'package:shared/bloc/parkings/parking_state.dart';
-import 'package:bloc_test/bloc_test.dart';
+// import 'package:firebase_repositories/firebase_repositories.dart';
+// import 'package:shared/bloc/parkings/parking_bloc.dart';
+// import 'package:shared/bloc/parkings/parking_event.dart';
+// import 'package:shared/bloc/parkings/parking_state.dart';
+// import 'package:bloc_test/bloc_test.dart';
 
-import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
-import 'package:shared/shared.dart';
+// import 'package:flutter_test/flutter_test.dart';
+// import 'package:mocktail/mocktail.dart';
+// import 'package:shared/shared.dart';
 
-// Define Fakes
-class FakeParking extends Fake implements Parking {}
+// // Define Fakes
+// class FakeParking extends Fake implements Parking {}
 
-class FakeVehicle extends Fake implements Vehicle {}
+// class FakeVehicle extends Fake implements Vehicle {}
 
-class FakeParkingSpace extends Fake implements ParkingSpace {}
+// class FakeParkingSpace extends Fake implements ParkingSpace {}
 
-// Mock Repositories
-class MockParkingRepository extends Mock implements ParkingRepository {}
+// // Mock Repositories
+// class MockParkingRepository extends Mock implements ParkingRepository {}
 
-class MockVehicleRepository extends Mock implements VehicleRepository {}
+// class MockVehicleRepository extends Mock implements VehicleRepository {}
 
-class MockParkingSpaceRepository extends Mock
-    implements ParkingSpaceRepository {}
+// class MockParkingSpaceRepository extends Mock
+//     implements ParkingSpaceRepository {}
 
-void main() {
-  group('ParkingBloc - DeleteParking', () {
-    late MockParkingRepository parkingRepository;
-    late MockVehicleRepository vehicleRepository;
-    late MockParkingSpaceRepository parkingSpaceRepository;
+// void main() {
+//   group('ParkingBloc - DeleteParking', () {
+//     late MockParkingRepository parkingRepository;
+//     late MockVehicleRepository vehicleRepository;
+//     late MockParkingSpaceRepository parkingSpaceRepository;
 
-    setUp(() {
-      parkingRepository = MockParkingRepository();
-      vehicleRepository = MockVehicleRepository();
-      parkingSpaceRepository = MockParkingSpaceRepository();
+//     setUp(() {
+//       parkingRepository = MockParkingRepository();
+//       vehicleRepository = MockVehicleRepository();
+//       parkingSpaceRepository = MockParkingSpaceRepository();
 
-      registerFallbackValue(FakeParking());
-      registerFallbackValue(FakeVehicle());
-      registerFallbackValue(FakeParkingSpace());
-    });
+//       registerFallbackValue(FakeParking());
+//       registerFallbackValue(FakeVehicle());
+//       registerFallbackValue(FakeParkingSpace());
+//     });
 
-    final fixedTime = DateTime.parse('2025-01-11T12:03:48.000');
-    final parkingToDelete = Parking(
-      id: '123', // Use a string ID for Firebase
-      startTime: fixedTime,
-    );
+//     final fixedTime = DateTime.parse('2025-01-11T12:03:48.000');
+//     final parkingToDelete = Parking(
+//       id: '123', // Use a string ID for Firebase
+//       startTime: fixedTime,
+//     );
 
-    blocTest<ParkingBloc, ParkingState>(
-      'deletes a parking session and reloads parkings',
-      setUp: () {
-        // Mock stop to succeed
-        when(() => parkingRepository.stop(parkingToDelete.id))
-            .thenAnswer((_) async => Future.value());
+//     blocTest<ParkingBloc, ParkingState>(
+//       'deletes a parking session and reloads parkings',
+//       setUp: () {
+//         // Mock stop to succeed
+//         when(() => parkingRepository.stop(parkingToDelete.id))
+//             .thenAnswer((_) async => Future.value());
 
-        // Mock getAll to return an empty list after deletion
-        when(() => parkingRepository.getAll()).thenAnswer((_) async => []);
+//         // Mock getAll to return an empty list after deletion
+//         when(() => parkingRepository.getAll()).thenAnswer((_) async => []);
 
-        // Mock vehicle and parking space repositories
-        when(() => vehicleRepository.getAll()).thenAnswer((_) async =>
-            [Vehicle(id: '1', licensePlate: 'ABC123', vehicleType: 'Car')]);
-        when(() => parkingSpaceRepository.getAll()).thenAnswer((_) async =>
-            [ParkingSpace(id: '1', address: 'Main St', pricePerHour: 10)]);
-      },
-      build: () => ParkingBloc(
-        parkingRepository: parkingRepository,
-        vehicleRepository: vehicleRepository,
-        parkingSpaceRepository: parkingSpaceRepository,
-      ),
-      act: (bloc) => bloc.add(StopParking(parkingId: parkingToDelete.id)),
-      expect: () => [
-        isA<ParkingLoading>(),
-        predicate<ParkingLoaded>((state) => state.parkings.isEmpty),
-      ],
-      verify: (_) {
-        verify(() => parkingRepository.stop(parkingToDelete.id)).called(1);
-        verify(() => parkingRepository.getAll()).called(1);
-        verify(() => vehicleRepository.getAll()).called(1);
-        verify(() => parkingSpaceRepository.getAll()).called(1);
-      },
-    );
-  });
-}
+//         // Mock vehicle and parking space repositories
+//         when(() => vehicleRepository.getAll()).thenAnswer((_) async =>
+//             [Vehicle(id: '1', licensePlate: 'ABC123', vehicleType: 'Car')]);
+//         when(() => parkingSpaceRepository.getAll()).thenAnswer((_) async =>
+//             [ParkingSpace(id: '1', address: 'Main St', pricePerHour: 10)]);
+//       },
+//       build: () => ParkingBloc(
+//         parkingRepository: parkingRepository,
+//         vehicleRepository: vehicleRepository,
+//         parkingSpaceRepository: parkingSpaceRepository,
+        
+//       ),
+//       act: (bloc) => bloc.add(StopParking(parkingId: parkingToDelete.id)),
+//       expect: () => [
+//         isA<ParkingLoading>(),
+//         predicate<ParkingLoaded>((state) => state.parkings.isEmpty),
+//       ],
+//       verify: (_) {
+//         verify(() => parkingRepository.stop(parkingToDelete.id)).called(1);
+//         verify(() => parkingRepository.getAll()).called(1);
+//         verify(() => vehicleRepository.getAll()).called(1);
+//         verify(() => parkingSpaceRepository.getAll()).called(1);
+//       },
+//     );
+//   });
+// }

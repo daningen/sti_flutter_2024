@@ -11,7 +11,6 @@ import 'package:shared/shared.dart';
 import '../../widgets/app_bar_actions.dart';
 import '../../widgets/bottom_action_buttons.dart';
 import 'dialogs/create_vehicle_dialog.dart';
-import 'dialogs/edit_vehicle_dialog.dart';
 
 class VehiclesView extends StatelessWidget {
   const VehiclesView({super.key});
@@ -27,11 +26,12 @@ class VehiclesView extends StatelessWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          context.read<VehiclesBloc>().add(ReloadVehicles());
+          context.read<VehiclesBloc>().add(ReloadVehicles()); // Refresh vehicles
         },
         child: BlocBuilder<VehiclesBloc, VehicleState>(
           builder: (context, state) {
             if (state is VehicleInitial) {
+              // Initial state: Show a button to load vehicles
               return Center(
                 child: ElevatedButton(
                   onPressed: () =>
@@ -40,12 +40,14 @@ class VehiclesView extends StatelessWidget {
                 ),
               );
             } else if (state is VehicleLoading) {
+              // Loading state: Show a circular progress indicator
               return const Center(child: CircularProgressIndicator());
             } else if (state is VehicleLoaded) {
+              // Loaded state: Display the vehicles in a DataTable
               final vehicles = state.vehicles;
-              return SingleChildScrollView(
+              return SingleChildScrollView( // Make the table scrollable
                 child: Center(
-                  child: ConstrainedBox(
+                  child: ConstrainedBox( // Constrain the table width
                     constraints: const BoxConstraints(maxWidth: 800),
                     child: DataTable(
                       headingRowColor: WidgetStateColor.resolveWith((states) {
@@ -60,12 +62,14 @@ class VehiclesView extends StatelessWidget {
                         DataColumn(label: Text('OWNER')),
                       ],
                       rows: vehicles.map((vehicle) {
+                        // Check if the vehicle is selected
                         final isSelected = vehicle ==
                             context.select<VehiclesBloc, Vehicle?>(
                                 (bloc) => bloc.state.selectedVehicle);
                         return DataRow(
                           selected: isSelected,
                           onSelectChanged: (selected) {
+                            // Select/deselect the vehicle
                             context
                                 .read<VehiclesBloc>()
                                 .add(SelectVehicle(vehicle: vehicle));
@@ -78,7 +82,25 @@ class VehiclesView extends StatelessWidget {
                             DataCell(Text(vehicle.licensePlate)),
                             DataCell(Text(vehicle.vehicleType)),
                             DataCell(
-                              Text(vehicle.owner?.name ?? 'Unknown'),
+                              // Fetch and display the owner's name using FutureBuilder
+                              FutureBuilder<Person?>(
+                                future: context
+                                    .read<PersonRepository>()
+                                    .getPersonByAuthId(vehicle.ownerAuthId),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const Text("Loading...");
+                                  } else if (snapshot.hasError) {
+                                    return Text(
+                                        "Error: ${snapshot.error.toString()}");
+                                  } else {
+                                    final owner = snapshot.data;
+                                    return Text(
+                                        owner?.name ?? 'Unknown'); // Display owner name
+                                  }
+                                },
+                              ),
                             ),
                           ],
                         );
@@ -88,8 +110,10 @@ class VehiclesView extends StatelessWidget {
                 ),
               );
             } else if (state is VehicleError) {
+              // Error state: Display an error message
               return Center(child: Text('Error: ${state.message}'));
             } else {
+              // Other states: Return an empty SizedBox (no widget to display)
               return const SizedBox.shrink();
             }
           },
@@ -110,22 +134,14 @@ class VehiclesView extends StatelessWidget {
                   debugPrint(
                       "onNew: Creating new vehicle: ${newVehicle.toJson()}");
 
-                  // Ensure authId is set correctly for new persons
-                  final authId = newVehicle.owner?.authId ?? 'unknown_auth_id';
-
                   context.read<VehiclesBloc>().add(CreateVehicle(
                         licensePlate: newVehicle.licensePlate,
                         vehicleType: newVehicle.vehicleType,
-                        owner: newVehicle.owner ??
-                            Person(
-                              id: '', 
-                              authId: authId, // ✅ Ensure authId is set
-                              name: 'Unknown', 
-                              ssn: '000000',
-                            ),
+                        authId: newVehicle.authId, // authId of the creator
+                        ownerAuthId: newVehicle.ownerAuthId, // ownerAuthId
                       ));
 
-                  context.read<PersonBloc>().add(LoadPersons());
+                  context.read<PersonBloc>().add(LoadPersons()); // Refresh person list
                 },
               );
             },
@@ -133,31 +149,30 @@ class VehiclesView extends StatelessWidget {
 
           debugPrint("onNew: CreateVehicleDialog closed.");
         },
-        onEdit: () async {
-          final selectedVehicle =
-              context.read<VehiclesBloc>().state.selectedVehicle;
-          if (selectedVehicle != null) {
-            final ownersFuture = context.read<PersonRepository>().getAll();
+        // todo fix this for admin
+        // onEdit: () async {
+        //   final selectedVehicle = context.read<VehiclesBloc>().state.selectedVehicle;
+        //   if (selectedVehicle != null) {
+        //     final ownersFuture = context.read<PersonRepository>().getAll();
 
-            await showDialog(
-              context: context,
-              builder: (context) {
-                return EditVehicleDialog(
-                  ownersFuture: ownersFuture,
-                  vehicle: selectedVehicle,
-                  onEdit: (updatedVehicle) {
-                    context.read<VehiclesBloc>().add(UpdateVehicle(
-                          vehicleId: updatedVehicle.id,
-                          updatedVehicle: updatedVehicle,
-                        ));
+        //     // Correct usage of showDialog and EditVehicleDialog
+        //     await showDialog(
+        //       context: context,
+        //       builder: (context) => EditVehicleDialog( // Use EditVehicleDialog as a widget
+        //         ownersFuture: ownersFuture,
+        //         vehicle: selectedVehicle,
+        //         onEdit: (updatedVehicle) {
+        //           context.read<VehiclesBloc>().add(UpdateVehicle(
+        //             vehicleId: updatedVehicle.id,
+        //             updatedVehicle: updatedVehicle,
+        //           ));
 
-                    context.read<PersonBloc>().add(LoadPersons());
-                  },
-                );
-              },
-            );
-          }
-        },
+        //           context.read<PersonBloc>().add(LoadPersons());
+        //         },
+        //       ),
+        //     );
+        //   }
+        // },
         onDelete: () {
           final selectedVehicle =
               context.read<VehiclesBloc>().state.selectedVehicle;
@@ -195,7 +210,7 @@ class VehiclesView extends StatelessWidget {
           }
         },
         onReload: () {
-          context.read<VehiclesBloc>().add(ReloadVehicles());
+          context.read<VehiclesBloc>().add(ReloadVehicles()); // Reload vehicles
         },
       ),
     );
