@@ -16,6 +16,11 @@ class AuthFirebaseBloc extends Bloc<AuthFirebaseEvent, AuthState> {
   final UserRepository userRepository;
   final PersonRepository personRepository;
 
+  String?
+      _userRole; // Store user role (not currently used, but can be added later)
+  String?
+      _loggedInUserAuthId; // Store user authId (not currently used, but can be added later)
+
   AuthFirebaseBloc({
     required this.authRepository,
     required this.userRepository,
@@ -31,6 +36,7 @@ class AuthFirebaseBloc extends Bloc<AuthFirebaseEvent, AuthState> {
     add(AuthFirebaseUserSubscriptionRequested());
   }
 
+  /// Handles user login.
   void _onLogin(AuthFirebaseLogin event, Emitter<AuthState> emit) async {
     emit(AuthPending()); // Emit loading state
 
@@ -65,6 +71,7 @@ class AuthFirebaseBloc extends Bloc<AuthFirebaseEvent, AuthState> {
     }
   }
 
+  /// Handles user registration.
   Future<void> _onRegister(
     AuthFirebaseRegister event,
     Emitter<AuthState> emit,
@@ -97,6 +104,7 @@ class AuthFirebaseBloc extends Bloc<AuthFirebaseEvent, AuthState> {
     }
   }
 
+  /// Handles the creation of a person document in Firestore.
   void _onCreatePerson(
       AuthFirebaseCreatePerson event, Emitter<AuthState> emit) async {
     debugPrint('🆕 Creating person in Firestore: ${event.name}, ${event.ssn}');
@@ -143,47 +151,66 @@ class AuthFirebaseBloc extends Bloc<AuthFirebaseEvent, AuthState> {
     }
   }
 
+  /// Handles listening to authentication state changes.
   Future<void> _onUserSubscriptionRequested(
     AuthFirebaseUserSubscriptionRequested event,
     Emitter<AuthState> emit,
   ) async {
     debugPrint('🔄 Fetching user subscription...');
 
-     
+    // Use emit.onEach to listen to the stream of Firebase Auth users.
     return emit.onEach<firebase_auth.User?>(
-      authRepository.signedInAuthId,  
+      authRepository.signedInAuthId, // The stream of Firebase Auth users.
       onData: (authUser) async {
+        // Called when a new user authentication state is received.
+
         if (authUser == null) {
-          emit(AuthUnauthenticated());  
+          // No user is signed in.
+          emit(AuthUnauthenticated()); // Emit unauthenticated state.
         } else {
-          // Check if the user has a corresponding person document
+          // A user is signed in.
+
+          // Check if the user has a corresponding person document in Firestore.
           final person = await personRepository.getByAuthId(authUser.uid);
 
           if (person == null) {
+            // The user is authenticated with Firebase Auth, but their Person
+            // document is missing in Firestore.  This likely means they have
+            // registered but not yet completed their profile.
             emit(AuthAuthenticatedNoUser(
-              // User exists in Firebase Auth, but not in Firestore
               authId: authUser.uid,
               email: authUser.email!,
             ));
           } else {
+            // The user is fully authenticated (both Firebase Auth and Firestore).
+            _userRole = person.role; // Store user role
+            _loggedInUserAuthId = authUser.uid; // Store user authId
+
             emit(AuthAuthenticated(
-                user: authUser, person: person)); // User is fully authenticated
+              user: authUser,
+              person: person,
+            )); // Emit authenticated state.
           }
         }
       },
       onError: (error, stackTrace) {
-        emit(AuthFail(message: error.toString()));  
+        // Called if an error occurs while listening to the stream.
+        emit(AuthFail(
+            message: error.toString())); // Emit authentication failure state.
       },
     );
   }
 
+  String? getUserRole() => _userRole; // The getter method
+  String? getLoggedInUserAuthId() => _loggedInUserAuthId;
+
+  /// Handles user logout.
   Future<void> _onLogout(
     LogoutRequested event,
     Emitter<AuthState> emit,
   ) async {
     try {
       await authRepository.logout();
-       
     } catch (e) {
       emit(AuthFail(message: e.toString()));
     }

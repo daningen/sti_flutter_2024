@@ -8,11 +8,11 @@ import 'package:shared/shared.dart';
 
 class VehiclesBloc extends Bloc<VehicleEvent, VehicleState> {
   final VehicleRepository vehicleRepository;
-  final AuthFirebaseBloc authFirebaseBloc; // Add authFirebaseBloc
+  final AuthFirebaseBloc authFirebaseBloc;
 
   VehiclesBloc({
     required this.vehicleRepository,
-    required this.authFirebaseBloc, // Initialize it
+    required this.authFirebaseBloc,
   }) : super(VehicleInitial()) {
     on<LoadVehicles>(_onLoadVehicles);
     on<ReloadVehicles>(_onReloadVehicles);
@@ -23,25 +23,34 @@ class VehiclesBloc extends Bloc<VehicleEvent, VehicleState> {
   }
 
   /// Handles the LoadVehicles event.
-  /// Fetches all vehicles from the repository and emits a VehicleLoaded state.
+  /// Fetches vehicles from the repository (filtered by user role) and emits a VehicleLoaded state.
   Future<void> _onLoadVehicles(
-    LoadVehicles event,
-    Emitter<VehicleState> emit,
-  ) async {
-    debugPrint('Loading vehicles...');
-    emit(VehicleLoading()); // Emit loading state
+  LoadVehicles event,
+  Emitter<VehicleState> emit,
+) async {
+  debugPrint('Loading vehicles...');
+  emit(VehicleLoading()); // Emit loading state
 
-    try {
-      final vehicles = await vehicleRepository.getAll(); // Fetch vehicles
+  try {
+    final userRole = authFirebaseBloc.getUserRole(); // Get user role (NO await)
+    final loggedInUserAuthId = authFirebaseBloc.getLoggedInUserAuthId(); // Get user authId (NO await)
+
+    if (userRole != null && loggedInUserAuthId != null) { // Check for null values
+      final vehicles = await vehicleRepository.getAvailableVehiclesStream(userRole, loggedInUserAuthId); // Fetch vehicles (with filtering)
+
       for (final vehicle in vehicles) {
         debugPrint('Vehicle: ${vehicle.toJson()}');
       }
       emit(VehicleLoaded(vehicles)); // Emit loaded state with vehicles
-    } catch (e) {
-      debugPrint('Error loading vehicles: $e');
-      emit(VehicleError('Failed to load vehicles: $e')); // Emit error state
+    } else {
+      debugPrint('User role or authId is null. Cannot load vehicles.');
+      emit(VehicleError('User role or authId is missing.')); // Or handle as appropriate
     }
+  } catch (e) {
+    debugPrint('Error loading vehicles: $e');
+    emit(VehicleError('Failed to load vehicles: $e')); // Emit error state
   }
+}
 
   /// Handles the ReloadVehicles event.
   /// Triggers the LoadVehicles event to reload the vehicles.
@@ -56,17 +65,17 @@ class VehiclesBloc extends Bloc<VehicleEvent, VehicleState> {
   Future<void> _onCreateVehicle(
       CreateVehicle event, Emitter<VehicleState> emit) async {
     debugPrint(
-        'Creating vehicle: LicensePlate: ${event.licensePlate}, Type: ${event.vehicleType}, OwnerAuthId: ${event.ownerAuthId}'); // Log ownerAuthId
+        'Creating vehicle: LicensePlate: ${event.licensePlate}, Type: ${event.vehicleType}, OwnerAuthId: ${event.ownerAuthId}');
 
     try {
       final newVehicle = Vehicle(
-        authId: event.authId, // Auth ID of the creator
+        authId: event.authId,
         licensePlate: event.licensePlate,
         vehicleType: event.vehicleType,
-        ownerAuthId: event.ownerAuthId, // Use ownerAuthId
+        ownerAuthId: event.ownerAuthId,
       );
 
-      await vehicleRepository.create(newVehicle); // Create the vehicle
+      await vehicleRepository.create(newVehicle);
       debugPrint('Vehicle created successfully: $newVehicle');
 
       // Optimistically update the state
@@ -79,7 +88,7 @@ class VehiclesBloc extends Bloc<VehicleEvent, VehicleState> {
       }
     } catch (e) {
       debugPrint('Error creating vehicle: $e');
-      emit(VehicleError('Failed to create vehicle: $e')); // Emit error state
+      emit(VehicleError('Failed to create vehicle: $e'));
     }
   }
 
@@ -92,7 +101,7 @@ class VehiclesBloc extends Bloc<VehicleEvent, VehicleState> {
         id: event.vehicleId,
       );
 
-      await vehicleRepository.update(event.vehicleId, updatedVehicle); // Update vehicle
+      await vehicleRepository.update(event.vehicleId, updatedVehicle);
 
       // Optimistically update the state
       if (state is VehicleLoaded) {
@@ -106,7 +115,7 @@ class VehiclesBloc extends Bloc<VehicleEvent, VehicleState> {
       }
     } catch (e) {
       debugPrint('Error updating vehicle: $e');
-      emit(VehicleError('Failed to update vehicle: $e')); // Emit error state
+      emit(VehicleError('Failed to update vehicle: $e'));
     }
   }
 
@@ -115,7 +124,7 @@ class VehiclesBloc extends Bloc<VehicleEvent, VehicleState> {
   Future<void> _onDeleteVehicle(
       DeleteVehicle event, Emitter<VehicleState> emit) async {
     try {
-      await vehicleRepository.delete(event.vehicleId); // Delete vehicle
+      await vehicleRepository.delete(event.vehicleId);
 
       // Optimistically update the state
       if (state is VehicleLoaded) {
@@ -129,7 +138,7 @@ class VehiclesBloc extends Bloc<VehicleEvent, VehicleState> {
       }
     } catch (e) {
       debugPrint('Error deleting vehicle: $e');
-      emit(VehicleError('Failed to delete vehicle: $e')); // Emit error state
+      emit(VehicleError('Failed to delete vehicle: $e'));
     }
   }
 
@@ -141,7 +150,7 @@ class VehiclesBloc extends Bloc<VehicleEvent, VehicleState> {
     if (currentState is VehicleLoaded) {
       emit(VehicleLoaded(
         currentState.vehicles,
-        selectedVehicle: event.vehicle, // Update selected vehicle
+        selectedVehicle: event.vehicle,
       ));
       debugPrint('Vehicle selected: ${event.vehicle}');
     }
