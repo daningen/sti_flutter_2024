@@ -32,22 +32,28 @@ class _VehiclesViewState extends State<VehiclesView> {
       vehicleRepository: VehicleRepository(db: FirebaseFirestore.instance),
       authFirebaseBloc: authBloc,
     );
-    _vehicleBloc.add(LoadVehicles());
+    _vehicleBloc.add(LoadVehicles()); // Load vehicles when the view initializes
   }
 
   @override
   void dispose() {
-    _vehicleBloc.close();
+    _vehicleBloc.close(); // Close the VehiclesBloc to prevent memory leaks
     super.dispose();
   }
 
   void refreshVehicles() {
-    _vehicleBloc.add(ReloadVehicles());
+    _vehicleBloc.add(ReloadVehicles()); // Reload vehicles data
   }
 
   @override
   Widget build(BuildContext context) {
-    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    final themeNotifier =
+        Provider.of<ThemeNotifier>(context); // Access theme notifier
+    final authState = context.watch<AuthFirebaseBloc>().state;
+    final userRole =
+        (authState is AuthAuthenticated) ? authState.person.role : 'user';
+    final loggedInUserAuthId =
+        (authState is AuthAuthenticated) ? authState.user.uid : '';
 
     return Scaffold(
       appBar: AppBar(
@@ -59,93 +65,56 @@ class _VehiclesViewState extends State<VehiclesView> {
                   ? Icons.dark_mode
                   : Icons.light_mode,
             ),
-            onPressed: themeNotifier.toggleTheme,
+            onPressed: themeNotifier.toggleTheme, // Toggle theme
           ),
         ],
       ),
       body: BlocProvider<VehiclesBloc>(
-        create: (context) => _vehicleBloc,
+        create: (context) => _vehicleBloc, // Provide VehiclesBloc
         child: BlocBuilder<VehiclesBloc, VehicleState>(
           builder: (context, state) {
             if (state is VehicleLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(
+                  child: CircularProgressIndicator()); // Show loading indicator
             }
 
             if (state is VehicleError) {
-              return Center(child: Text('Error: ${state.message}'));
+              return Center(
+                  child: Text('Error: ${state.message}')); // Show error message
             }
 
             if (state is VehicleLoaded) {
               final vehicles = state.vehicles;
 
-              return Column(
-                children: [
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: vehicles.length,
-                      itemBuilder: (context, index) {
-                        final vehicle = vehicles[index];
-                        // Access owner using FutureBuilder
-                        return FutureBuilder<Person?>(
-                          future: _personRepository.getPersonByAuthId(vehicle.ownerAuthId),
-                          builder: (context, snapshot) {
-                            final owner = snapshot.data;
-                            return ListTile(
-                              title: Text(
-                                'License Plate: ${vehicle.licensePlate}, '
-                                'Type: ${vehicle.vehicleType}, '
-                                'Owner: ${owner?.name ?? 'Unknown'} '
-                                '(SSN: ${owner?.ssn ?? 'Unknown'})',
-                              ),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () async {
-                                  final confirmDelete = await showDialog<bool>(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: const Text('Confirm Deletion'),
-                                      content: const Text(
-                                          'Are you sure you want to delete this vehicle?'),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.of(context).pop(false),
-                                          child: const Text('Cancel'),
-                                        ),
-                                        ElevatedButton(
-                                          onPressed: () =>
-                                              Navigator.of(context).pop(true),
-                                          child: const Text('Delete'),
-                                        ),
-                                      ],
-                                    ),
-                                  );
+              return ListView.builder(
+                itemCount: vehicles.length,
+                itemBuilder: (context, index) {
+                  final vehicle = vehicles[index];
 
-                                  if (confirmDelete == true) {
-                                    _vehicleBloc.add(DeleteVehicle(
-                                        vehicleId: vehicle.id));
-                                  }
-                                },
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ],
+                  return FutureBuilder<Person?>(
+                    // FutureBuilder to fetch owner
+                    future: _personRepository
+                        .getPersonByAuthId(vehicle.ownerAuthId),
+                    builder: (context, snapshot) {
+                      final owner = snapshot.data;
+                      return VehicleListItem(
+                          vehicle: vehicle,
+                          owner: owner); // Use separate widget
+                    },
+                  );
+                },
               );
             }
 
-            return const SizedBox();
+            return const SizedBox(); // Empty widget for other states
           },
         ),
       ),
       bottomNavigationBar: VehicleNavigationBar(
-        onHomePressed: () => context.go('/'),
-        onReloadPressed: refreshVehicles,
+        onHomePressed: () => context.go('/'), // Navigate to home
+        onReloadPressed: refreshVehicles, // Refresh vehicles list
         onAddVehiclePressed: () async {
-          final persons = await _personRepository.getAll();
+          final persons = await _personRepository.getAll(); // Fetch all persons
 
           if (persons.isEmpty) {
             debugPrint(
@@ -156,7 +125,9 @@ class _VehiclesViewState extends State<VehiclesView> {
             // ignore: use_build_context_synchronously
             context: context,
             builder: (context) => CreateVehicleDialog(
-              ownersFuture: Future.value(persons),
+              owners: Future.value(persons), // Pass persons to dialog
+              userRole: userRole,
+              loggedInUserAuthId: loggedInUserAuthId,
             ),
           );
 
@@ -166,14 +137,65 @@ class _VehiclesViewState extends State<VehiclesView> {
                 licensePlate: newVehicle.licensePlate,
                 vehicleType: newVehicle.vehicleType,
                 authId: newVehicle.authId,
-                ownerAuthId: newVehicle.ownerAuthId, // Use ownerAuthId
+                ownerAuthId: newVehicle.ownerAuthId,
               ),
             );
           }
         },
         onLogoutPressed: () {
           debugPrint('Logout pressed');
-          context.go('/login');
+          context.go('/login'); // Navigate to login
+        },
+      ),
+    );
+  }
+}
+
+// Separate widget for the list item
+class VehicleListItem extends StatelessWidget {
+  final Vehicle vehicle;
+  final Person? owner;
+
+  const VehicleListItem(
+      {super.key, required this.vehicle, required this.owner});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(
+        'License Plate: ${vehicle.licensePlate}, '
+        'Type: ${vehicle.vehicleType}, '
+        'Owner: ${owner?.name ?? 'Unknown'} '
+        '(SSN: ${owner?.ssn ?? 'Unknown'})',
+      ),
+      trailing: IconButton(
+        icon: const Icon(Icons.delete),
+        onPressed: () async {
+          final confirmDelete = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Confirm Deletion'),
+              content:
+                  const Text('Are you sure you want to delete this vehicle?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('Delete'),
+                ),
+              ],
+            ),
+          );
+
+          if (confirmDelete == true) {
+            // ignore: use_build_context_synchronously
+            context
+                .read<VehiclesBloc>()
+                .add(DeleteVehicle(vehicleId: vehicle.id));
+          }
         },
       ),
     );

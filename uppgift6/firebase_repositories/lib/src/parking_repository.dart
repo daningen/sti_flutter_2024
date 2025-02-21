@@ -62,26 +62,31 @@ class ParkingRepository implements RepositoryInterface<Parking> {
 
     if (userRole == 'admin') {
       debugPrint("[ParkingRepository] Querying all parkings (admin)");
-      query = parkingsCollection; // Admin: Get all parkings
+      query = parkingsCollection;
     } else {
-      // Regular user: Get only their parkings
       debugPrint(
-          "[ParkingRepository] Querying parkings for user: $loggedInUserAuthId"); // Debug print for user query
-      query = parkingsCollection.where('vehicle.owner.authId',
+          "[ParkingRepository] Querying parkings for user: $loggedInUserAuthId");
+      // query = parkingsCollection.where('ownerAuthId',
+      //     isEqualTo: loggedInUserAuthId);
+      // query = parkingsCollection.where('vehicle.owner.authId',
+      //     isEqualTo: loggedInUserAuthId);
+      query = parkingsCollection.where('vehicle.ownerAuthId',
           isEqualTo: loggedInUserAuthId);
-      debugPrint("[ParkingRepository] the query result is: $query");
     }
 
     return query.snapshots().map((snapshot) {
       debugPrint(
-          "[ParkingRepository] Received parkings snapshot: ${snapshot.docs.length} documents for user $loggedInUserAuthId"); // Print snapshot length
+          "[ParkingRepository] Received ${snapshot.docs.length} parkings");
+
       final parkings = _mapParkingSnapshots(snapshot);
-      debugPrint(
-          "[ParkingRepository] Mapped parkings length: ${parkings.length} for user $loggedInUserAuthId"); // Print mapped parkings length
+
+      debugPrint("[ParkingRepository] Mapped parkings: ${parkings.length}");
+
       return parkings;
     }).handleError((error) {
       debugPrint("[ParkingRepository] Error getting parkings stream: $error");
-      return const Stream.empty(); // Return an empty stream on error
+      return Stream.value(
+          []); // Return an empty list instead of an empty stream
     });
   }
 

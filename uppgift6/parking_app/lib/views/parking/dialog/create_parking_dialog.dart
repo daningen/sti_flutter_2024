@@ -43,32 +43,40 @@ class _CreateParkingDialogState extends State<CreateParkingDialog> {
   void _filterAvailableItems() {
     debugPrint("Entering _filterAvailableItems");
 
-    final currentState = context.read<ParkingBloc>().state;
-    debugPrint("Current State: ${currentState.runtimeType}");
+    // 1. Get the current ParkingBloc state.
+    final parkingState = context.read<ParkingBloc>().state;
+    debugPrint("Current Parking State: ${parkingState.runtimeType}");
 
-    if (currentState is ParkingLoaded) {
-      final loadedState = currentState;
-      final nowUtc =
-          DateTime.now().toUtc(); // Current time in UTC (only get it ONCE)
+    // 2. Check if the ParkingBloc state is ParkingLoaded.  We only proceed
+    //    with filtering if the parking data has been loaded.
+    if (parkingState is ParkingLoaded) {
+      final loadedParkingState = parkingState;
+
+      // 3. Get the current time in UTC.  We get it only ONCE to ensure
+      //    consistency during the filtering process.
+      final nowUtc = DateTime.now().toUtc();
 
       debugPrint("Filtering Available Items:");
       debugPrint("Total Vehicles: ${widget.availableVehicles.length}");
       debugPrint(
           "Total Parking Spaces: ${widget.availableParkingSpaces.length}");
       debugPrint(
-          "All Parkings: ${loadedState.allParkings.length}"); // Log allParkings
+          "All Parkings: ${loadedParkingState.allParkings.length}"); // Log all parkings
 
+      // 4. Filter the available vehicles.
       _filteredAvailableVehicles = widget.availableVehicles.where((vehicle) {
-        final isAvailable = !loadedState.allParkings.any((parking) {
-          // Use allParkings
+        // 4a. Check if the vehicle is currently parked (unavailable).
+        final isAvailable = !loadedParkingState.allParkings.any((parking) {
+          // A vehicle is considered unavailable if it's already in a parking
+          // and the parking has not ended or has an end time in the future.
           return parking.vehicle?.id == vehicle.id &&
               (parking.endTime == null ||
                   parking.endTime!.toUtc().isAfter(nowUtc));
         });
 
+        // 4b. Debug print to check availability.
         debugPrint("Vehicle ${vehicle.licensePlate}: Available = $isAvailable "
-            "(endTime: ${loadedState.allParkings.firstWhere(
-                  // Use allParkings here too
+            "(endTime: ${loadedParkingState.allParkings.firstWhere(
                   (p) => p.vehicle?.id == vehicle.id,
                   orElse: () => Parking(
                     startTime: DateTime.now(),
@@ -80,39 +88,40 @@ class _CreateParkingDialogState extends State<CreateParkingDialog> {
                 ).endTime?.toUtc()}, "
             "nowUtc: $nowUtc)");
 
+        // 4c. Return true if the vehicle is available, false otherwise.
         return isAvailable;
-      }).toList();
+      }).toList(); // 5. Convert the filtered iterable to a list.
 
+      // 6. Filter the available parking spaces. The logic is the same as for vehicles.
       _filteredAvailableParkingSpaces =
           widget.availableParkingSpaces.where((space) {
-        final isAvailable = !loadedState.allParkings.any((parking) {
-          // Use allParkings
+        final isAvailable = !loadedParkingState.allParkings.any((parking) {
           return parking.parkingSpace?.id == space.id &&
               (parking.endTime == null ||
                   parking.endTime!.toUtc().isAfter(nowUtc));
         });
 
         debugPrint("Parking Space ${space.address}: Available = $isAvailable "
-            "(endTime: ${loadedState.allParkings.firstWhere(
-                  // And here
+            "(endTime: ${loadedParkingState.allParkings.firstWhere(
                   (p) => p.parkingSpace?.id == space.id,
                   orElse: () => Parking(
                     startTime: DateTime.now(),
                     endTime: null,
-                   vehicle: Vehicle( // Create a Vehicle *instance*
-                    ownerAuthId: '', // Provide ownerAuthId
-                    licensePlate: '',
-                    vehicleType: '',
-                    authId: '',
-                  ),
+                    vehicle: Vehicle(
+                      ownerAuthId: '',
+                      licensePlate: '',
+                      vehicleType: '',
+                      authId: '',
+                    ),
                     parkingSpace: space,
                   ),
                 ).endTime?.toUtc()}, "
             "nowUtc: $nowUtc)");
 
-        return isAvailable;
-      }).toList();
+        return isAvailable; // Return true if the parking space is available.
+      }).toList(); // 7. Convert the filtered iterable to a list.
 
+      // 8. Debug print the filtered lists.
       debugPrint("Filtered Vehicles: ${_filteredAvailableVehicles.length}");
       debugPrint(
           "Filtered Parking Spaces: ${_filteredAvailableParkingSpaces.length}");
@@ -121,9 +130,11 @@ class _CreateParkingDialogState extends State<CreateParkingDialog> {
       debugPrint(
           "Filtered Parking Spaces (Addresses): ${_filteredAvailableParkingSpaces.map((s) => s.address).join(", ")}");
     } else {
+      // 9. Log if the ParkingBloc state is not ParkingLoaded.
       debugPrint(
-          "Current State is NOT ParkingLoaded: ${currentState.runtimeType}");
+          "Current Parking State is NOT ParkingLoaded: ${parkingState.runtimeType}");
     }
+
     debugPrint("Exiting _filterAvailableItems");
   }
 
@@ -190,57 +201,65 @@ class _CreateParkingDialogState extends State<CreateParkingDialog> {
                 validator: (value) =>
                     value == null ? 'Please select a parking space' : null,
               ),
-              
-             DateTimeField(
-  decoration: const InputDecoration(
-    labelText: 'Estimated End Time (Optional)',
-  ),
-  format: DateFormat("yyyy-MM-ddTHH:mm:ss"),
-  onShowPicker: (context, currentValue) async {
-  DateTime? pickedDate = currentValue; // Initialize with current value
-  TimeOfDay? pickedTime;
-  DateTime? finalDateTime;
 
-  final date = await showDatePicker(
-    context: context,
-    initialDate: currentValue ?? DateTime.now(),
-    firstDate: DateTime.now(),
-    lastDate: DateTime(2100),
-  );
+              DateTimeField(
+                decoration: const InputDecoration(
+                  labelText: 'Estimated End Time (Optional)',
+                ),
+                format: DateFormat("yyyy-MM-ddTHH:mm:ss"),
+                onShowPicker: (context, currentValue) async {
+                  DateTime? pickedDate =
+                      currentValue; // Initialize with current value
+                  TimeOfDay? pickedTime;
+                  DateTime? finalDateTime;
 
-  if (date != null) {
-    pickedDate = date; // Update pickedDate if date is selected
+                  final date = await showDatePicker(
+                    context: context,
+                    initialDate: currentValue ?? DateTime.now(),
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime(2100),
+                  );
 
-    // Initialize time based on currentValue only if same date is picked
-    if (currentValue != null && currentValue.year == date.year && currentValue.month == date.month && currentValue.day == date.day) {
-      pickedTime = TimeOfDay.fromDateTime(currentValue);
-    }
+                  if (date != null) {
+                    pickedDate = date; // Update pickedDate if date is selected
 
-    final time = await showTimePicker(
-      // ignore: use_build_context_synchronously
-      context: context,
-      initialTime: pickedTime ?? TimeOfDay.fromDateTime(
-        currentValue ?? DateTime.now(),
-      ),
-    );
+                    // Initialize time based on currentValue only if same date is picked
+                    if (currentValue != null &&
+                        currentValue.year == date.year &&
+                        currentValue.month == date.month &&
+                        currentValue.day == date.day) {
+                      pickedTime = TimeOfDay.fromDateTime(currentValue);
+                    }
 
-    if (time != null) {
-      pickedTime = time;
-      finalDateTime = DateTimeField.combine(pickedDate, pickedTime); // Combine date and time. Use pickedDate!
-    } else {
-      finalDateTime = pickedDate; // Only date selected. Use pickedDate
-    }
-  } else {
-      finalDateTime = currentValue; // Use the initial value if date picker is cancelled.
-  }
+                    final time = await showTimePicker(
+                      // ignore: use_build_context_synchronously
+                      context: context,
+                      initialTime: pickedTime ??
+                          TimeOfDay.fromDateTime(
+                            currentValue ?? DateTime.now(),
+                          ),
+                    );
 
-  estimatedEndTime = finalDateTime; // Set estimatedEndTime 
-  return finalDateTime; // Return the final DateTime
-},
-  onChanged: (DateTime? value) {
-    // Do NOTHING here.  This is essential.
-  },
-),
+                    if (time != null) {
+                      pickedTime = time;
+                      finalDateTime = DateTimeField.combine(pickedDate,
+                          pickedTime); // Combine date and time. Use pickedDate!
+                    } else {
+                      finalDateTime =
+                          pickedDate; // Only date selected. Use pickedDate
+                    }
+                  } else {
+                    finalDateTime =
+                        currentValue; // Use the initial value if date picker is cancelled.
+                  }
+
+                  estimatedEndTime = finalDateTime; // Set estimatedEndTime
+                  return finalDateTime; // Return the final DateTime
+                },
+                onChanged: (DateTime? value) {
+                  // Do NOTHING here.  This is essential.
+                },
+              ),
             ],
           ),
         ),
