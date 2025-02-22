@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:firebase_repositories/firebase_repositories.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,32 +25,26 @@ class VehiclesView extends StatefulWidget {
 class _VehiclesViewState extends State<VehiclesView> {
   late VehiclesBloc _vehicleBloc;
   final _personRepository = PersonRepository();
+  late Future<Map<String, Person>> _personsFuture;
 
   @override
   void initState() {
     super.initState();
-    final authBloc = context.read<AuthFirebaseBloc>();
-    _vehicleBloc = VehiclesBloc(
-      vehicleRepository: VehicleRepository(db: FirebaseFirestore.instance),
-      authFirebaseBloc: authBloc,
-    );
-    _vehicleBloc.add(LoadVehicles()); // Load vehicles when the view initializes
+    _personsFuture = _fetchAllPersons();
   }
 
-  @override
-  void dispose() {
-    _vehicleBloc.close(); // Close the VehiclesBloc to prevent memory leaks
-    super.dispose();
+  Future<Map<String, Person>> _fetchAllPersons() async {
+    final personsList = await _personRepository.getAll();
+    return {for (var person in personsList) person.authId: person};
   }
 
   void refreshVehicles() {
-    _vehicleBloc.add(ReloadVehicles()); // Reload vehicles data
+    _vehicleBloc.add(ReloadVehicles());
   }
 
   @override
   Widget build(BuildContext context) {
-    final themeNotifier =
-        Provider.of<ThemeNotifier>(context); // Access theme notifier
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
     final authState = context.watch<AuthFirebaseBloc>().state;
     final userRole =
         (authState is AuthAuthenticated) ? authState.person.role : 'user';
@@ -65,67 +61,65 @@ class _VehiclesViewState extends State<VehiclesView> {
                   ? Icons.dark_mode
                   : Icons.light_mode,
             ),
-            onPressed: themeNotifier.toggleTheme, // Toggle theme
+            onPressed: themeNotifier.toggleTheme,
           ),
         ],
       ),
       body: BlocProvider<VehiclesBloc>(
-        create: (context) => _vehicleBloc, // Provide VehiclesBloc
+        create: (context) {
+          final authBloc = context.read<AuthFirebaseBloc>();
+          _vehicleBloc = VehiclesBloc(
+            vehicleRepository:
+                VehicleRepository(db: FirebaseFirestore.instance),
+            authFirebaseBloc: authBloc,
+          );
+          _vehicleBloc.add(LoadVehicles());
+          return _vehicleBloc;
+        },
         child: BlocBuilder<VehiclesBloc, VehicleState>(
           builder: (context, state) {
             if (state is VehicleLoading) {
-              return const Center(
-                  child: CircularProgressIndicator()); // Show loading indicator
+              return const Center(child: CircularProgressIndicator());
             }
-
             if (state is VehicleError) {
-              return Center(
-                  child: Text('Error: ${state.message}')); // Show error message
+              return Center(child: Text('Error: ${state.message}'));
             }
-
             if (state is VehicleLoaded) {
               final vehicles = state.vehicles;
-
-              return ListView.builder(
-                itemCount: vehicles.length,
-                itemBuilder: (context, index) {
-                  final vehicle = vehicles[index];
-
-                  return FutureBuilder<Person?>(
-                    // FutureBuilder to fetch owner
-                    future: _personRepository
-                        .getPersonByAuthId(vehicle.ownerAuthId),
-                    builder: (context, snapshot) {
-                      final owner = snapshot.data;
-                      return VehicleListItem(
-                          vehicle: vehicle,
-                          owner: owner); // Use separate widget
+              return FutureBuilder<Map<String, Person>>(
+                future: _personsFuture,
+                builder: (context, snapshot) {
+                  if (!mounted) return const SizedBox();
+                  final personsMap = snapshot.data ?? {};
+                  return ListView.builder(
+                    itemCount: vehicles.length,
+                    itemBuilder: (context, index) {
+                      final vehicle = vehicles[index];
+                      final owner = personsMap[vehicle.ownerAuthId];
+                      return VehicleListItem(vehicle: vehicle, owner: owner);
                     },
                   );
                 },
               );
             }
-
-            return const SizedBox(); // Empty widget for other states
+            return const SizedBox();
           },
         ),
       ),
       bottomNavigationBar: VehicleNavigationBar(
-        onHomePressed: () => context.go('/'), // Navigate to home
-        onReloadPressed: refreshVehicles, // Refresh vehicles list
+        onHomePressed: () => context.go('/'),
+        onReloadPressed: refreshVehicles,
         onAddVehiclePressed: () async {
-          final persons = await _personRepository.getAll(); // Fetch all persons
-
+          final persons = await _personsFuture;
+          if (!mounted) return;
           if (persons.isEmpty) {
             debugPrint(
                 "⚠️ No persons found. Ensure persons exist in Firestore.");
           }
-
           final newVehicle = await showDialog<Vehicle>(
-            // ignore: use_build_context_synchronously
             context: context,
             builder: (context) => CreateVehicleDialog(
-              owners: Future.value(persons), // Pass persons to dialog
+              owners: Future.value(persons.values.toList()),
               userRole: userRole,
               loggedInUserAuthId: loggedInUserAuthId,
             ),
@@ -144,14 +138,13 @@ class _VehiclesViewState extends State<VehiclesView> {
         },
         onLogoutPressed: () {
           debugPrint('Logout pressed');
-          context.go('/login'); // Navigate to login
+          context.go('/login');
         },
       ),
     );
   }
 }
 
-// Separate widget for the list item
 class VehicleListItem extends StatelessWidget {
   final Vehicle vehicle;
   final Person? owner;
@@ -191,7 +184,6 @@ class VehicleListItem extends StatelessWidget {
           );
 
           if (confirmDelete == true) {
-            // ignore: use_build_context_synchronously
             context
                 .read<VehiclesBloc>()
                 .add(DeleteVehicle(vehicleId: vehicle.id));

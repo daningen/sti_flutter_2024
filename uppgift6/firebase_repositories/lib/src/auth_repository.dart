@@ -48,7 +48,7 @@ class AuthRepository {
   }
 
   /// Gets the currently signed-in user.
-  /// Returns the Firebase Auth User object if a user is signed in, or `null` otherwise.
+
   User? getCurrentUser() {
     return _firebaseAuth.currentUser;
   }

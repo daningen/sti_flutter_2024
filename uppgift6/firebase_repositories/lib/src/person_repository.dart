@@ -105,13 +105,13 @@ class PersonRepository {
       await db.collection("persons").doc(id).delete();
       debugPrint("[PersonRepository] Person deleted successfully.");
     } catch (e) {
-      debugPrint("❌ Error deleting person: $e");
+      debugPrint(" Error deleting person: $e");
     }
   }
    Future<Person?> getPersonByAuthId(String authId) async {
     try {
       final querySnapshot = await db
-          .collection('persons') // Replace 'persons' with your collection name
+          .collection('persons') 
           .where('authId', isEqualTo: authId)
           .get();
 
@@ -119,10 +119,10 @@ class PersonRepository {
         final personData = querySnapshot.docs.first.data();
         return Person.fromJson(personData);
       } else {
-        return null; // Return null if no person is found
+        return null;  
       }
     } catch (e) {
-      debugPrint("Error fetching person by authId: $e"); // Handle errors
+      debugPrint("Error fetching person by authId: $e"); 
       return null;
     }
   }

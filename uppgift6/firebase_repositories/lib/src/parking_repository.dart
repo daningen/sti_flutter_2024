@@ -31,7 +31,7 @@ class ParkingRepository implements RepositoryInterface<Parking> {
       return parkingToCreate;
     } catch (e) {
       debugPrint("[ParkingRepository] Error creating parking: $e");
-      rethrow; // Re-throw the error for handling elsewhere
+      rethrow; 
     }
   }
 
@@ -66,10 +66,7 @@ class ParkingRepository implements RepositoryInterface<Parking> {
     } else {
       debugPrint(
           "[ParkingRepository] Querying parkings for user: $loggedInUserAuthId");
-      // query = parkingsCollection.where('ownerAuthId',
-      //     isEqualTo: loggedInUserAuthId);
-      // query = parkingsCollection.where('vehicle.owner.authId',
-      //     isEqualTo: loggedInUserAuthId);
+
       query = parkingsCollection.where('vehicle.ownerAuthId',
           isEqualTo: loggedInUserAuthId);
     }
@@ -86,7 +83,7 @@ class ParkingRepository implements RepositoryInterface<Parking> {
     }).handleError((error) {
       debugPrint("[ParkingRepository] Error getting parkings stream: $error");
       return Stream.value(
-          []); // Return an empty list instead of an empty stream
+          []);  
     });
   }
 
@@ -97,11 +94,11 @@ class ParkingRepository implements RepositoryInterface<Parking> {
 
     try {
       final docRef =
-          _db.collection("parkings").doc(id); // Get document reference
-      final snapshot = await docRef.get(); // Get document snapshot
+          _db.collection("parkings").doc(id);  
+      final snapshot = await docRef.get();  
 
       if (!snapshot.exists) {
-        return null; // Return null if document doesn't exist
+        return null;  
       }
 
       final data = snapshot.data() as Map<String, dynamic>; // Get data
@@ -113,7 +110,7 @@ class ParkingRepository implements RepositoryInterface<Parking> {
     }
   }
 
-  /// Updates a parking session.
+   
   @override
   Future<Parking> update(String id, Parking parking) async {
     debugPrint("[ParkingRepository] Updating parking session with ID: $id");
@@ -132,7 +129,7 @@ class ParkingRepository implements RepositoryInterface<Parking> {
     }
   }
 
-  /// Deletes a parking session.
+ 
   @override
   Future<Parking?> delete(String id) async {
     debugPrint("[ParkingRepository] Deleting parking session with ID: $id");
@@ -148,14 +145,14 @@ class ParkingRepository implements RepositoryInterface<Parking> {
       } else {
         debugPrint("[ParkingRepository] Parking not found for deletion.");
       }
-      return parking; // Return the deleted parking (or null if not found)
+      return parking;  
     } catch (e) {
       debugPrint("[ParkingRepository] Error deleting parking: $e");
       rethrow;
     }
   }
 
-  /// Stops a parking session (updates the endTime).
+  
   Future<void> stop(String id) async {
     debugPrint("[ParkingRepository] Stopping parking session with ID: $id");
 
@@ -164,11 +161,11 @@ class ParkingRepository implements RepositoryInterface<Parking> {
       if (parking != null) {
         debugPrint("[ParkingRepository] Parking to stop: $parking");
         final updatedParking = parking.copyWith(
-            endTime: DateTime.now()); // Create updated parking object
+            endTime: DateTime.now());  
         debugPrint(
             "[ParkingRepository] Updated parking object: $updatedParking");
 
-        await update(id, updatedParking); // Update in Firestore
+        await update(id, updatedParking);  
         debugPrint("[ParkingRepository] Parking session stopped successfully.");
       } else {
         debugPrint("[ParkingRepository] Parking not found for stopping.");
@@ -189,7 +186,7 @@ class ParkingRepository implements RepositoryInterface<Parking> {
 
       if (data == null) {
         debugPrint("WARNING: Document data is null for document ${doc.id}");
-        continue; // Skip this document if data is null
+        continue;  
       }
 
       try {
@@ -234,7 +231,7 @@ class ParkingRepository implements RepositoryInterface<Parking> {
         final parking = Parking.fromJson({
           ...data,
           'endTime': endTime,
-          'id': doc.id, // Include the document ID explicitly
+          'id': doc.id,  
         });
 
         debugPrint('Parking from JSON (document ${doc.id}): $parking');

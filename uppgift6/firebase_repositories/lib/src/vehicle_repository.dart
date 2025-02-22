@@ -114,43 +114,7 @@ class VehicleRepository implements RepositoryInterface<Vehicle> {
     }
   }
 
-  ///
-  // Stream<List<Vehicle>> getAvailableVehiclesStream(
-  //     String userRole, String loggedInUserAuthId) {
-  //   debugPrint(
-  //       "[VehicleRepository] Getting available vehicles stream for role: $userRole, user: $loggedInUserAuthId");
-
-  //   final vehiclesCollection = _db.collection('vehicles');
-  //   Query query;
-
-  //   if (userRole == 'admin') {
-  //     debugPrint("[VehicleRepository] Querying all vehicles (admin)");
-  //     query = vehiclesCollection;
-  //   } else {
-  //     debugPrint(
-  //         "[VehicleRepository] Querying vehicles for user: $loggedInUserAuthId");
-
-  //     //  Query based on ownerAuthId
-  //     query = vehiclesCollection.where('ownerAuthId', isEqualTo: loggedInUserAuthId);
-  //   }
-
-  //   debugPrint("[VehicleRepository] getAvailableVehiclesStream query: ${query.toString()}");
-
-  //   return query.snapshots().map((snapshot) {
-  //     debugPrint("[VehicleRepository] getAvailableVehiclesStream snapshot docs length: ${snapshot.docs.length} for user $loggedInUserAuthId");
-  //     final vehicles = _mapVehicleSnapshots(snapshot);
-  //     debugPrint("[VehicleRepository] getAvailableVehiclesStream mapped vehicles length: ${vehicles.length} for user $loggedInUserAuthId");
-  //     return vehicles;
-  //   }).handleError((error) {
-  //     debugPrint("[VehicleRepository] Error getting available vehicles stream: $error");
-  //     return const Stream.empty(); // Return an empty stream on error
-  //   });
-  // }
-
-  /// Helper function to map a QuerySnapshot to a list of Vehicle objects.
-  ///
-  /// Iterates through the documents in the snapshot, converts each document's data to a `Vehicle` object using `Vehicle.fromJson`,
-  /// and returns a list of `Vehicle` objects. Handles potential null data and deserialization errors.
+  /// Helper function to map vehicle snapshots to Vehicle objects
   List<Vehicle> _mapVehicleSnapshots(QuerySnapshot snapshot) {
     List<Vehicle> vehicles = [];
     for (final doc in snapshot.docs) {
@@ -164,7 +128,7 @@ class VehicleRepository implements RepositoryInterface<Vehicle> {
       try {
         final vehicle = Vehicle.fromJson({
           ...data,
-          'id': doc.id, // Include the document ID
+          'id': doc.id,  
         });
         debugPrint(
             '[VehicleRepository] Vehicle from JSON (document ${doc.id}): $vehicle');

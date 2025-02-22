@@ -204,11 +204,43 @@ class ParkingListItem extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Parking at: ${parkingSpace?.address ?? 'N/A'}',
-            style: const TextStyle(fontWeight: FontWeight.bold),
+          Row(
+            // Row for "Parking at" and the Prolong button
+            mainAxisAlignment:
+                MainAxisAlignment.spaceBetween, // Align items to start and end
+            children: [
+              Text(
+                'Parking at: ${parkingSpace?.address ?? 'N/A'}',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              ElevatedButton(
+                // Prolong Parking (Icon) Button
+                onPressed: () {
+                  debugPrint(
+                      'Prolong Parking button pressed for parking ID: ${parking.id}');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 112, 243, 129),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.all(8.0),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Icon(
+                  parking.endTime == null ||
+                          parking.endTime!.isAfter(DateTime.now().toUtc())
+                      ? Icons.directions_car
+                      : Icons.local_parking,
+                  color: parking.endTime == null ||
+                          parking.endTime!.isAfter(DateTime.now().toUtc())
+                      ? Colors.green
+                      : Colors.grey,
+                  size: 20,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 4.0),
+          const SizedBox(height: 4.0), // Spacing below the row
           Text('Vehicle: ${vehicle?.licensePlate ?? 'N/A'}'),
           const SizedBox(height: 4.0),
           Text('Start Time: ${timeFormat.format(parking.startTime)}'),
@@ -218,29 +250,20 @@ class ParkingListItem extends StatelessWidget {
           const SizedBox(height: 4.0),
           if (parking.endTime == null ||
               parking.endTime!.isAfter(DateTime.now().toUtc()))
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 243, 112, 102),
-                foregroundColor: Colors.white,
+            if (parking.endTime == null ||
+                parking.endTime!.isAfter(DateTime.now().toUtc()))
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 243, 112, 102),
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () {
+                  context
+                      .read<ParkingBloc>()
+                      .add(StopParking(parkingId: parking.id));
+                },
+                child: const Text('Stop Parking'),
               ),
-              onPressed: () {
-                context
-                    .read<ParkingBloc>()
-                    .add(StopParking(parkingId: parking.id));
-              },
-              child: const Text('Stop Parking'),
-            ),
-          Icon(
-            parking.endTime == null ||
-                    parking.endTime!.isAfter(DateTime.now().toUtc())
-                ? Icons.directions_car
-                : Icons.local_parking,
-            color: parking.endTime == null ||
-                    parking.endTime!.isAfter(DateTime.now().toUtc())
-                ? Colors.green
-                : Colors.grey,
-            size: 30,
-          ),
         ],
       ),
     );
