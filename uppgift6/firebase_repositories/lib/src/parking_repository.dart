@@ -31,7 +31,7 @@ class ParkingRepository implements RepositoryInterface<Parking> {
       return parkingToCreate;
     } catch (e) {
       debugPrint("[ParkingRepository] Error creating parking: $e");
-      rethrow; 
+      rethrow;
     }
   }
 
@@ -82,8 +82,7 @@ class ParkingRepository implements RepositoryInterface<Parking> {
       return parkings;
     }).handleError((error) {
       debugPrint("[ParkingRepository] Error getting parkings stream: $error");
-      return Stream.value(
-          []);  
+      return Stream.value([]);
     });
   }
 
@@ -93,12 +92,11 @@ class ParkingRepository implements RepositoryInterface<Parking> {
     debugPrint("[ParkingRepository] Fetching parking session with ID: $id");
 
     try {
-      final docRef =
-          _db.collection("parkings").doc(id);  
-      final snapshot = await docRef.get();  
+      final docRef = _db.collection("parkings").doc(id);
+      final snapshot = await docRef.get();
 
       if (!snapshot.exists) {
-        return null;  
+        return null;
       }
 
       final data = snapshot.data() as Map<String, dynamic>; // Get data
@@ -110,7 +108,6 @@ class ParkingRepository implements RepositoryInterface<Parking> {
     }
   }
 
-   
   @override
   Future<Parking> update(String id, Parking parking) async {
     debugPrint("[ParkingRepository] Updating parking session with ID: $id");
@@ -129,7 +126,6 @@ class ParkingRepository implements RepositoryInterface<Parking> {
     }
   }
 
- 
   @override
   Future<Parking?> delete(String id) async {
     debugPrint("[ParkingRepository] Deleting parking session with ID: $id");
@@ -145,14 +141,13 @@ class ParkingRepository implements RepositoryInterface<Parking> {
       } else {
         debugPrint("[ParkingRepository] Parking not found for deletion.");
       }
-      return parking;  
+      return parking;
     } catch (e) {
       debugPrint("[ParkingRepository] Error deleting parking: $e");
       rethrow;
     }
   }
 
-  
   Future<void> stop(String id) async {
     debugPrint("[ParkingRepository] Stopping parking session with ID: $id");
 
@@ -160,12 +155,11 @@ class ParkingRepository implements RepositoryInterface<Parking> {
       final parking = await getById(id); // Get parking before stopping
       if (parking != null) {
         debugPrint("[ParkingRepository] Parking to stop: $parking");
-        final updatedParking = parking.copyWith(
-            endTime: DateTime.now());  
+        final updatedParking = parking.copyWith(endTime: DateTime.now());
         debugPrint(
             "[ParkingRepository] Updated parking object: $updatedParking");
 
-        await update(id, updatedParking);  
+        await update(id, updatedParking);
         debugPrint("[ParkingRepository] Parking session stopped successfully.");
       } else {
         debugPrint("[ParkingRepository] Parking not found for stopping.");
@@ -186,7 +180,7 @@ class ParkingRepository implements RepositoryInterface<Parking> {
 
       if (data == null) {
         debugPrint("WARNING: Document data is null for document ${doc.id}");
-        continue;  
+        continue;
       }
 
       try {
@@ -231,7 +225,7 @@ class ParkingRepository implements RepositoryInterface<Parking> {
         final parking = Parking.fromJson({
           ...data,
           'endTime': endTime,
-          'id': doc.id,  
+          'id': doc.id,
         });
 
         debugPrint('Parking from JSON (document ${doc.id}): $parking');
@@ -245,5 +239,33 @@ class ParkingRepository implements RepositoryInterface<Parking> {
       }
     }
     return parkings;
+  }
+
+  Future<void> prolong(String id) async {
+    debugPrint("[ParkingRepository] Prolonging parking session with ID: $id");
+
+    try {
+      final parking = await getById(id);
+      if (parking != null) {
+        final newEndTime =
+            parking.endTime == null // If no endTime, prolong from startTime
+                ? parking.startTime.add(const Duration(hours: 1))
+                : parking.endTime!.add(const Duration(
+                    hours: 1)); // If endTime exists, prolong from endTime
+
+        final updatedParking = parking.copyWith(endTime: newEndTime);
+
+        await update(id, updatedParking); // Update in database
+
+        debugPrint(
+            "[ParkingRepository] Parking session prolonged successfully.");
+      } else {
+        debugPrint("[ParkingRepository] Parking not found for prolonging.");
+        throw Exception("Parking session not found for ID: $id");
+      }
+    } catch (e) {
+      debugPrint("[ParkingRepository] Error prolonging parking: $e");
+      rethrow;
+    }
   }
 }

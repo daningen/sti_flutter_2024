@@ -214,13 +214,35 @@ class ParkingListItem extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               ElevatedButton(
-                // Prolong Parking (Icon) Button
                 onPressed: () {
-                  debugPrint(
-                      'Prolong Parking button pressed for parking ID: ${parking.id}');
+                  if (parking.endTime == null ||
+                      parking.endTime!.isAfter(DateTime.now().toUtc())) {
+                    context
+                        .read<ParkingBloc>()
+                        .add(ProlongParking(parkingId: parking.id));
+                    debugPrint(
+                        'Prolong Parking button pressed for parking ID: ${parking.id}');
+                    // Show a SnackBar with a green background for success
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Parking prolonged successfully!'),
+                        backgroundColor:
+                            Colors.green, // Green background for success
+                      ),
+                    );
+                  } else {
+                    // Show a SnackBar with a red background for failure (not active)
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('This parking session is not active.'),
+                        backgroundColor:
+                            Colors.red, // Red background for failure
+                      ),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 112, 243, 129),
+                  backgroundColor: const Color.fromARGB(255, 211, 220, 212),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.all(8.0),
                   minimumSize: Size.zero,

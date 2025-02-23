@@ -35,11 +35,43 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
     on<StopParking>(_onStopParking); // Handle StopParking event
     on<SelectParking>(_onSelectParking); // Handle SelectParking event
     on<UpdateParking>(_onUpdateParking); // Handle UpdateParking event
-    on<ChangeFilter>(_onChangeFilter); // Handle ChangeFilter event
+    on<ChangeFilter>(_onChangeFilter);
+    on<ProlongParking>(_onProlongParking);
     on<ScheduleParkingNotification>(
         _onScheduleParkingNotification); // Handle ScheduleParkingNotification event
 
     add(LoadParkings(filter: _currentFilter)); // Initial data load
+  }
+
+  Future<void> _onProlongParking(
+      ProlongParking event, Emitter<ParkingState> emit) async {
+    try {
+      final parking = await parkingRepository
+          .getById(event.parkingId); // Get the parking by ID
+
+      if (parking != null) {
+        final newEndTime =
+            parking.endTime == null // If no endTime, prolong from startTime
+                ? parking.startTime.add(const Duration(hours: 1))
+                : parking.endTime!.add(const Duration(
+                    hours: 1)); // If endTime exists, prolong from endTime
+
+        final updatedParking = parking.copyWith(
+            endTime: newEndTime); // Create a copy with the new endTime
+
+        await parkingRepository.update(event.parkingId,
+            updatedParking); // Update the parking in the database
+
+        add(LoadParkings(
+            filter: _currentFilter)); // Reload parkings to reflect the change
+      } else {
+        emit(ParkingError(
+            'Parking not found')); // Emit error if parking is not found
+      }
+    } catch (e) {
+      emit(ParkingError(
+          'Failed to prolong parking: $e')); // Emit error if prolonging fails
+    }
   }
 
   /// Loads parkings data, vehicles, and parking spaces.
@@ -118,7 +150,7 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
       return parkings.where((p) {
         // Active parkings (endTime is null or in the future)
         final endTimeUtc = p.endTime?.toUtc();
-        
+
         return endTimeUtc == null || endTimeUtc.isAfter(nowUtc);
       }).toList();
     } else {
