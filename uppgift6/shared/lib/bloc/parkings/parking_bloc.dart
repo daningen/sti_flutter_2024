@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared/shared.dart';
 import 'package:notification_utils/notification_utils.dart';
+import 'package:uuid/uuid.dart';
 
+import '../../app_constants.dart';
 import '../auth/auth_firebase_bloc.dart';
 import 'parking_event.dart';
 import 'parking_state.dart';
@@ -37,6 +39,8 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
     on<UpdateParking>(_onUpdateParking); // Handle UpdateParking event
     on<ChangeFilter>(_onChangeFilter);
     on<ProlongParking>(_onProlongParking);
+    on<CancelParkingNotification>(
+        _onCancelParkingNotification); // NEW: Handle CancelParkingNotification
     on<ScheduleParkingNotification>(
         _onScheduleParkingNotification); // Handle ScheduleParkingNotification event
 
@@ -46,31 +50,55 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
   Future<void> _onProlongParking(
       ProlongParking event, Emitter<ParkingState> emit) async {
     try {
-      final parking = await parkingRepository
-          .getById(event.parkingId); // Get the parking by ID
+      // 1. Fetch the EXISTING Parking object from Firestore using its ID.
+      final existingParking = await parkingRepository.getById(event.parkingId);
 
-      if (parking != null) {
-        final newEndTime =
-            parking.endTime == null // If no endTime, prolong from startTime
-                ? parking.startTime.add(const Duration(hours: 1))
-                : parking.endTime!.add(const Duration(
-                    hours: 1)); // If endTime exists, prolong from endTime
+      // 2. Check if the parking exists.  This is important!
+      if (existingParking != null) {
+        debugPrint('🚗 [ParkingBloc] Prolonging parking: $existingParking');
 
-        final updatedParking = parking.copyWith(
-            endTime: newEndTime); // Create a copy with the new endTime
+        // 3. Calculate the new end time.
+        final newEndTime = existingParking.endTime == null
+            ? existingParking.startTime.add(prolongationDuration)
+            : existingParking.endTime!.add(prolongationDuration);
 
-        await parkingRepository.update(event.parkingId,
-            updatedParking); // Update the parking in the database
+        // 4. Create a *new* Parking object using copyWith, including the existing notificationId.
+        final updatedParking = existingParking.copyWith(
+          endTime: newEndTime,
+          notificationId: existingParking
+              .notificationId, // Copy the existing notificationId
+        );
 
-        add(LoadParkings(
-            filter: _currentFilter)); // Reload parkings to reflect the change
+        debugPrint(
+            '🚗 [ParkingBloc] Updated parking: $updatedParking'); // Debug print
+
+        // 5. Update the Parking object in Firestore using the *ID* and the *updatedParking* object.
+        // await parkingRepository.update(
+        //     event.parkingId, updatedParking); // Use the ID!
+
+        await parkingRepository.prolong(event.parkingId);
+
+        // 6. Trigger a LoadParkings event to refresh the UI.
+        add(LoadParkings(filter: _currentFilter));
       } else {
-        emit(ParkingError(
-            'Parking not found')); // Emit error if parking is not found
+        // 7. Handle the case where the Parking object is not found.
+        emit(ParkingError('Parking not found'));
       }
     } catch (e) {
-      emit(ParkingError(
-          'Failed to prolong parking: $e')); // Emit error if prolonging fails
+      // 8. Handle any errors.
+      emit(ParkingError('Failed to prolong parking: $e'));
+    }
+  }
+
+  Future<void> _onCancelParkingNotification(
+      CancelParkingNotification event, Emitter<ParkingState> emit) async {
+    try {
+      final parking = await parkingRepository.getById(event.parkingId);
+      if (parking != null && parking.notificationId != null) {
+        await cancelNotification(parking.notificationId!);
+      }
+    } catch (e) {
+      emit(ParkingError('Failed to cancel notification: $e'));
     }
   }
 
@@ -179,49 +207,60 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
     }
   }
 
-  /// Handles parking creation.
   Future<void> _onCreateParking(
       CreateParking event, Emitter<ParkingState> emit) async {
+    print("[_onCreateParking]: CreateParking event received. Parking details:");
+    print("[_onCreateParking]: Parking ID: ${event.parking.id}");
+    print("[_onCreateParking]: Start Time: ${event.parking.startTime}");
+    print("[_onCreateParking]: End Time: ${event.parking.endTime}");
+    print(
+        "[_onCreateParking]: Vehicle License Plate: ${event.parking.vehicle?.licensePlate}"); // Handle null vehicle
+    print(
+        "[_onCreateParking]: Parking Space Address: ${event.parking.parkingSpace?.address}"); // Handle null space
+    print(
+        "[_onCreateParking]: Notification ID: ${event.parking.notificationId}");
     try {
-      await parkingRepository
-          .create(event.parking); // Create parking in the repository
-      debugPrint('✅ [ParkingBloc] Parking created'); // Debug print
-      debugPrint(
-          "🚗 New Parking Created - ID: ${event.parking.id}, EndTime: ${event.parking.endTime}"); // Debug print
+      int? notificationId;
+      DateTime? reminderTimeUtc;
 
-      // Schedule notification if end time is set and in the future.
-      if (event.parking.endTime != null) {
-        final reminderTimeUtc = event.parking.endTime!
-            .subtract(const Duration(minutes: 3))
-            .toUtc(); // Calculate reminder time
-        debugPrint(
-            "🔔 Scheduling notification for: $reminderTimeUtc (UTC)"); // Debug print
+      final endTimeUtc = event.parking.endTime;
+      debugPrint("🚗 [ParkingBloc] End time: $endTimeUtc");
 
+      if (endTimeUtc != null) {
+        reminderTimeUtc = endTimeUtc.subtract(const Duration(minutes: 3));
         if (reminderTimeUtc.isAfter(DateTime.now().toUtc())) {
-          // Check if reminder time is in the future
-          debugPrint(
-              "✅ [ParkingBloc] Notification scheduled at: $reminderTimeUtc"); // Debug print
-
-          add(ScheduleParkingNotification(
-            // Schedule notification
-            title: "Parking Reminder",
-            content:
-                "Your parking at ${event.parking.parkingSpace?.address} expires soon!",
-            deliveryTime: reminderTimeUtc,
-            parkingId: event.parking.id,
-          ));
-        } else {
-          debugPrint(
-              "⚠️ Notification time is in the past. No notification scheduled."); // Debug print
+          final uuid = const Uuid();
+          notificationId = uuid.v4().hashCode;
         }
-      } else {
-        debugPrint(
-            "🚨 ERROR: Parking was created with `endTime` = null!"); // Debug print
       }
 
-      add(LoadParkings(filter: _currentFilter)); // Reload parkings
+      final parkingToCreate = event.parking
+          .copyWith(endTime: endTimeUtc, notificationId: notificationId);
+      debugPrint("🚗 [ParkingBloc] Creating parking: $parkingToCreate");
+
+      final createdParking = await parkingRepository.create(parkingToCreate);
+
+      if (reminderTimeUtc != null && notificationId != null) {
+        // Check if both are not null
+        await scheduleNotification(
+          title: "Parking Reminder",
+          content:
+              "Your parking at ${createdParking.parkingSpace?.address} expires soon!",
+          deliveryTime: reminderTimeUtc,
+          id: notificationId, // Use the generated UUID
+        );
+        debugPrint(
+            "✅ [ParkingBloc] Notification scheduled with ID: $notificationId");
+      } else {
+        debugPrint(
+            "⚠️ Notification time is in the past or endTime is null. No notification scheduled.");
+      }
+
+      add(LoadParkings(filter: _currentFilter));
     } catch (e) {
-      emit(ParkingError('Failed to create parking: $e')); // Emit ParkingError
+      emit(ParkingError(
+          'Failed to create parking or schedule notification: $e'));
+      debugPrint("Error details: $e");
     }
   }
 
@@ -264,7 +303,7 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
         title: event.title,
         content: event.content,
         deliveryTime: event.deliveryTime,
-        id: event.parkingId.hashCode,
+        id: event.parkingId.hashCode, // Use event.parkingId.hashCode
       );
     } catch (e) {
       emit(ParkingError('Failed to schedule notification: $e'));

@@ -24,6 +24,7 @@ import 'package:parking_app/firebase_options.dart';
 import 'package:parking_app/providers/theme_notifier.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'; // Import the local notifications plugin
 
+
 // Initialize FlutterLocalNotificationsPlugin
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -59,6 +60,7 @@ Future<void> main() async {
   );
 
   debugPrint("Notification initialized: $isInitialized");
+  
 
   runApp(const MyApp()); // Run the app
 }
@@ -158,6 +160,7 @@ class MyApp extends StatelessWidget {
               parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
               vehicleRepository: context.read<VehicleRepository>(),
               authFirebaseBloc: context.read<AuthFirebaseBloc>(),
+              // notificationService: context.read<NotificationService>(), // Inject NotificationService
             )..add(LoadParkings()), // Load parkings initially
           ),
           BlocProvider(

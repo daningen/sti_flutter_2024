@@ -87,7 +87,9 @@ class MyApp extends StatelessWidget {
             create: (context) => ParkingBloc(
               parkingRepository: context.read<ParkingRepository>(),
               parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
-              vehicleRepository: context.read<VehicleRepository>(), authFirebaseBloc: context.read<AuthFirebaseBloc>(),
+              vehicleRepository: context.read<VehicleRepository>(), 
+              authFirebaseBloc: context.read<AuthFirebaseBloc>(),
+         
             )..add(LoadParkings()), 
           ),
           BlocProvider( 

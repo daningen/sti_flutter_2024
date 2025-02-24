@@ -1,7 +1,6 @@
 // import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:uuid/uuid.dart';
 
 import 'permission_utils.dart';
 
@@ -12,35 +11,35 @@ Future<void> scheduleNotification({
   required String title,
   required String content,
   required DateTime deliveryTime,
-  required int id,
+  required int id, // Use the provided ID directly
 }) async {
-  await requestPermissions(); // Request permissions before scheduling
+  await requestPermissions();
 
-  String channelId = const Uuid().v4(); // Unique ID per notification
-  const String channelName = "notifications_channel";
-  String channelDescription = "Standard notifications";
+  const String channelId = "parking_channel_id"; // Consistent channel ID
+  const String channelName = "Parking Notifications"; // Consistent channel name
+  const String channelDescription = "Notifications for parking events";
 
-  // Android-specific settings
-  var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+  final AndroidNotificationDetails androidPlatformChannelSpecifics =
+      AndroidNotificationDetails(
     channelId,
     channelName,
     channelDescription: channelDescription,
     importance: Importance.max,
     priority: Priority.high,
-    ticker: 'ticker',
+    ticker: 'ticker', // Consider removing if it's not needed
+    // Add other Android-specific settings as needed (e.g., sound, icon)
   );
 
-  // iOS-specific settings
-  var iOSPlatformChannelSpecifics = const DarwinNotificationDetails();
+  const DarwinNotificationDetails iOSPlatformChannelSpecifics =
+      DarwinNotificationDetails(); // Add iOS settings if needed
 
-  // Combine platform settings
-  var platformChannelSpecifics = NotificationDetails(
+  final NotificationDetails platformChannelSpecifics = NotificationDetails(
     android: androidPlatformChannelSpecifics,
     iOS: iOSPlatformChannelSpecifics,
   );
 
   await flutterLocalNotificationsPlugin.zonedSchedule(
-    id,
+    id, // Use the provided ID directly (important!)
     title,
     content,
     tz.TZDateTime.from(deliveryTime, tz.local),
@@ -49,6 +48,10 @@ Future<void> scheduleNotification({
     uiLocalNotificationDateInterpretation:
         UILocalNotificationDateInterpretation.absoluteTime,
   );
+}
+
+Future<void> cancelNotification(int id) async {
+  await flutterLocalNotificationsPlugin.cancel(id);
 }
 
 // ✅ Add the new function for showing parking notifications
@@ -70,11 +73,10 @@ Future<void> showParkingNotification(String parkingId) async {
       NotificationDetails(android: androidDetails, iOS: iosDetails);
 
   await flutterLocalNotificationsPlugin.show(
-    
     1, // Unique notification ID
     'Parking Update',
     'A new parking event has occurred!',
-   
+
     platformDetails,
     payload: parkingId, // Attach parking ID to notification
   );

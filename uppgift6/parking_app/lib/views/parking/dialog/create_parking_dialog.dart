@@ -5,6 +5,7 @@ import 'package:shared/bloc/parkings/parking_bloc.dart';
 import 'package:shared/bloc/parkings/parking_state.dart';
 import 'package:shared/shared.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
+import 'package:uuid/uuid.dart';
 
 //current create
 
@@ -29,6 +30,7 @@ class _CreateParkingDialogState extends State<CreateParkingDialog> {
   Vehicle? selectedVehicle;
   ParkingSpace? selectedParkingSpace;
   DateTime? estimatedEndTime;
+  final uuid = const Uuid(); // Create uuid instance here
 
   List<Vehicle> _filteredAvailableVehicles = []; // Store filtered vehicles
   List<ParkingSpace> _filteredAvailableParkingSpaces =
@@ -276,14 +278,17 @@ class _CreateParkingDialogState extends State<CreateParkingDialog> {
             debugPrint(
                 "[create_parking_Dialog:] endtime type is: ${estimatedEndTime.runtimeType}");
             if (formKey.currentState!.validate()) {
+              final notificationId = uuid.v4().hashCode;
               // Create a new Parking instance with selected values
               final newParking = Parking(
                 startTime: DateTime.now(),
                 endTime: estimatedEndTime,
                 vehicle: selectedVehicle,
                 parkingSpace: selectedParkingSpace,
+                notificationId: notificationId,
               );
-
+              debugPrint(
+                  "Parking object created with notificationId: $newParking"); // Debug print
               Navigator.of(context).pop();
               widget.onCreate(newParking);
             }

@@ -1,34 +1,43 @@
 import 'package:cloud_firestore/cloud_firestore.dart'; // For Firestore interaction
 import 'package:shared/shared.dart'; // For shared models (Parking)
 import 'package:flutter/foundation.dart'; // For debugPrint
-import 'package:uuid/uuid.dart'; // For generating unique IDs
+// import 'package:uuid/uuid.dart'; // For generating unique IDs
 
 class ParkingRepository implements RepositoryInterface<Parking> {
   final FirebaseFirestore _db; // Firestore instance
-  final Uuid _uuid = const Uuid(); // UUID generator
+  // final Uuid _uuid = const Uuid(); // UUID generator
 
   ParkingRepository({required FirebaseFirestore db}) : _db = db;
 
   /// Creates a new parking session.
   @override
+  @override
   Future<Parking> create(Parking parking) async {
-    debugPrint(
-        '[ParkingRepository] Creating a new parking session: ${parking.toJson()}');
-
-    final parkingId = parking.id.isEmpty
-        ? _uuid.v4()
-        : parking.id; // Generate ID if not provided
-    final parkingToCreate =
-        parking.copyWith(id: parkingId); // Create a copy with the ID
-
     try {
-      await _db
-          .collection("parkings")
-          .doc(parkingId)
-          .set(parkingToCreate.toJson()); // Store in Firestore
+      final parkingJson = parking.toJson(); // Convert Parking object to JSON
+
       debugPrint(
-          "[ParkingRepository] Parking created: ${parkingToCreate.toJson()}");
-      return parkingToCreate;
+          "[ParkingRepository] Parking JSON before Firestore write: $parkingJson"); // Debug print!
+
+      final docRef =
+          await _db.collection("parkings").add(parkingJson); // Use add()
+
+      // ***KEY CHANGE: Retrieve the created document and its ID in ONE step***
+      final docSnapshot = await docRef.get();
+
+      if (docSnapshot.exists) {
+        // ***KEY CHANGE: Construct the Parking object using data from the document AND the ID***
+        final createdParking = Parking.fromJson({
+          'id': docSnapshot.id, // Add the ID
+          ...docSnapshot.data() as Map<String, dynamic>, // Add other data
+        });
+
+        debugPrint(
+            "[ParkingRepository] Parking created: ${createdParking.toJson()}");
+        return createdParking;
+      } else {
+        throw Exception("Failed to retrieve created Parking document.");
+      }
     } catch (e) {
       debugPrint("[ParkingRepository] Error creating parking: $e");
       rethrow;
@@ -114,12 +123,41 @@ class ParkingRepository implements RepositoryInterface<Parking> {
     debugPrint("[ParkingRepository] Parking to update: ${parking.toJson()}");
 
     try {
-      await _db
-          .collection("parkings")
-          .doc(id)
-          .set(parking.toJson()); // Update in Firestore
-      debugPrint("[ParkingRepository] Parking updated: ${parking.toJson()}");
-      return parking;
+      final docRef = _db.collection("parkings").doc(id);
+      final docSnapshot = await docRef.get();
+
+      if (!docSnapshot.exists) {
+        throw Exception("Parking document not found for ID: $id");
+      }
+
+      final existingData = docSnapshot.data() as Map<String, dynamic>;
+
+      final updateData = <String, dynamic>{};
+
+      if (parking.endTime != null) {
+        updateData['endTime'] = parking.endTime!.toIso8601String();
+      }
+      // Add other fields to be updated similarly
+
+      // ***KEY CHANGE: Preserve notificationId if it's not in the updated parking object***
+      if (parking.notificationId == null &&
+          existingData.containsKey('notificationId')) {
+        updateData['notificationId'] = existingData['notificationId'];
+      } else if (parking.notificationId != null) {
+        updateData['notificationId'] = parking.notificationId;
+      }
+
+      await docRef.update(updateData);
+
+      final updatedSnapshot = await docRef.get();
+      final updatedData = updatedSnapshot.data() as Map<String, dynamic>;
+      updatedData['id'] = updatedSnapshot.id;
+      final updatedParking = Parking.fromJson(updatedData);
+
+      debugPrint(
+          "[ParkingRepository] Firestore updated parking: ${updatedParking.toJson()}");
+
+      return updatedParking;
     } catch (e) {
       debugPrint("[ParkingRepository] Error updating parking: $e");
       rethrow;

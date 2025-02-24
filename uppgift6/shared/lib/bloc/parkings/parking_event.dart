@@ -19,6 +19,15 @@ class ProlongParking extends ParkingEvent {
   List<Object?> get props => [parkingId];
 }
 
+class CancelParkingNotification extends ParkingEvent {
+  final String parkingId;
+
+  const CancelParkingNotification({required this.parkingId});
+
+  @override
+  List<Object?> get props => [parkingId];
+}
+
 class LoadParkings extends ParkingEvent {
   final ParkingFilter filter;
 
@@ -89,8 +98,6 @@ class ScheduleParkingNotification extends ParkingEvent {
   @override
   List<Object?> get props => [title, content, deliveryTime, parkingId];
 }
-
-
 
 // Optional state to indicate notification scheduling (in parking_state.dart if needed)
 // class NotificationScheduled extends ParkingState {

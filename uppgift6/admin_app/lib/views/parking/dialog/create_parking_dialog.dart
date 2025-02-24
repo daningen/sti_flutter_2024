@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
+
 class CreateParkingDialog extends StatelessWidget {
   final List<Vehicle> availableVehicles;
   final List<ParkingSpace> availableParkingSpaces;

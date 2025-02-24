@@ -215,28 +215,36 @@ class ParkingListItem extends StatelessWidget {
               ),
               ElevatedButton(
                 onPressed: () {
-                  if (parking.endTime == null ||
+                  debugPrint("[ParkingView] Prolong Parking button pressed");
+
+                  debugPrint(
+                      "[ParkingView] Parking object: $parking"); // Log the entire parking object
+                  final parkingId = parking.id;
+                  debugPrint("[ParkingView] Parking ID to prolong: $parkingId");
+
+                  if (parking.endTime != null &&
                       parking.endTime!.isAfter(DateTime.now().toUtc())) {
+                    // Only check endTime
                     context
                         .read<ParkingBloc>()
-                        .add(ProlongParking(parkingId: parking.id));
+                        .add(ProlongParking(parkingId: parkingId));
                     debugPrint(
-                        'Prolong Parking button pressed for parking ID: ${parking.id}');
-                    // Show a SnackBar with a green background for success
+                        "[ParkingView] ProlongParking event dispatched for ID: $parkingId");
+
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Parking prolonged successfully!'),
-                        backgroundColor:
-                            Colors.green, // Green background for success
+                        backgroundColor: Colors.green,
                       ),
                     );
                   } else {
-                    // Show a SnackBar with a red background for failure (not active)
+                    debugPrint(
+                        "[ParkingView] Parking session is not active or endTime is null");
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('This parking session is not active.'),
-                        backgroundColor:
-                            Colors.red, // Red background for failure
+                        content: Text(
+                            'This parking session is not active or data is missing.'),
+                        backgroundColor: Colors.red,
                       ),
                     );
                   }

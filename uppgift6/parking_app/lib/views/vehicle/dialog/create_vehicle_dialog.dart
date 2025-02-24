@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:parking_app/app_constants.dart';
+import 'package:shared/app_constants.dart';
 import 'package:shared/shared.dart';
 import '../../../utils/validators.dart';
 

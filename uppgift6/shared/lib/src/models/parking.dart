@@ -12,6 +12,7 @@ class Parking {
   DateTime? endTime;
   final Vehicle? vehicle;
   final ParkingSpace? parkingSpace;
+  final int? notificationId;
 
   Parking({
     String? id,
@@ -19,22 +20,22 @@ class Parking {
     this.endTime,
     this.vehicle,
     this.parkingSpace,
+    this.notificationId,
   }) : id = id ?? const Uuid().v4();
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'startTime': startTime.toIso8601String(),
-
       'endTime': endTime?.toIso8601String(),
       'vehicle': vehicle?.toJson(), // Assuming `Vehicle` has a `toJson` method
-      'parkingSpace': parkingSpace
-          ?.toJson(), // Assuming `ParkingSpace` has a `toJson` method
+      'parkingSpace': parkingSpace?.toJson(), // Corrected line
+      'notificationId': notificationId, // Include notificationId
     };
   }
 
   factory Parking.fromJson(Map<String, dynamic> json) {
-    debugPrint('[parking model]Parsing Parking from JSON: $json');
+    // debugPrint('[parking model]Parsing Parking from JSON: $json');
 
     try {
       if (json['startTime'] == null) {
@@ -92,6 +93,7 @@ class Parking {
     DateTime? endTime,
     Vehicle? vehicle,
     ParkingSpace? parkingSpace,
+    int? notificationId, // Add notificationId to copyWith
   }) {
     return Parking(
       id: id ?? this.id,
@@ -99,11 +101,13 @@ class Parking {
       endTime: endTime ?? this.endTime,
       vehicle: vehicle ?? this.vehicle,
       parkingSpace: parkingSpace ?? this.parkingSpace,
+      notificationId:
+          notificationId ?? this.notificationId, // Copy notificationId
     );
   }
 
   @override
   String toString() {
-    return 'Parking{id: $id, startTime: $startTime, endTime: $endTime, vehicle: $vehicle, parkingSpace: $parkingSpace}';
+    return 'Parking{id: $id, startTime: $startTime, endTime: $endTime, vehicle: $vehicle, parkingSpace: $parkingSpace, notificationId: $notificationId}';
   }
 }
