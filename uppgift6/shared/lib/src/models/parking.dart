@@ -80,6 +80,7 @@ class Parking {
         endTime: endTime,
         vehicle: vehicle,
         parkingSpace: parkingSpace,
+        notificationId: json['notificationId'] as int?,
       );
     } catch (e) {
       debugPrint('Error parsing Parking JSON: $e, json: $json');

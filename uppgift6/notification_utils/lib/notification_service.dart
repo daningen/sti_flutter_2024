@@ -81,3 +81,19 @@ Future<void> showParkingNotification(String parkingId) async {
     payload: parkingId, // Attach parking ID to notification
   );
 }
+
+  Future<void> updateParkingNotification({
+    required String title,
+    required String content,
+    required DateTime newEndTime,
+    required int notificationId, // The ORIGINAL notification ID
+  }) async {
+    await cancelNotification(notificationId); // Cancel the old notification
+
+    await scheduleNotification(
+      title: title,
+      content: content,
+      deliveryTime: newEndTime,
+      id: notificationId, // Use the SAME ID to replace the notification
+    );
+  }

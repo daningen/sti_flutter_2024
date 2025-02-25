@@ -9,8 +9,6 @@ class ParkingRepository implements RepositoryInterface<Parking> {
 
   ParkingRepository({required FirebaseFirestore db}) : _db = db;
 
-  /// Creates a new parking session.
-  @override
   @override
   Future<Parking> create(Parking parking) async {
     try {
@@ -27,6 +25,9 @@ class ParkingRepository implements RepositoryInterface<Parking> {
 
       if (docSnapshot.exists) {
         // ***KEY CHANGE: Construct the Parking object using data from the document AND the ID***
+        debugPrint(
+            "[ParkingRepository] docSnapshot.data(): ${docSnapshot.data()}"); // Print the raw data
+
         final createdParking = Parking.fromJson({
           'id': docSnapshot.id, // Add the ID
           ...docSnapshot.data() as Map<String, dynamic>, // Add other data
@@ -292,6 +293,8 @@ class ParkingRepository implements RepositoryInterface<Parking> {
                     hours: 1)); // If endTime exists, prolong from endTime
 
         final updatedParking = parking.copyWith(endTime: newEndTime);
+        debugPrint(
+            "[ParkingRepository] before updating parking object for prolonging: $updatedParking");
 
         await update(id, updatedParking); // Update in database
 
