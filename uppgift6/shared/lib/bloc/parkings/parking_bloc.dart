@@ -1,5 +1,3 @@
-// ignore_for_file: unused_import
-
 import 'dart:async';
 
 import 'package:firebase_repositories/firebase_repositories.dart';
@@ -16,18 +14,17 @@ import 'parking_event.dart';
 import 'parking_state.dart';
 
 class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
-  final ParkingRepository parkingRepository; // Parking data repository
-  final VehicleRepository vehicleRepository; // Vehicle data repository
-  final ParkingSpaceRepository
-      parkingSpaceRepository; // Parking space data repository
+  final ParkingRepository parkingRepository;
+  final VehicleRepository vehicleRepository;
+  final ParkingSpaceRepository parkingSpaceRepository;
 
   ParkingFilter _currentFilter =
       ParkingFilter.active; // Currently applied filter
-  List<Parking> _allParkings = []; // All loaded parkings
-  List<Vehicle> _allVehicles = []; // All loaded vehicles
-  List<ParkingSpace> _allParkingSpaces = []; // All loaded parking spaces
+  List<Parking> _allParkings = [];
+  List<Vehicle> _allVehicles = [];
+  List<ParkingSpace> _allParkingSpaces = [];
 
-  final AuthFirebaseBloc authFirebaseBloc; // Auth Firebase Bloc
+  final AuthFirebaseBloc authFirebaseBloc;
 
   ParkingBloc({
     required this.parkingRepository,
@@ -35,80 +32,65 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
     required this.parkingSpaceRepository,
     required this.authFirebaseBloc,
   }) : super(ParkingLoading()) {
-    on<LoadParkings>(_onLoadParkings); // Handle LoadParkings event
-    on<CreateParking>(_onCreateParking); // Handle CreateParking event
-    on<StopParking>(_onStopParking); // Handle StopParking event
-    on<SelectParking>(_onSelectParking); // Handle SelectParking event
-    on<UpdateParking>(_onUpdateParking); // Handle UpdateParking event
+    on<LoadParkings>(_onLoadParkings);
+    on<CreateParking>(_onCreateParking);
+    on<StopParking>(_onStopParking);
+    on<SelectParking>(_onSelectParking);
+    on<UpdateParking>(_onUpdateParking);
     on<ChangeFilter>(_onChangeFilter);
     on<ProlongParking>(_onProlongParking);
-    on<CancelParkingNotification>(
-        _onCancelParkingNotification); // NEW: Handle CancelParkingNotification
-    on<ScheduleParkingNotification>(
-        _onScheduleParkingNotification); // Handle ScheduleParkingNotification event
+    on<CancelParkingNotification>(_onCancelParkingNotification);
+    on<ScheduleParkingNotification>(_onScheduleParkingNotification);
 
-    add(LoadParkings(filter: _currentFilter)); // Initial data load
+    add(LoadParkings(filter: _currentFilter));
   }
 
-Future<void> _onProlongParking(ProlongParking event, Emitter<ParkingState> emit) async {
+  Future<void> _onProlongParking(ProlongParking event, Emitter<ParkingState> emit) async {
   try {
     final existingParking = await parkingRepository.getById(event.parkingId);
 
-    if (existingParking != null) {
+    if (existingParking != null && existingParking.notificationId != null) {
       debugPrint('🚗 [ParkingBloc] Prolonging parking: $existingParking');
 
-      await parkingRepository.prolong(event.parkingId);
+      final newEndTime = existingParking.endTime != null
+          ? existingParking.endTime!.add(prolongationDuration)
+          : existingParking.startTime.add(prolongationDuration);
 
-      // ***CRITICAL: Fetch the UPDATED Parking object***
-      final prolongedParking = await parkingRepository.getById(event.parkingId);
+      await parkingRepository.prolong(event.parkingId, newEndTime); // Update endTime in Firestore
 
-      debugPrint('🚗 [ParkingBloc] Prolonged Parking (from Firestore): $prolongedParking'); // Log the fetched object
+      final pendingNotifications = await flutterLocalNotificationsPlugin.pendingNotificationRequests();
+      final existingIds = pendingNotifications.map((n) => n.id).toList();
 
-      if (prolongedParking != null && prolongedParking.notificationId != null) {
-        debugPrint(
-            '🔔 Checking notification ID in Firestore: ${prolongedParking.notificationId}');
+      debugPrint("🔎 Existing pending notification IDs: $existingIds"); // Print ALL pending IDs
 
-        // 🔍 Get all pending notifications
-        final pendingNotifications =
-            await flutterLocalNotificationsPlugin.pendingNotificationRequests();
-        final existingIds = pendingNotifications.map((n) => n.id).toList();
-        debugPrint("🔎 Existing pending notification IDs: $existingIds");
+      if (existingIds.contains(existingParking.notificationId)) {
+        debugPrint('✅ [ParkingBloc] Found notification ID ${existingParking.notificationId}, updating it.');
 
-        if (existingIds.contains(prolongedParking.notificationId)) {
-          debugPrint(
-              '✅ Found notification ID ${prolongedParking.notificationId}, updating it.');
-
-          try { // Add try-catch here
-            final newEndTime = prolongedParking.endTime!; // Get newEndTime after fetching
-
-            await updateParkingNotification(
-              title: "Parking Extended",
-              content: "Your parking has been extended until ${DateFormat.Hm().format(newEndTime.toLocal())}",
-              newEndTime: newEndTime,
-              notificationId: prolongedParking.notificationId!,
-            );
-            debugPrint("[ParkingBloc] Notification updated successfully.");
-          } catch (notificationError) {
-            debugPrint("⚠️ Error updating notification: $notificationError");
-            // Handle the error appropriately (e.g., show a message to the user)
-          }
-        } else {
-          debugPrint(
-              "⚠️ Notification ID ${prolongedParking.notificationId} NOT FOUND in pending list.");
-        }
+        await flutterLocalNotificationsPlugin.cancel(existingParking.notificationId!); // Cancel old notification
       } else {
-        debugPrint("⚠️ No notification ID found in Firestore for this parking.");
+        debugPrint('[ParkingBloc] No pending notification found, scheduling a new one.');
       }
+
+      // Calculate notification time (e.g., 3 minutes before newEndTime)
+      final notificationTime = newEndTime.subtract(const Duration(minutes: 3));
+
+      await updateParkingNotification(
+        title: "Parking Extended",
+        content: "Your parking has been extended until ${DateFormat.Hm().format(newEndTime.toLocal())}",
+        newEndTime: newEndTime,
+        notificationId: existingParking.notificationId!,
+        notificationTime: notificationTime, // Pass the calculated notificationTime
+      );
 
       add(LoadParkings(filter: _currentFilter));
     } else {
-      emit(ParkingError('Parking not found'));
+      debugPrint('[ParkingBloc] No existing parking or notification ID found.');
+      emit(ParkingError('Parking not found or no notification ID'));
     }
   } catch (e) {
     emit(ParkingError('Failed to prolong parking: $e'));
   }
 }
-
 
   Future<void> _onCancelParkingNotification(
       CancelParkingNotification event, Emitter<ParkingState> emit) async {

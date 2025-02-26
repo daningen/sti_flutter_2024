@@ -27,7 +27,7 @@ Future<void> scheduleNotification(
       channelDescription: channelDescription,
       importance: Importance.max,
       priority: Priority.high,
-      timeoutAfter: 40000,
+      timeoutAfter: 50000,
       ticker: 'ticker');
 
   // iOS-specifika inställningar

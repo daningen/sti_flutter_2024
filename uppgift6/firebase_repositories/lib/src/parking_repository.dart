@@ -280,33 +280,26 @@ class ParkingRepository implements RepositoryInterface<Parking> {
     return parkings;
   }
 
-  Future<void> prolong(String id) async {
-    debugPrint("[ParkingRepository] Prolonging parking session with ID: $id");
+  Future<void> prolong(String id, DateTime newEndTime) async {
+  debugPrint("[ParkingRepository] Prolonging parking session with ID: $id, newEndTime: $newEndTime"); // Include newEndTime in log
 
-    try {
-      final parking = await getById(id);
-      if (parking != null) {
-        final newEndTime =
-            parking.endTime == null // If no endTime, prolong from startTime
-                ? parking.startTime.add(const Duration(hours: 1))
-                : parking.endTime!.add(const Duration(
-                    hours: 1)); // If endTime exists, prolong from endTime
+  try {
+    final parking = await getById(id);
+    if (parking != null) {
 
-        final updatedParking = parking.copyWith(endTime: newEndTime);
-        debugPrint(
-            "[ParkingRepository] before updating parking object for prolonging: $updatedParking");
+      final updatedParking = parking.copyWith(endTime: newEndTime); // Use the provided newEndTime
+      debugPrint("[ParkingRepository] Before updating parking object for prolonging: $updatedParking");
 
-        await update(id, updatedParking); // Update in database
+      await update(id, updatedParking); // Update in database
 
-        debugPrint(
-            "[ParkingRepository] Parking session prolonged successfully.");
-      } else {
-        debugPrint("[ParkingRepository] Parking not found for prolonging.");
-        throw Exception("Parking session not found for ID: $id");
-      }
-    } catch (e) {
-      debugPrint("[ParkingRepository] Error prolonging parking: $e");
-      rethrow;
+      debugPrint("[ParkingRepository] Parking session prolonged successfully.");
+    } else {
+      debugPrint("[ParkingRepository] Parking not found for prolonging.");
+      throw Exception("Parking session not found for ID: $id");
     }
+  } catch (e) {
+    debugPrint("[ParkingRepository] Error prolonging parking: $e");
+    rethrow;
   }
+}
 }

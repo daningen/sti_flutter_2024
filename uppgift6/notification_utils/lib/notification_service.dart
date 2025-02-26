@@ -1,4 +1,5 @@
 // import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
@@ -11,7 +12,7 @@ Future<void> scheduleNotification({
   required String title,
   required String content,
   required DateTime deliveryTime,
-  required int id, // Use the provided ID directly
+  required int id,
 }) async {
   await requestPermissions();
 
@@ -50,8 +51,9 @@ Future<void> scheduleNotification({
   );
 }
 
-Future<void> cancelNotification(int id) async {
-  await flutterLocalNotificationsPlugin.cancel(id);
+Future<void> cancelNotification(int notificationId) async {
+  await flutterLocalNotificationsPlugin.cancel(notificationId);
+  debugPrint("Cancelled notification with ID: $notificationId");
 }
 
 // ✅ Add the new function for showing parking notifications
@@ -82,18 +84,19 @@ Future<void> showParkingNotification(String parkingId) async {
   );
 }
 
-  Future<void> updateParkingNotification({
-    required String title,
-    required String content,
-    required DateTime newEndTime,
-    required int notificationId, // The ORIGINAL notification ID
-  }) async {
-    await cancelNotification(notificationId); // Cancel the old notification
+Future<void> updateParkingNotification({
+  required String title,
+  required String content,
+  required DateTime newEndTime,
+  required int notificationId, // The ORIGINAL notification ID
+  required DateTime notificationTime, // Add the notificationTime parameter
+}) async {
+  await cancelNotification(notificationId); // Cancel the old notification
 
-    await scheduleNotification(
-      title: title,
-      content: content,
-      deliveryTime: newEndTime,
-      id: notificationId, // Use the SAME ID to replace the notification
-    );
-  }
+  await scheduleNotification(
+    title: title,
+    content: content,
+    deliveryTime: notificationTime, // Use notificationTime here!
+    id: notificationId, // Use the SAME ID to replace the notification
+  );
+}
