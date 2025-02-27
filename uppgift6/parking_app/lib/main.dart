@@ -129,17 +129,20 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
       providers: [
-        RepositoryProvider<AuthRepository>(create: (_) => AuthRepository()),
-        RepositoryProvider<UserRepository>(create: (_) => UserRepository()),
-        RepositoryProvider<PersonRepository>(create: (_) => PersonRepository()),
-        RepositoryProvider<VehicleRepository>(
-            create: (_) => VehicleRepository(db: FirebaseFirestore.instance)),
-        RepositoryProvider<ParkingRepository>(
-            create: (_) => ParkingRepository(db: FirebaseFirestore.instance)),
-        RepositoryProvider<ParkingSpaceRepository>(
-            create: (_) =>
-                ParkingSpaceRepository(db: FirebaseFirestore.instance)),
-      ],
+    RepositoryProvider<AuthRepository>(create: (_) => AuthRepository()),
+    RepositoryProvider<UserRepository>(create: (_) => UserRepository()),
+    RepositoryProvider<PersonRepository>(create: (_) => PersonRepository()),
+    RepositoryProvider<VehicleRepository>(
+        create: (_) => VehicleRepository(db: FirebaseFirestore.instance)),
+    RepositoryProvider<ParkingSpaceRepository>( // Move this up!
+        create: (_) =>
+            ParkingSpaceRepository(db: FirebaseFirestore.instance)),
+    RepositoryProvider<ParkingRepository>(
+        create: (context) => ParkingRepository(
+            db: FirebaseFirestore.instance,
+            parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
+        )),
+  ],
       child: MultiBlocProvider(
         providers: [
           BlocProvider(

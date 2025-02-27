@@ -198,6 +198,11 @@ class ParkingListItem extends StatelessWidget {
       margin: const EdgeInsets.all(8.0),
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
+        // color: (parking.endTime == null ||
+        //         parking.endTime!.isAfter(DateTime.now().toUtc()))
+        //     ? const Color.fromARGB(255, 239, 236, 232) // Active Parking Color
+        //     : const Color.fromARGB(
+        //         255, 232, 237, 232), // Inactive Parking Color
         border: Border.all(color: Colors.grey),
         borderRadius: BorderRadius.circular(8.0),
       ),
@@ -250,8 +255,11 @@ class ParkingListItem extends StatelessWidget {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 211, 220, 212),
-                  foregroundColor: Colors.white,
+                  backgroundColor: (parking.endTime == null ||
+                          parking.endTime!.isAfter(DateTime.now().toUtc()))
+                      ? Colors.red // Green background if available
+                      : Colors.green, // Red background if unavailable
+                  foregroundColor: Colors.white, // Always white foreground
                   padding: const EdgeInsets.all(8.0),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -261,13 +269,10 @@ class ParkingListItem extends StatelessWidget {
                           parking.endTime!.isAfter(DateTime.now().toUtc())
                       ? Icons.directions_car
                       : Icons.local_parking,
-                  color: parking.endTime == null ||
-                          parking.endTime!.isAfter(DateTime.now().toUtc())
-                      ? Colors.green
-                      : Colors.grey,
+                  color: Colors.white, // White icon if available
                   size: 20,
                 ),
-              ),
+              )
             ],
           ),
           const SizedBox(height: 4.0), // Spacing below the row

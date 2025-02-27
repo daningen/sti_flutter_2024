@@ -54,8 +54,7 @@ class _CreateParkingDialogState extends State<CreateParkingDialog> {
     if (parkingState is ParkingLoaded) {
       final loadedParkingState = parkingState;
 
-      // 3. Get the current time in UTC.  We get it only ONCE to ensure
-      //    consistency during the filtering process.
+     
       final nowUtc = DateTime.now().toUtc();
 
       debugPrint("Filtering Available Items:");
@@ -65,9 +64,9 @@ class _CreateParkingDialogState extends State<CreateParkingDialog> {
       debugPrint(
           "All Parkings: ${loadedParkingState.allParkings.length}"); // Log all parkings
 
-      // 4. Filter the available vehicles.
+     
       _filteredAvailableVehicles = widget.availableVehicles.where((vehicle) {
-        // 4a. Check if the vehicle is currently parked (unavailable).
+        // Check if the vehicle is currently parked (unavailable).
         final isAvailable = !loadedParkingState.allParkings.any((parking) {
           // A vehicle is considered unavailable if it's already in a parking
           // and the parking has not ended or has an end time in the future.

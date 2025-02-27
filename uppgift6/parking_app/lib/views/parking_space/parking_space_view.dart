@@ -16,7 +16,7 @@ class ParkingSpacesView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Available Parking Spaces'),
+        title: const Text('Parking Spaces'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -51,11 +51,24 @@ class ParkingSpacesView extends StatelessWidget {
                       decimalDigits: 0,
                     ).format(parkingSpace.pricePerHour)} / hour',
                   ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.info),
-                    onPressed: () {
-                      // Future action can be added here (e.g., details page)
-                    },
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        parkingSpace.isAvailable
+                            ? Icons.check_circle
+                            : Icons.cancel,
+                        color: parkingSpace.isAvailable
+                            ? Colors.green
+                            : Colors.red,
+                      ),
+                      // IconButton(
+                      //   icon: const Icon(Icons.info),
+                      //   onPressed: () {
+                      //     // Future action can be added here (e.g., details page)
+                      //   },
+                      // ),
+                    ],
                   ),
                 );
               },
@@ -126,7 +139,7 @@ class ParkingSpacesView extends StatelessWidget {
             onPressed: () {
               if (formKey.currentState!.validate()) {
                 final address = addressController.text.trim();
-                final price = int.parse(priceController.text.trim()); // ✅ Fix: Ensure price is int
+                final price = int.parse(priceController.text.trim());
 
                 context.read<ParkingSpaceBloc>().add(
                       CreateParkingSpace(

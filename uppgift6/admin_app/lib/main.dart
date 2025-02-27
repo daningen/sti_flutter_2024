@@ -62,7 +62,8 @@ class MyApp extends StatelessWidget {
         ),
         RepositoryProvider<ParkingRepository>(  
           create: (context) => ParkingRepository(
-              db: FirebaseFirestore.instance),  
+              db: FirebaseFirestore.instance,
+              parkingSpaceRepository: context.read<ParkingSpaceRepository>()),  
         ),
         RepositoryProvider<ParkingSpaceRepository>( 
           create: (_) => ParkingSpaceRepository(db: FirebaseFirestore.instance),

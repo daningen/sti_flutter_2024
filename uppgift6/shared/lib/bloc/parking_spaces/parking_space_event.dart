@@ -57,3 +57,12 @@ class UpdateParkingSpace extends ParkingSpaceEvent {
 
   UpdateParkingSpace({required this.id, required this.updatedSpace});
 }
+
+class ParkingSpacesUpdated extends ParkingSpaceEvent {
+  final List<ParkingSpace> parkingSpaces;
+
+  ParkingSpacesUpdated(this.parkingSpaces);
+
+  @override
+  List<Object?> get props => [parkingSpaces];
+}

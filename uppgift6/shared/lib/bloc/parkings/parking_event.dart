@@ -99,6 +99,15 @@ class ScheduleParkingNotification extends ParkingEvent {
   List<Object?> get props => [title, content, deliveryTime, parkingId];
 }
 
+class ParkingStreamUpdated extends ParkingEvent {
+  final List<Parking> parkings;
+
+  ParkingStreamUpdated(this.parkings);
+
+  @override
+  List<Object?> get props => [parkings];
+}
+
 // Optional state to indicate notification scheduling (in parking_state.dart if needed)
 // class NotificationScheduled extends ParkingState {
 //   final String parkingId;

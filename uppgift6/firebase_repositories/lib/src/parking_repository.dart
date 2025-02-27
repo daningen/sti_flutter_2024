@@ -1,13 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart'; // For Firestore interaction
 import 'package:shared/shared.dart'; // For shared models (Parking)
-import 'package:flutter/foundation.dart'; // For debugPrint
+import 'package:flutter/foundation.dart';
+
+import '../firebase_repositories.dart'; // For debugPrint
 // import 'package:uuid/uuid.dart'; // For generating unique IDs
 
 class ParkingRepository implements RepositoryInterface<Parking> {
-  final FirebaseFirestore _db; // Firestore instance
-  // final Uuid _uuid = const Uuid(); // UUID generator
+  final FirebaseFirestore _db;
+  final ParkingSpaceRepository
+      _parkingSpaceRepository; // Add ParkingSpaceRepository
 
-  ParkingRepository({required FirebaseFirestore db}) : _db = db;
+  ParkingRepository(
+      {required FirebaseFirestore db,
+      required ParkingSpaceRepository parkingSpaceRepository})
+      : _db = db,
+        _parkingSpaceRepository = parkingSpaceRepository;
 
   @override
   Future<Parking> create(Parking parking) async {
@@ -35,6 +42,16 @@ class ParkingRepository implements RepositoryInterface<Parking> {
 
         debugPrint(
             "[ParkingRepository] Parking created: ${createdParking.toJson()}");
+
+        // Update ParkingSpace availability
+        if (parking.parkingSpace != null) {
+          final updatedParkingSpace =
+              parking.parkingSpace!.copyWith(isAvailable: false);
+          await _parkingSpaceRepository.update(
+              parking.parkingSpace!.id, updatedParkingSpace);
+          debugPrint(
+              "[ParkingRepository] ParkingSpace updated, set to unavailable: $updatedParkingSpace");
+        }
         return createdParking;
       } else {
         throw Exception("Failed to retrieve created Parking document.");
@@ -200,6 +217,16 @@ class ParkingRepository implements RepositoryInterface<Parking> {
 
         await update(id, updatedParking);
         debugPrint("[ParkingRepository] Parking session stopped successfully.");
+
+        // Update ParkingSpace availability
+        if (parking.parkingSpace != null) {
+          final updatedParkingSpace =
+              parking.parkingSpace!.copyWith(isAvailable: true);
+          await _parkingSpaceRepository.update(
+              parking.parkingSpace!.id, updatedParkingSpace);
+          debugPrint(
+              "[ParkingRepository] ParkingSpace updated, set to available: $updatedParkingSpace");
+        }
       } else {
         debugPrint("[ParkingRepository] Parking not found for stopping.");
         throw Exception("Parking session not found for ID: $id");
@@ -281,25 +308,28 @@ class ParkingRepository implements RepositoryInterface<Parking> {
   }
 
   Future<void> prolong(String id, DateTime newEndTime) async {
-  debugPrint("[ParkingRepository] Prolonging parking session with ID: $id, newEndTime: $newEndTime"); // Include newEndTime in log
+    debugPrint(
+        "[ParkingRepository] Prolonging parking session with ID: $id, newEndTime: $newEndTime"); // Include newEndTime in log
 
-  try {
-    final parking = await getById(id);
-    if (parking != null) {
+    try {
+      final parking = await getById(id);
+      if (parking != null) {
+        final updatedParking = parking.copyWith(
+            endTime: newEndTime); // Use the provided newEndTime
+        debugPrint(
+            "[ParkingRepository] Before updating parking object for prolonging: $updatedParking");
 
-      final updatedParking = parking.copyWith(endTime: newEndTime); // Use the provided newEndTime
-      debugPrint("[ParkingRepository] Before updating parking object for prolonging: $updatedParking");
+        await update(id, updatedParking); // Update in database
 
-      await update(id, updatedParking); // Update in database
-
-      debugPrint("[ParkingRepository] Parking session prolonged successfully.");
-    } else {
-      debugPrint("[ParkingRepository] Parking not found for prolonging.");
-      throw Exception("Parking session not found for ID: $id");
+        debugPrint(
+            "[ParkingRepository] Parking session prolonged successfully.");
+      } else {
+        debugPrint("[ParkingRepository] Parking not found for prolonging.");
+        throw Exception("Parking session not found for ID: $id");
+      }
+    } catch (e) {
+      debugPrint("[ParkingRepository] Error prolonging parking: $e");
+      rethrow;
     }
-  } catch (e) {
-    debugPrint("[ParkingRepository] Error prolonging parking: $e");
-    rethrow;
   }
-}
 }

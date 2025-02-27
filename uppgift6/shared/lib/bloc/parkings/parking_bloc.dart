@@ -39,58 +39,69 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
     on<UpdateParking>(_onUpdateParking);
     on<ChangeFilter>(_onChangeFilter);
     on<ProlongParking>(_onProlongParking);
+    on<ParkingStreamUpdated>(_onParkingStreamUpdated);
     on<CancelParkingNotification>(_onCancelParkingNotification);
     on<ScheduleParkingNotification>(_onScheduleParkingNotification);
 
     add(LoadParkings(filter: _currentFilter));
   }
 
-  Future<void> _onProlongParking(ProlongParking event, Emitter<ParkingState> emit) async {
-  try {
-    final existingParking = await parkingRepository.getById(event.parkingId);
+  Future<void> _onProlongParking(
+      ProlongParking event, Emitter<ParkingState> emit) async {
+    try {
+      final existingParking = await parkingRepository.getById(event.parkingId);
 
-    if (existingParking != null && existingParking.notificationId != null) {
-      debugPrint('🚗 [ParkingBloc] Prolonging parking: $existingParking');
+      if (existingParking != null && existingParking.notificationId != null) {
+        debugPrint('🚗 [ParkingBloc] Prolonging parking: $existingParking');
 
-      final newEndTime = existingParking.endTime != null
-          ? existingParking.endTime!.add(prolongationDuration)
-          : existingParking.startTime.add(prolongationDuration);
+        final newEndTime = existingParking.endTime != null
+            ? existingParking.endTime!.add(prolongationDuration)
+            : existingParking.startTime.add(prolongationDuration);
 
-      await parkingRepository.prolong(event.parkingId, newEndTime); // Update endTime in Firestore
+        await parkingRepository.prolong(
+            event.parkingId, newEndTime); // Update endTime in Firestore
 
-      final pendingNotifications = await flutterLocalNotificationsPlugin.pendingNotificationRequests();
-      final existingIds = pendingNotifications.map((n) => n.id).toList();
+        final pendingNotifications =
+            await flutterLocalNotificationsPlugin.pendingNotificationRequests();
+        final existingIds = pendingNotifications.map((n) => n.id).toList();
 
-      debugPrint("🔎 Existing pending notification IDs: $existingIds"); // Print ALL pending IDs
+        debugPrint("🔎 Existing pending notification IDs: $existingIds");
 
-      if (existingIds.contains(existingParking.notificationId)) {
-        debugPrint('✅ [ParkingBloc] Found notification ID ${existingParking.notificationId}, updating it.');
+        if (existingIds.contains(existingParking.notificationId)) {
+          debugPrint(
+              '✅ [ParkingBloc] Found notification ID ${existingParking.notificationId}, updating it.');
 
-        await flutterLocalNotificationsPlugin.cancel(existingParking.notificationId!); // Cancel old notification
+          await flutterLocalNotificationsPlugin.cancel(
+              existingParking.notificationId!); // Cancel old notification
+        } else {
+          debugPrint(
+              '[ParkingBloc] No pending notification found, scheduling a new one.');
+        }
+
+        // Calculate notification time (e.g., 3 minutes before newEndTime)
+        final notificationTime =
+            newEndTime.subtract(const Duration(minutes: 3));
+
+        await updateParkingNotification(
+          title: "Parking Extended",
+          content:
+              "Your parking has been extended until ${DateFormat.Hm().format(newEndTime.toLocal())}",
+          newEndTime: newEndTime,
+          notificationId: existingParking.notificationId!,
+          notificationTime:
+              notificationTime, // Pass the calculated notificationTime
+        );
+
+        add(LoadParkings(filter: _currentFilter));
       } else {
-        debugPrint('[ParkingBloc] No pending notification found, scheduling a new one.');
+        debugPrint(
+            '[ParkingBloc] No existing parking or notification ID found.');
+        emit(ParkingError('Parking not found or no notification ID'));
       }
-
-      // Calculate notification time (e.g., 3 minutes before newEndTime)
-      final notificationTime = newEndTime.subtract(const Duration(minutes: 3));
-
-      await updateParkingNotification(
-        title: "Parking Extended",
-        content: "Your parking has been extended until ${DateFormat.Hm().format(newEndTime.toLocal())}",
-        newEndTime: newEndTime,
-        notificationId: existingParking.notificationId!,
-        notificationTime: notificationTime, // Pass the calculated notificationTime
-      );
-
-      add(LoadParkings(filter: _currentFilter));
-    } else {
-      debugPrint('[ParkingBloc] No existing parking or notification ID found.');
-      emit(ParkingError('Parking not found or no notification ID'));
+    } catch (e) {
+      emit(ParkingError('Failed to prolong parking: $e'));
     }
-  } catch (e) {
-    emit(ParkingError('Failed to prolong parking: $e'));
   }
-}
 
   Future<void> _onCancelParkingNotification(
       CancelParkingNotification event, Emitter<ParkingState> emit) async {
@@ -104,69 +115,149 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
     }
   }
 
-  /// Loads parkings data, vehicles, and parking spaces.
   Future<void> _onLoadParkings(
       LoadParkings event, Emitter<ParkingState> emit) async {
-    debugPrint(
-        '🔄 Loading parkings with filter: ${event.filter}'); // Debug print
-    _currentFilter = event.filter; // Update current filter
+    debugPrint('🔄 Loading parkings with filter: ${event.filter}');
+    _currentFilter = event.filter;
 
-    final authState = authFirebaseBloc.state; // Access the state directly
+    final authState = authFirebaseBloc.state;
 
     if (authState is AuthAuthenticated) {
       final userRole = authState.person.role;
       final loggedInUserAuthId = authState.person.authId;
 
       try {
-        _allVehicles = await vehicleRepository.getAll(); // Load all vehicles
-        _allParkingSpaces =
-            await parkingSpaceRepository.getAll(); // Load all parking spaces
+        _allVehicles = await vehicleRepository.getAll();
+        _allParkingSpaces = await parkingSpaceRepository.getAll();
 
-        await emit.forEach<List<Parking>>(
-          parkingRepository.getParkingsStream(userRole,
-              loggedInUserAuthId), // 5. Pass role and ID to the stream
-          onData: (parkings) {
-            debugPrint(
-                'Parkings from stream (before filter): ${_allParkings.length}'); // Debug print before filter
-
-            _allParkings = List.from(parkings); // 6. Update all parkings
-            final filteredParkings = _filterParkings(
-                _allParkings, _currentFilter); // 7. Apply time-based filter
-            debugPrint(
-                'Parkings after filter: ${filteredParkings.length}'); // Debug print after filter
-
-            final availableVehicles = _allVehicles
-                .where((vehicle) => !_allParkings.any(
-                    (p) => p.vehicle?.id == vehicle.id && p.endTime == null))
-                .toList(); // 8. Find available vehicles
-            final availableParkingSpaces = _allParkingSpaces
-                .where((space) => !_allParkings.any(
-                    (p) => p.parkingSpace?.id == space.id && p.endTime == null))
-                .toList(); // 9. Find available parking spaces
-
-            return ParkingLoaded(
-              // 10. Emit ParkingLoaded state
-              parkings: filteredParkings,
-              allParkings: _allParkings,
-              vehicles: _allVehicles,
-              parkingSpaces: _allParkingSpaces,
-              availableVehicles: availableVehicles,
-              availableParkingSpaces: availableParkingSpaces,
-              filter: _currentFilter,
-            );
-          },
-          onError: (error, stackTrace) {
-            emit(ParkingError(
-                'Failed to load parkings: $error')); // 11. Emit ParkingError state
-            return ParkingError(
-                'Failed to load parkings: $error'); // Return error (for stream handling)
-          },
-        );
+        // Listen to the stream and add a new event when data changes
+        parkingRepository
+            .getParkingsStream(userRole, loggedInUserAuthId)
+            .listen((parkings) {
+          add(ParkingStreamUpdated(parkings)); // Add a new event
+        }, onError: (error, stackTrace) {
+          emit(ParkingError('Failed to load parkings: $error'));
+        });
       } catch (error) {
-        emit(ParkingError(
-            'Failed to load parkings: $error')); // 12. Emit ParkingError state
+        emit(ParkingError('Failed to load parkings: $error'));
       }
     }
+  }
+
+  /// Loads parkings data, vehicles, and parking spaces.
+  // Future<void> _onLoadParkings(
+  //     LoadParkings event, Emitter<ParkingState> emit) async {
+  //   debugPrint('🔄 Loading parkings with filter: ${event.filter}');
+  //   _currentFilter = event.filter; // Update current filter
+
+  //   final authState = authFirebaseBloc.state;
+
+  //   if (authState is AuthAuthenticated) {
+  //     final userRole = authState.person.role;
+  //     final loggedInUserAuthId = authState.person.authId;
+
+  //     try {
+  //       _allVehicles = await vehicleRepository.getAll(); // Load all vehicles
+  //       _allParkingSpaces =
+  //           await parkingSpaceRepository.getAll(); // Load all parking spaces
+
+  //       await emit.forEach<List<Parking>>(
+  //         parkingRepository.getParkingsStream(userRole, loggedInUserAuthId),
+  //         onData: (parkings) {
+  //           debugPrint(
+  //               'Parkings from stream (before filter): ${_allParkings.length}'); // Debug print before filter
+
+  //           _allParkings = List.from(parkings); // Update all parkings
+  //           final filteredParkings = _filterParkings(
+  //               _allParkings, _currentFilter); // Apply time-based filter
+  //           debugPrint(
+  //               'Parkings after filter: ${filteredParkings.length}'); // Debug print after filter
+
+  //           final availableVehicles = _allVehicles
+  //               .where((vehicle) => !_allParkings.any(
+  //                   (p) => p.vehicle?.id == vehicle.id && p.endTime == null))
+  //               .toList(); // Find available vehicles
+  //           final availableParkingSpaces = _allParkingSpaces
+  //               .where((space) => !_allParkings.any(
+  //                   (p) => p.parkingSpace?.id == space.id && p.endTime == null))
+  //               .toList(); // Find available parking spaces
+
+  //           return ParkingLoaded(
+
+  //             parkings: filteredParkings,
+  //             allParkings: _allParkings,
+  //             vehicles: _allVehicles,
+  //             parkingSpaces: _allParkingSpaces,
+  //             availableVehicles: availableVehicles,
+  //             availableParkingSpaces: availableParkingSpaces,
+  //             filter: _currentFilter,
+  //           );
+  //         },
+  //         onError: (error, stackTrace) {
+  //           emit(ParkingError(
+  //               'Failed to load parkings: $error'));
+  //           return ParkingError(
+  //               'Failed to load parkings: $error');
+  //         },
+  //       );
+  //     } catch (error) {
+  //       emit(ParkingError(
+  //           'Failed to load parkings: $error'));
+  //     }
+  //   }
+  // }
+
+  Future<void> _onParkingStreamUpdated(
+      ParkingStreamUpdated event, Emitter<ParkingState> emit) async {
+    debugPrint(
+        '[parkingBloc] Parkings from stream (before filter): ${event.parkings.length}');
+
+    _allParkings = List.from(event.parkings);
+    final filteredParkings = _filterParkings(_allParkings, _currentFilter);
+    debugPrint('Parkings after filter: ${filteredParkings.length}');
+
+    final availableVehicles = _allVehicles
+        .where((vehicle) => !_allParkings
+            .any((p) => p.vehicle?.id == vehicle.id && p.endTime == null))
+        .toList();
+
+    // Calculate available and unavailable parking spaces
+    final availableParkingSpaces = _allParkingSpaces
+        .where((space) => !_allParkings.any((parking) =>
+            parking.parkingSpace?.id == space.id &&
+            parking.endTime != null &&
+            parking.endTime!.isAfter(DateTime.now())))
+        .toList();
+
+    final unavailableParkingSpaces = _allParkingSpaces
+        .where((space) => _allParkings.any((parking) =>
+            parking.parkingSpace?.id == space.id &&
+            parking.endTime != null &&
+            parking.endTime!.isAfter(DateTime.now())))
+        .toList();
+
+    // 🚀 **Step: Update Parking Space Availability using batch**
+
+    try {
+      await parkingSpaceRepository.updateParkingSpaceAvailabilityBatch(
+          availableParkingSpaces, true);
+      await parkingSpaceRepository.updateParkingSpaceAvailabilityBatch(
+          unavailableParkingSpaces, false);
+
+      debugPrint("✅ Updated parking space availability batch");
+    } catch (error) {
+      debugPrint("❌ Failed to update parking space availability batch: $error");
+    }
+
+    emit(ParkingLoaded(
+      parkings: filteredParkings,
+      allParkings: _allParkings,
+      vehicles: _allVehicles,
+      parkingSpaces: _allParkingSpaces,
+      availableVehicles: availableVehicles,
+      availableParkingSpaces: availableParkingSpaces,
+      filter: _currentFilter,
+    ));
   }
 
   /// Filters parkings based on the selected filter (all, active, past).
@@ -174,7 +265,7 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
     final nowUtc = DateTime.now().toUtc(); // Current time in UTC
 
     if (filter == ParkingFilter.all) {
-      debugPrint('Returning all parkings'); // Debug print for all filter
+      debugPrint('Returning all parkings');
       return parkings; // All parkings
     } else if (filter == ParkingFilter.active) {
       return parkings.where((p) {
@@ -192,9 +283,8 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
     }
   }
 
-  /// Handles filter changes.
   void _onChangeFilter(ChangeFilter event, Emitter<ParkingState> emit) {
-    _currentFilter = event.filter; // Update current filter
+    _currentFilter = event.filter;
 
     if (state is ParkingLoaded) {
       // If data is loaded
@@ -216,9 +306,9 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
     print("[_onCreateParking]: Start Time: ${event.parking.startTime}");
     print("[_onCreateParking]: End Time: ${event.parking.endTime}");
     print(
-        "[_onCreateParking]: Vehicle License Plate: ${event.parking.vehicle?.licensePlate}"); // Handle null vehicle
+        "[_onCreateParking]: Vehicle License Plate: ${event.parking.vehicle?.licensePlate}");
     print(
-        "[_onCreateParking]: Parking Space Address: ${event.parking.parkingSpace?.address}"); // Handle null space
+        "[_onCreateParking]: Parking Space Address: ${event.parking.parkingSpace?.address}");
     print(
         "[_onCreateParking]: Notification ID: ${event.parking.notificationId}");
     try {
@@ -305,7 +395,7 @@ class ParkingBloc extends Bloc<ParkingEvent, ParkingState> {
         title: event.title,
         content: event.content,
         deliveryTime: event.deliveryTime,
-        id: event.parkingId.hashCode, // Use event.parkingId.hashCode
+        id: event.parkingId.hashCode,
       );
     } catch (e) {
       emit(ParkingError('Failed to schedule notification: $e'));

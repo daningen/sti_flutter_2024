@@ -66,11 +66,9 @@ class ParkingSpaceRepository implements RepositoryInterface<ParkingSpace> {
 
       final activeParkingSpaceIds = [
         ...activeParkingsSnapshot.docs
-            .map((doc) => doc.get('parkingSpace')['id'] as String)
-            ,
+            .map((doc) => doc.get('parkingSpace')['id'] as String),
         ...activeParkingsSnapshot2.docs
             .map((doc) => doc.get('parkingSpace')['id'] as String)
-            
       ];
 
       final allParkingSpacesSnapshot =
@@ -122,6 +120,28 @@ class ParkingSpaceRepository implements RepositoryInterface<ParkingSpace> {
     debugPrint(
         "[ParkingSpaceRepository] Parking space updated: ${parkingSpace.toJson()}");
     return parkingSpace;
+  }
+
+Future<void> updateParkingSpaceAvailabilityBatch(
+      List<ParkingSpace> parkingSpaces, bool isAvailable) async {
+    try {
+      final batch = _db.batch();
+
+      for (final space in parkingSpaces) {
+        final docRef = _db.collection("parkingSpaces").doc(space.id);
+        debugPrint(
+            "[ParkingSpaceRepository] Updating parking space availability: $space, isAvailable: $isAvailable");
+        batch.update(docRef, {'isAvailable': isAvailable});
+      }
+
+      await batch.commit();
+      debugPrint(
+          "[ParkingSpaceRepository] Batch update of parking space availability completed.");
+    } catch (e) {
+      debugPrint(
+          "[ParkingSpaceRepository] Error in batch update of parking space availability: $e");
+      rethrow;
+    }
   }
 
   @override

@@ -1,40 +1,42 @@
 import 'package:uuid/uuid.dart';
 
 class ParkingSpace {
-  final String id; // id is now a String and uses Uuid
+  final String id;
   final String address;
   final int pricePerHour;
+  final bool isAvailable; // Added isAvailable
 
   ParkingSpace({
     String? id,
     required this.address,
     required this.pricePerHour,
-  }) : id = id ?? const Uuid().v4(); // Generate a unique ID if none is provided
+    this.isAvailable = true, // Default to true
+  }) : id = id ?? const Uuid().v4();
 
-  /// Create a ParkingSpace object from JSON data
   factory ParkingSpace.fromJson(Map<String, dynamic> json) {
     return ParkingSpace(
-      id: json['id'] ?? const Uuid().v4(), // Generate a UUID if id is null
+      id: json['id'] ?? const Uuid().v4(),
       address: json['address'] ?? '',
       pricePerHour: json['pricePerHour'] ?? 0,
+      isAvailable: json['isAvailable'] as bool? ??
+          true, // Added isAvailable and default to true if not present
     );
   }
 
-  /// Convert ParkingSpace to JSON format
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'address': address,
       'pricePerHour': pricePerHour,
+      'isAvailable': isAvailable, // Added isAvailable
     };
   }
 
   @override
   String toString() {
-    return 'ParkingSpace{id: $id, address: $address, pricePerHour: $pricePerHour}';
+    return 'ParkingSpace{id: $id, address: $address, pricePerHour: $pricePerHour, isAvailable: $isAvailable}'; // Added isAvailable
   }
 
-  /// Equality and Hashcode overrides for comparing objects
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -42,22 +44,28 @@ class ParkingSpace {
     return other is ParkingSpace &&
         other.id == id &&
         other.address == address &&
-        other.pricePerHour == pricePerHour;
+        other.pricePerHour == pricePerHour &&
+        other.isAvailable == isAvailable; // Added isAvailable
   }
 
   @override
-  int get hashCode => id.hashCode ^ address.hashCode ^ pricePerHour.hashCode;
+  int get hashCode =>
+      id.hashCode ^
+      address.hashCode ^
+      pricePerHour.hashCode ^
+      isAvailable.hashCode; // Added isAvailable
 
-  /// CopyWith method to clone and modify properties
   ParkingSpace copyWith({
     String? id,
     String? address,
     int? pricePerHour,
+    bool? isAvailable, // Added isAvailable
   }) {
     return ParkingSpace(
       id: id ?? this.id,
       address: address ?? this.address,
       pricePerHour: pricePerHour ?? this.pricePerHour,
+      isAvailable: isAvailable ?? this.isAvailable, // Added isAvailable
     );
   }
 }
