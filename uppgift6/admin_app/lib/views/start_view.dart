@@ -5,14 +5,14 @@ class StartView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       // appBar: AppBar(
       //   title: const Text('Start'),
       //   actions: const [
       //     AppBarActions(),
       //   ],
       // ),
-      body: const Center(
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

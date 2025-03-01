@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously, deprecated_member_use, unnecessary_null_comparison
+// ignore_for_file: use_build_context_synchronously, deprecated_member_use, unnecessary_null_comparison, prefer_const_constructors
 
 import 'package:admin_app/views/parking/dialog/edit_parking_dialog.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +26,7 @@ class ParkingView extends StatelessWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          context.read<ParkingBloc>().add(LoadParkings());
+          context.read<ParkingBloc>().add(const LoadParkings());
         },
         child: BlocBuilder<ParkingBloc, ParkingState>(
           builder: (context, state) {

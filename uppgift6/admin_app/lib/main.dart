@@ -1,10 +1,10 @@
 import 'package:admin_app/utils/go_router_refresh_stream.dart';  
-import 'package:admin_app/views/parking/parking_view.dart';  
 import 'package:admin_app/views/parking_spaces/parking_space_view.dart';  
 import 'package:admin_app/views/person/person_view.dart';  
 import 'package:admin_app/views/register_view.dart';  
 import 'package:admin_app/views/statistics_view.dart';  
-import 'package:admin_app/views/vehicles/vehicles_view.dart';  
+import 'package:admin_app/views/vehicles/vehicles_view.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';  
 import 'package:shared/bloc/auth/auth_firebase_bloc.dart';  
 import 'package:firebase_core/firebase_core.dart';  
 import 'package:firebase_repositories/firebase_repositories.dart';  
@@ -29,6 +29,12 @@ import 'package:shared/bloc/parkings/parking_event.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';  
 
 // Main function to initialize Firebase and run the app
+// Initialize FlutterLocalNotificationsPlugin
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
+// Global key for navigation
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized(); 
 
@@ -45,72 +51,64 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // MultiRepositoryProvider to provide repositories to the app
     return MultiRepositoryProvider(
       providers: [
-        RepositoryProvider<AuthRepository>(  
-          create: (_) => AuthRepository(),
-        ),
-        RepositoryProvider<UserRepository>(  
-          create: (_) => UserRepository(),
-        ),
-        RepositoryProvider<PersonRepository>(  
-          create: (_) => PersonRepository(),
-        ),
-        RepositoryProvider<VehicleRepository>( 
-          create: (_) => VehicleRepository(db: FirebaseFirestore.instance),
-        ),
-        RepositoryProvider<ParkingRepository>(  
-          create: (context) => ParkingRepository(
-              db: FirebaseFirestore.instance,
-              parkingSpaceRepository: context.read<ParkingSpaceRepository>()),  
-        ),
-        RepositoryProvider<ParkingSpaceRepository>( 
-          create: (_) => ParkingSpaceRepository(db: FirebaseFirestore.instance),
-        ),
-      ],
-      // MultiBlocProvider to provide BLoCs to the app
+    RepositoryProvider<AuthRepository>(create: (_) => AuthRepository()),
+    RepositoryProvider<UserRepository>(create: (_) => UserRepository()),
+    RepositoryProvider<PersonRepository>(create: (_) => PersonRepository()),
+    RepositoryProvider<VehicleRepository>(
+        create: (_) => VehicleRepository(db: FirebaseFirestore.instance)),
+    RepositoryProvider<ParkingSpaceRepository>( // Move this up!
+        create: (_) =>
+            ParkingSpaceRepository(db: FirebaseFirestore.instance)),
+    RepositoryProvider<ParkingRepository>(
+        create: (context) => ParkingRepository(
+            db: FirebaseFirestore.instance,
+            parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
+        )),
+  ],
       child: MultiBlocProvider(
         providers: [
-          BlocProvider( // Authentication BLoC
+          BlocProvider(
             create: (context) => AuthFirebaseBloc(
               authRepository: context.read<AuthRepository>(),
               userRepository: context.read<UserRepository>(),
               personRepository: context.read<PersonRepository>(),
-            )..add(AuthFirebaseUserSubscriptionRequested()), // Start listening for auth changes
+            )..add(AuthFirebaseUserSubscriptionRequested()), // Subscribe to user changes
           ),
-          BlocProvider(  
+          BlocProvider(
             create: (context) => PersonBloc(
               personRepository: context.read<PersonRepository>(),
-            )..add(LoadPersons()),  
+            )..add(LoadPersons()), // Load persons initially
           ),
-          BlocProvider(  
+          BlocProvider(
             create: (context) => ParkingBloc(
               parkingRepository: context.read<ParkingRepository>(),
               parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
-              vehicleRepository: context.read<VehicleRepository>(), 
+              vehicleRepository: context.read<VehicleRepository>(),
               authFirebaseBloc: context.read<AuthFirebaseBloc>(),
-         
-            )..add(LoadParkings()), 
+              // notificationService: context.read<NotificationService>(), // Inject NotificationService
+            )..add(const LoadParkings()), // Load parkings initially
           ),
-          BlocProvider( 
+          BlocProvider(
             create: (context) => VehiclesBloc(
-              vehicleRepository: context.read<VehicleRepository>(), authFirebaseBloc: context.read<AuthFirebaseBloc>(),
-            )..add(LoadVehicles()),  
+              vehicleRepository: context.read<VehicleRepository>(),
+              authFirebaseBloc: context.read<AuthFirebaseBloc>(),
+            )..add(LoadVehicles()), // Load vehicles initially
           ),
-          BlocProvider(  
+          BlocProvider(
             create: (context) => ParkingSpaceBloc(
               parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
-            )..add(LoadParkingSpaces()),  
+            )..add(LoadParkingSpaces()), // Load parking spaces initially
           ),
-          BlocProvider(  
+          BlocProvider(
             create: (context) => StatisticsBloc(
               parkingRepository: context.read<ParkingRepository>(),
               parkingSpaceRepository: context.read<ParkingSpaceRepository>(),
-            )..add(LoadStatistics()), 
+            )..add(LoadStatistics()), // Load statistics initially
           ),
         ],
-        child: const AppInitializer(),  
+        child: const AppInitializer(), // Initialize the app
       ),
     );
   }
@@ -172,7 +170,7 @@ class AppInitializer extends StatelessWidget {
             ),
             GoRoute( 
               path: 'parkings',
-              builder: (context, state) => const ParkingView(),
+              builder: (context, state) => const ParkingSpacesView(),
             ),
             GoRoute(  
               path: 'parking-spaces',
