@@ -45,9 +45,9 @@ class VehiclesView extends StatelessWidget {
             } else if (state is VehicleLoaded) {
               // Loaded state: Display the vehicles in a DataTable
               final vehicles = state.vehicles;
-              return SingleChildScrollView( // Make the table scrollable
+              return SingleChildScrollView(  
                 child: Center(
-                  child: ConstrainedBox( // Constrain the table width
+                  child: ConstrainedBox( 
                     constraints: const BoxConstraints(maxWidth: 800),
                     child: DataTable(
                       headingRowColor: WidgetStateColor.resolveWith((states) {

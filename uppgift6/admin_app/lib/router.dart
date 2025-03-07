@@ -1,100 +1,82 @@
-// import 'package:flutter/material.dart';
-// import 'package:go_router/go_router.dart';
-// import 'package:provider/provider.dart';
-// import 'package:shared/bloc/auth/auth_firebase_bloc.dart';
+// router.dart
+import 'package:admin_app/utils/go_router_refresh_stream.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shared/bloc/auth/auth_firebase_bloc.dart';
+import 'package:admin_app/views/login_view.dart';
+import 'package:admin_app/views/nav_rail_view.dart';
+import 'package:admin_app/views/register_view.dart';
+import 'package:admin_app/views/parking/parking_view.dart';
+import 'package:admin_app/views/parking_spaces/parking_space_view.dart';
+import 'package:admin_app/views/person/person_view.dart';
+import 'package:admin_app/views/statistics_view.dart';
+import 'package:admin_app/views/vehicles/vehicles_view.dart';
 
-// import 'package:parking_app/views/login_view.dart';
-// import 'package:parking_app/views/register_view.dart';
-// import 'package:parking_app/views/start_view.dart';
-// import 'package:parking_app/views/statistics_view.dart';
-// import 'package:parking_app/views/parking/parking_view.dart';
-// import 'package:parking_app/views/parking_space/parking_space_view.dart';
-// import 'package:parking_app/views/person/person_view.dart';
-// import 'package:parking_app/views/vehicle/vehicles_view.dart';
+GoRouter createRouter(BuildContext context) => GoRouter(
+      initialLocation: '/login',
+      refreshListenable: GoRouterRefreshStream(
+        context.read<AuthFirebaseBloc>().stream,
+      ),
+      redirect: (context, state) {
+        final authState = context.read<AuthFirebaseBloc>().state;
+        final isLoggedIn = authState is AuthAuthenticated;
+        final isRegistering = state.uri.toString() == '/register';
+        final isPendingRegistration = authState is AuthUnauthenticated &&
+            authState.errorMessage == 'Pending person creation';
 
-// import 'package:parking_app/widgets/app_layout.dart';
-// import 'package:parking_app/utils/go_router_refresh_stream.dart';
+        debugPrint(
+            'Redirect Logic: state=${state.uri.toString()}, isLoggedIn=$isLoggedIn, isRegistering=$isRegistering, isPendingRegistration=$isPendingRegistration');
 
-// current
+        if (isPendingRegistration) {
+          return '/register';
+        }
 
-// / **Create and return the GoRouter instance**
-// GoRouter createRouter(BuildContext context) {
-//   return GoRouter(
-//     initialLocation: '/login',
-//     refreshListenable: GoRouterRefreshStream(
-//       context.read<AuthFirebaseBloc>().stream,
-//     ),
-//     redirect: (context, state) {
-//       final authState = context.read<AuthFirebaseBloc>().state;
-//       final isLoggedIn = authState is AuthAuthenticated;
-//       final hasCreatedPerson = authState is AuthFirebasePersonCreated;
+        if (!isLoggedIn && !isRegistering) {
+          return '/login';
+        }
 
-//       if (hasCreatedPerson) {
-//         return '/start';
-//       }
+        if (isLoggedIn) {
+          return '/start';
+        }
 
-//       final isLoggingIn = state.uri.toString() == '/login';
-//       final isRegistering = state.uri.toString() == '/register';
-
-//       debugPrint(
-//           'Redirect Logic: state=${state.uri.toString()}, isLoggedIn=$isLoggedIn, isLoggingIn=$isLoggingIn, isRegistering=$isRegistering');
-
-//       if (!isLoggedIn && !isLoggingIn && !isRegistering) {
-//         return '/login';
-//       }
-
-//       if (isLoggedIn && (isLoggingIn || isRegistering)) {
-//         return '/start';
-//       }
-
-//       return null;
-//     },
-//     routes: [
-//       GoRoute(
-//         path: '/login',
-//         builder: (context, state) => const LoginView(),
-//       ),
-//       GoRoute(
-//         path: '/register',
-//         builder: (context, state) => const RegisterView(),
-//       ),
-//       GoRoute(
-//         path: '/', // Root path
-//         builder: (context, state) => const AppLayout(
-//           child: StartView(),
-//         ),
-//       ),
-//       GoRoute(
-//         path: '/start',
-//         builder: (context, state) => const AppLayout(
-//           child: StartView(),
-//         ),
-//         routes: [
-//           GoRoute(
-//             path: 'statistics',
-//             builder: (context, state) => const AppLayout(
-//               child: StatisticsView(),
-//             ),
-//           ),
-//           GoRoute(
-//             path: 'parkings',
-//             builder: (context, state) => const ParkingView(),
-//           ),
-//           GoRoute(
-//             path: 'parking-spaces',
-//             builder: (context, state) => const ParkingSpacesView(),
-//           ),
-//           GoRoute(
-//               path: 'vehicles',
-//               builder: (context, state) => const VehiclesView()),
-//           GoRoute(
-//             path: 'persons',
-//             builder: (context, state) => const AppLayout(
-//               child: PersonView(),
-//             ),
-//           ),
-//         ],
-//       ),
-//     ],
-//   );
-// }
+        return null;
+      },
+      routes: [
+        GoRoute(
+          path: '/login',
+          builder: (context, state) => const LoginView(),
+        ),
+        GoRoute(
+          path: '/register',
+          builder: (context, state) => const RegisterView(),
+        ),
+        GoRoute(
+          path: '/start',
+          builder: (context, state) => const NavRailView(initialIndex: 0),
+          routes: [
+            // Sub-routes for the main app
+            GoRoute(
+              path: 'statistics',
+              builder: (context, state) => const StatisticsView(),
+            ),
+            GoRoute(
+              path: 'parkings',
+              builder: (context, state) => const ParkingView(),
+            ),
+            GoRoute(
+              path: 'parking-spaces',
+              builder: (context, state) => const ParkingSpacesView(),
+            ),
+            GoRoute(
+              path: 'vehicles',
+              builder: (context, state) => const VehiclesView(),
+            ),
+            GoRoute(
+              path: 'persons',
+              builder: (context, state) => const PersonView(),
+            ),
+          ],
+        ),
+      ],
+    );

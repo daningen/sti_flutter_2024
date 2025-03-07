@@ -1,37 +1,33 @@
-// import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:go_router/go_router.dart';
- 
+import 'package:go_router/go_router.dart';
+
+// ignore: unnecessary_import
 import 'package:provider/provider.dart';
 import 'package:shared/shared.dart';
 import 'package:shared/bloc/person/person_bloc.dart';
 import 'package:shared/bloc/person/person_event.dart';
 import 'package:shared/bloc/person/person_state.dart';
 
+// ignore: unused_import
 import '../../providers/theme_notifier.dart';
-// import 'dialogs/create_person_dialog.dart';
+import '../../widgets/app_bar_actions.dart';
+import 'dialogs/create_person_dialog.dart';
+import 'person_navigation_bar.dart';
 
 class PersonView extends StatelessWidget {
   const PersonView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final themeNotifier = Provider.of<ThemeNotifier>(context);
+
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Persons'),
-        actions: [
-          IconButton(
-            icon: Icon(
-              themeNotifier.themeMode == ThemeMode.light
-                  ? Icons.dark_mode
-                  : Icons.light_mode,
-            ),
-            onPressed: themeNotifier.toggleTheme,
-          ),
-        ],
+        actions: const [AppBarActions()],
+
       ),
       body: BlocBuilder<PersonBloc, PersonState>(
         builder: (context, state) {
@@ -82,45 +78,45 @@ class PersonView extends StatelessWidget {
           }
         },
       ),
-      // bottomNavigationBar: PersonNavigationBar(
-        
-      //   onHomePressed: () {
-      //     context.go('/'); // Navigate to home
-      //   },
-      //   onReloadPressed: () {
-      //     context.read<PersonBloc>().add(ReloadPersons());
-      //   },
-      //   onAddPersonPressed: () async {
-      //     final user = FirebaseAuth.instance.currentUser; // Fetch user
-      //     final authId = user?.uid; // Extract authId
+      bottomNavigationBar: PersonNavigationBar(
+        onHomePressed: () {
+          context.go('/'); // Navigate to home
+        },
+        onReloadPressed: () {
+          context.read<PersonBloc>().add(ReloadPersons());
+        },
+        onAddPersonPressed: () async {
+          final user = FirebaseAuth.instance.currentUser; // Fetch user
+          final authId = user?.uid; // Extract authId
 
-      //     if (authId == null) {
-      //       ScaffoldMessenger.of(context).showSnackBar(
-      //         const SnackBar(content: Text('❌ Error: User is not authenticated')),
-      //       );
-      //       return;
-      //     }
+          if (authId == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text('❌ Error: User is not authenticated')),
+            );
+            return;
+          }
 
-      //     await showDialog(
-      //       context: context,
-      //       builder: (context) => CreatePersonDialog(
-      //         authId: authId, // ✅ Pass authId
-      //         onCreate: (authId, name, ssn) {
-      //           context.read<PersonBloc>().add(
-      //                 CreatePerson(
-      //                   authId: authId, // ✅ Pass authId
-      //                   name: name,
-      //                   ssn: ssn,
-      //                 ),
-      //               );
-      //         },
-      //       ),
-      //     );
-      //   },
-      //   onLogoutPressed: () {
-      //     context.go('/login');
-      //   },
-      // ),
+          await showDialog(
+            context: context,
+            builder: (context) => CreatePersonDialog(
+              authId: authId, // ✅ Pass authId
+              onCreate: (authId, name, ssn) {
+                context.read<PersonBloc>().add(
+                      CreatePerson(
+                        authId: authId, // ✅ Pass authId
+                        name: name,
+                        ssn: ssn,
+                      ),
+                    );
+              },
+            ),
+          );
+        },
+        onLogoutPressed: () {
+          context.go('/login');
+        },
+      ),
     );
   }
 
@@ -177,7 +173,8 @@ class PersonView extends StatelessWidget {
                         ),
                       );
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Person updated successfully')),
+                    const SnackBar(
+                        content: Text('Person updated successfully')),
                   );
                   Navigator.of(context).pop();
                 }

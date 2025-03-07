@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../theme_notifier.dart'; // Update the path based on your project structure
 import 'package:shared/bloc/auth/auth_firebase_bloc.dart';
 
-
 class AppBarActions extends StatelessWidget {
   const AppBarActions({super.key});
 

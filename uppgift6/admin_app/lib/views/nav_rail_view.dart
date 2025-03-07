@@ -1,7 +1,7 @@
- import 'package:shared/bloc/auth/auth_firebase_bloc.dart';
+//  import 'package:shared/bloc/auth/auth_firebase_bloc.dart';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+// import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import 'start_view.dart';
@@ -34,17 +34,17 @@ class _NavRailViewState extends State<NavRailView> {
     final isWideScreen = MediaQuery.of(context).size.width >= 800;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Admin Dashboard'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              context.read<AuthFirebaseBloc>().add(LogoutRequested());
-            },
-          ),
-        ],
-      ),
+      // appBar: AppBar(
+      //   title: const Text('Admin Dashboard'),
+      //   actions: [
+      //     IconButton(
+      //       icon: const Icon(Icons.logout),
+      //       onPressed: () {
+      //         context.read<AuthFirebaseBloc>().add(LogoutRequested());
+      //       },
+      //     ),
+      //   ],
+      // ),
       body: Row(
         children: [
           if (isWideScreen)
